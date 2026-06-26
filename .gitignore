@@ -4,3 +4,7 @@ __pycache__/
 .DS_Store
 *.blend1
 *.blend2
+
+# Python virtual environment
+.venv/
+venv/
