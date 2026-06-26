@@ -32,7 +32,7 @@ echo -e "${NC}"
 # Dependency check
 echo -e "${YLW}Checking Python dependencies...${NC}"
 python3 -c "import numpy, matplotlib" 2>/dev/null \
-    || { echo -e "${RED}ERROR: numpy/matplotlib not installed. Run: pip install numpy matplotlib${NC}"; exit 1; }
+    || { echo -e "${RED}ERROR: numpy/matplotlib not installed. Activate .venv or run the Blender GLB step only.${NC}"; exit 1; }
 python3 -c "import trimesh" 2>/dev/null \
     && echo -e "  ${GRN}trimesh    : OK${NC}" \
     || echo -e "  ${YLW}trimesh    : NOT FOUND (GLB steps will be skipped)${NC}"
@@ -56,7 +56,11 @@ if $RENDERS_ONLY; then
 else
     # ─── Step 2: Generate individual building GLBs ──────────────────────────
     echo -e "${BLU}Step 2/4: Generating 30 individual building GLBs...${NC}"
-    if python3 -c "import trimesh" 2>/dev/null; then
+    if command -v blender >/dev/null 2>&1; then
+        blender --background --python scripts/blender_generate_campus.py \
+            && echo -e "${GRN}  Blender campus GLBs generated.${NC}" \
+            || echo -e "${RED}  Blender generation failed.${NC}"
+    elif python3 -c "import trimesh" 2>/dev/null; then
         python3 scripts/generate_buildings.py \
             && echo -e "${GRN}  Building GLBs generated.${NC}" \
             || echo -e "${RED}  generate_buildings.py failed.${NC}"
