@@ -1,1 +1,125 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Collective AI Mega Campus Viewer</title><link rel="stylesheet" href="style.css"></head><body><aside><h1>Collective AI<br><span>Mega Campus</span></h1><p>30-facility investor presentation viewer</p><select id="building"></select><div id="districts"></div><button id="day">Day / Night</button><button id="hero">Hero Camera</button><button id="ground">Ground Camera</button><p class="small">Loads <code>assets/glb/site/collective-ai-mega-campus.glb</code>. Uses Three.js r185 and anime.js 4.4.1 from CDN when npm install is blocked.</p></aside><main id="app"></main><script type="module" src="main.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Collective AI Mega Campus — Investor Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loading-inner">
+      <div class="loading-logo">
+        <div class="logo-hex"></div>
+        <span>COLLECTIVE AI</span>
+      </div>
+      <div class="loading-title">MEGA CAMPUS</div>
+      <div class="loading-subtitle">Initializing 3D Environment</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <div class="progress-label" id="progress-label">Loading assets...</div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-hex"></div>
+        <div class="brand-text">
+          <div class="brand-name">COLLECTIVE AI</div>
+          <div class="brand-sub">MEGA CAMPUS</div>
+        </div>
+      </div>
+      <button id="sidebar-toggle" class="icon-btn" title="Toggle Sidebar">&#9776;</button>
+    </div>
+
+    <div class="sidebar-stats">
+      <div class="stat-item"><span class="stat-val">30</span><span class="stat-lbl">Facilities</span></div>
+      <div class="stat-item"><span class="stat-val">180</span><span class="stat-lbl">Acres</span></div>
+      <div class="stat-item"><span class="stat-val">150MW</span><span class="stat-lbl">Peak Load</span></div>
+      <div class="stat-item"><span class="stat-val">4.9M</span><span class="stat-lbl">Sq Ft</span></div>
+    </div>
+
+    <div class="section-label">DISTRICT FILTER</div>
+    <div id="district-filters" class="district-filters">
+      <button class="dist-btn active" data-district="all">All Districts</button>
+      <button class="dist-btn" data-district="utility_data">Utility &amp; Data</button>
+      <button class="dist-btn" data-district="governance_knowledge">Governance</button>
+      <button class="dist-btn" data-district="public_wellness">Public &amp; Wellness</button>
+      <button class="dist-btn" data-district="manufacturing_logistics">Manufacturing</button>
+      <button class="dist-btn" data-district="bioenergy_farm_lifescience">Bioenergy</button>
+      <button class="dist-btn" data-district="visitor_hotel_mobility_residential">Visitor &amp; Hotel</button>
+    </div>
+
+    <div class="section-label">BUILDING DIRECTORY</div>
+    <div id="building-list" class="building-list">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="section-label">CAMERA</div>
+    <div class="camera-controls">
+      <button class="cam-btn" id="btn-hero">&#9651; Hero Aerial</button>
+      <button class="cam-btn" id="btn-ground">&#9711; Ground Level</button>
+      <button class="cam-btn" id="btn-north">&#8593; North</button>
+      <button class="cam-btn" id="btn-east">&#8594; East</button>
+    </div>
+
+    <div class="section-label">SCENE</div>
+    <div class="scene-controls">
+      <button class="scene-btn active" id="btn-night">&#9790; Night Mode</button>
+      <button class="scene-btn" id="btn-day">&#9728; Day Mode</button>
+      <button class="scene-btn" id="btn-autorotate">&#8635; Auto Rotate</button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="footer-line">Northeast Columbus Growth Corridor, Ohio</div>
+      <div class="footer-line">Version 3.0 &mdash; Investor Presentation</div>
+    </div>
+  </aside>
+
+  <!-- Main canvas area -->
+  <main id="app"></main>
+
+  <!-- Minimap -->
+  <div id="minimap-container">
+    <div class="minimap-label">CAMPUS MAP</div>
+    <canvas id="minimap" width="200" height="128"></canvas>
+    <div id="minimap-viewport"></div>
+  </div>
+
+  <!-- Info Panel -->
+  <div id="info-panel" class="info-panel hidden">
+    <button id="info-close" class="icon-btn close-btn">&times;</button>
+    <div class="info-number" id="info-number">#01</div>
+    <div class="info-name" id="info-name">Building Name</div>
+    <div class="info-district" id="info-district">District</div>
+    <div class="info-grid">
+      <div class="info-cell"><span class="info-label">Footprint</span><span class="info-value" id="info-footprint">—</span></div>
+      <div class="info-cell"><span class="info-label">Height</span><span class="info-value" id="info-height">—</span></div>
+      <div class="info-cell"><span class="info-label">Stories</span><span class="info-value" id="info-stories">—</span></div>
+      <div class="info-cell"><span class="info-label">Area</span><span class="info-value" id="info-area">—</span></div>
+    </div>
+    <div class="info-arch" id="info-arch"></div>
+    <button class="cam-btn fly-btn" id="info-fly">&#9654; Fly to Building</button>
+  </div>
+
+  <!-- HUD overlays -->
+  <div id="hud-topleft">
+    <div id="hud-coords">CAM 0, 0, 0</div>
+  </div>
+  <div id="hud-topright">
+    <div class="hud-badge">LIVE 3D</div>
+  </div>
+
+  <!-- Tooltip -->
+  <div id="tooltip" class="tooltip hidden"></div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
