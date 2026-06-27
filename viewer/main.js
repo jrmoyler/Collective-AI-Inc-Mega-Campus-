@@ -1,19 +1,30 @@
 /**
  * Collective AI Mega Campus — Enhanced WebGL Viewer
- * Three.js r185 | ACES Filmic | Bloom | Raycasting | Minimap | Particles
+ * Three.js r185 (vendored locally) | ACES Filmic | Bloom | Raycasting | Minimap
+ * Procedural environment + PBR building enhancement + day/night sky.
+ *
+ * Loadability: Three.js is vendored under ./vendor (no CDN single point of
+ * failure). A watchdog in index.html guarantees the loading screen is always
+ * dismissed; this module signals window.__campusBoot.ready()/fail().
  */
 
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js';
-import { GLTFLoader }       from 'https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/loaders/GLTFLoader.js';
-import { OrbitControls }    from 'https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/controls/OrbitControls.js';
-import { EffectComposer }   from 'https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass }       from 'https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass }  from 'https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+import * as THREE          from 'three';
+import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls }   from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer }  from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass }      from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass }      from 'three/addons/postprocessing/OutputPass.js';
+
+import { createEnvironment } from './lib/environment.js';
+import { enhanceBuildings }  from './lib/buildings.js';
+import { createSky }         from './lib/sky.js';
+
+const boot = (typeof window !== 'undefined' && window.__campusBoot) || { ready(){}, fail(){} };
 
 // ─── Campus constants ────────────────────────────────────────────────────────
 const CAMPUS_W = 1097, CAMPUS_D = 664;
 const SCENE_URL = '../assets/glb/site/collective-ai-mega-campus.glb';
-const FACILITIES_URL = '../data/facilities.json';
 
 // ─── Facilities metadata (embedded for fast startup) ─────────────────────────
 const FACILITIES = [
@@ -71,12 +82,12 @@ const elMinimap     = document.querySelector('#minimap');
 const minimapCtx    = elMinimap ? elMinimap.getContext('2d') : null;
 
 // ─── Renderer ────────────────────────────────────────────────────────────────
-const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true, powerPreference: 'high-performance' });
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
+renderer.toneMappingExposure = 1.1;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 elApp.appendChild(renderer.domElement);
@@ -84,10 +95,11 @@ elApp.appendChild(renderer.domElement);
 // ─── Scene ───────────────────────────────────────────────────────────────────
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x020810);
-scene.fog = new THREE.FogExp2(0x020810, 0.00048);
+scene.fog = new THREE.FogExp2(0x05101e, 0.00035);
 
 // ─── Camera ──────────────────────────────────────────────────────────────────
-const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 1, 6000);
+const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 1, 9000);
+camera.up.set(0, 0, 1); // Scene is Z-up — make the camera & OrbitControls Z-up aware
 camera.position.set(548, -820, 680);
 
 // ─── Controls ────────────────────────────────────────────────────────────────
@@ -97,7 +109,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.06;
 controls.maxPolarAngle = Math.PI / 2.05;
 controls.minDistance = 20;
-controls.maxDistance = 3000;
+controls.maxDistance = 4200;
 controls.autoRotate = false;
 controls.autoRotateSpeed = 0.2;
 controls.update();
@@ -107,51 +119,55 @@ const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  0.6,   // strength
-  0.45,  // radius
-  0.68   // threshold
+  0.65,  // strength
+  0.5,   // radius
+  0.62   // threshold
 );
 composer.addPass(bloom);
+composer.addPass(new OutputPass());
 
 // ─── Lighting — Night (default) ───────────────────────────────────────────────
-const ambient = new THREE.HemisphereLight(0x1a3a6a, 0x040a08, 1.2);
+const ambient = new THREE.HemisphereLight(0x1a3a6a, 0x040a08, 1.1);
 scene.add(ambient);
 
-const sun = new THREE.DirectionalLight(0x8ab4f8, 1.8);
-sun.position.set(-400, -600, 900);
+const sun = new THREE.DirectionalLight(0x8ab4f8, 1.7);
+sun.position.set(-500, -650, 950);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.near = 1; sun.shadow.camera.far = 3000;
-sun.shadow.camera.left = -700; sun.shadow.camera.right = 700;
-sun.shadow.camera.top = 700;  sun.shadow.camera.bottom = -700;
+sun.shadow.camera.near = 1; sun.shadow.camera.far = 3500;
+sun.shadow.camera.left = -750; sun.shadow.camera.right = 750;
+sun.shadow.camera.top = 750;  sun.shadow.camera.bottom = -750;
+sun.shadow.bias = -0.0004;
+sun.target.position.set(548, 332, 0);
 scene.add(sun);
+scene.add(sun.target);
 
-const rim = new THREE.DirectionalLight(0x004488, 0.6);
-rim.position.set(800, 800, 200);
+const rim = new THREE.DirectionalLight(0x004488, 0.55);
+rim.position.set(900, 900, 250);
 scene.add(rim);
 
-// Neon point lights at key buildings
+// Neon point lights at key buildings (campus glow)
 const neonPositions = [
   [220,585,25, 0x00cfff], [390,555,30, 0x0044ff], [858,572,18, 0x00ff88],
   [898,433,18, 0x00ff88], [565,370,18, 0x8844ff], [718,448,15, 0x4488ff],
   [798,98,20,  0xff8800], [562,82,14,  0xffffff],
 ];
 neonPositions.forEach(([x,y,z,col]) => {
-  const pt = new THREE.PointLight(col, 1.8, 320);
+  const pt = new THREE.PointLight(col, 1.6, 340, 1.6);
   pt.position.set(x, y, z);
   scene.add(pt);
 });
 
-// ─── Ground plane (visible when GLB absent) ───────────────────────────────────
-const groundGeo = new THREE.PlaneGeometry(2600, 1600);
-const groundMat = new THREE.MeshStandardMaterial({ color: 0x060c12, roughness: 0.95, metalness: 0.1 });
-const ground = new THREE.Mesh(groundGeo, groundMat);
-ground.rotation.x = -Math.PI / 2;
-ground.position.set(548, 332, -0.5);
-ground.receiveShadow = true;
-scene.add(ground);
+// ─── Procedural world: sky + environment ─────────────────────────────────────
+let sky = null, environment = null, buildingsCtl = null;
+try {
+  sky = createSky(THREE, scene, {});
+} catch (e) { console.warn('Sky init failed:', e); }
+try {
+  environment = createEnvironment(THREE, scene, {});
+} catch (e) { console.warn('Environment init failed:', e); }
 
-// ─── Placeholder geometry (shown until GLB loads) ─────────────────────────────
+// ─── Placeholder geometry (shown until GLB loads, fallback if it fails) ───────
 const placeholderGroup = new THREE.Group();
 scene.add(placeholderGroup);
 const placeholderMap = new Map(); // id -> Mesh
@@ -160,44 +176,18 @@ FACILITIES.forEach(f => {
   const geo = new THREE.BoxGeometry(f.footprint_m[0], f.footprint_m[1], f.height_m);
   const dc = DISTRICT_COLORS[f.district] || { hex: 0x224466 };
   const mat = new THREE.MeshStandardMaterial({
-    color: dc.hex, roughness: 0.55, metalness: 0.45,
-    emissive: dc.hex, emissiveIntensity: 0.06,
+    color: dc.hex, roughness: 0.5, metalness: 0.5,
+    emissive: dc.hex, emissiveIntensity: 0.12,
   });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(f.position[0], f.position[1], f.height_m / 2);
   mesh.castShadow = true;
+  mesh.receiveShadow = true;
   mesh.name = f.id;
   mesh.userData.facilityId = f.id;
   placeholderGroup.add(mesh);
   placeholderMap.set(f.id, mesh);
 });
-
-// ─── Energy particle system ───────────────────────────────────────────────────
-const PARTICLE_COUNT = 900;
-const pPositions  = new Float32Array(PARTICLE_COUNT * 3);
-const pVelocities = [];
-const pSpeeds     = [];
-
-for (let i = 0; i < PARTICLE_COUNT; i++) {
-  const x = Math.random() * CAMPUS_W;
-  const y = Math.random() * CAMPUS_D;
-  pPositions[i*3]   = x;
-  pPositions[i*3+1] = y;
-  pPositions[i*3+2] = Math.random() * 3 + 0.5;
-  const angle = (Math.random() < 0.5 ? 0 : Math.PI / 2) + (Math.random() - 0.5) * 0.3;
-  pVelocities.push(new THREE.Vector2(Math.cos(angle), Math.sin(angle)));
-  pSpeeds.push(Math.random() * 0.6 + 0.15);
-}
-
-const particleGeo = new THREE.BufferGeometry();
-particleGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
-const particleMat = new THREE.PointsMaterial({
-  color: 0x00cfff, size: 2.8, sizeAttenuation: true,
-  transparent: true, opacity: 0.65,
-  blending: THREE.AdditiveBlending, depthWrite: false,
-});
-const particles = new THREE.Points(particleGeo, particleMat);
-scene.add(particles);
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let campus = null;
@@ -218,7 +208,12 @@ function setProgress(pct, msg) {
   if (elProgressBar) elProgressBar.style.width = pct + '%';
   if (elProgressLbl) elProgressLbl.textContent = msg;
 }
+let loadingHidden = false;
 function hideLoading() {
+  if (loadingHidden) return;
+  loadingHidden = true;
+  boot.ready();
+  if (window.__campusWatchdog) clearTimeout(window.__campusWatchdog);
   if (!elLoading) return;
   elLoading.style.transition = 'opacity 0.8s ease';
   elLoading.style.opacity = '0';
@@ -226,27 +221,50 @@ function hideLoading() {
 }
 
 // ─── GLB Loader ──────────────────────────────────────────────────────────────
-setProgress(5, 'Initializing renderer...');
+setProgress(8, 'Initializing renderer...');
 
 const gltfLoader = new GLTFLoader();
-setProgress(10, 'Loading 3D campus scene...');
+setProgress(12, 'Loading 3D campus scene...');
 
 gltfLoader.load(
   SCENE_URL,
   (gltf) => {
     setProgress(92, 'Building scene graph...');
     campus = gltf.scene;
+
+    // The GLB is authored Y-up (glTF standard) with building height along +Y and
+    // node placement [origX, 0, -origY]. Our world is Z-up. A +90° rotation about
+    // X reorients the whole campus so each building stands up in +Z and lands at
+    // its true site coordinate (origX, origY, 0) — aligned with our environment,
+    // placeholders and fly-to targets.
+    campus.rotation.x = Math.PI / 2;
+    campus.updateMatrixWorld(true);
     scene.add(campus);
     placeholderGroup.visible = false;
 
+    // Hide the GLB's crude baked environment (flat road boxes, icosphere trees,
+    // box water/solar/turbines) — we render a far richer animated procedural one.
+    // Building meshes never match these names, so they survive.
+    const ENV_RE = /(terrain|road|water|solar|turbine|tree|landscape|hex|marker|bioswale|algae|canopy|pole|panel|grid_marker)/i;
+    campus.traverse(obj => {
+      if (obj.isMesh && ENV_RE.test(obj.name || '') && ENV_RE.test((obj.parent && obj.parent.name) || obj.name || '')) {
+        obj.visible = false;
+      }
+    });
+
+    // Enhance building materials / mark selectable meshes
+    try {
+      buildingsCtl = enhanceBuildings(THREE, campus, FACILITIES, DISTRICT_COLORS, { isNight });
+    } catch (e) { console.warn('Building enhancement failed:', e); }
+
     const newSelectable = [];
     campus.traverse(obj => {
-      if (!obj.isMesh) return;
+      if (!obj.isMesh || obj.visible === false) return;
       obj.castShadow = true;
       obj.receiveShadow = true;
-      // Tag with facility id from name
+      if (obj.userData && obj.userData.facilityId) { newSelectable.push(obj); return; }
       for (const f of FACILITIES) {
-        if (obj.name && obj.name.toLowerCase().includes(f.id.replace(/_/g,''))) {
+        if (obj.name && obj.name.toLowerCase().replace(/_/g,'').includes(f.id.replace(/_/g,''))) {
           obj.userData.facilityId = f.id;
           newSelectable.push(obj);
           break;
@@ -255,19 +273,21 @@ gltfLoader.load(
     });
     if (newSelectable.length > 0) selectableMeshes = newSelectable;
 
+    window.__campusDiag = { loaded: true, selectable: newSelectable.length };
+
     setProgress(100, 'Ready');
-    setTimeout(hideLoading, 500);
+    setTimeout(hideLoading, 400);
   },
   (xhr) => {
     if (xhr.lengthComputable) {
-      const pct = 10 + (xhr.loaded / xhr.total) * 80;
-      setProgress(pct, `Loading GLB... ${Math.round(pct)}%`);
+      const pct = 12 + (xhr.loaded / xhr.total) * 78;
+      setProgress(pct, `Loading campus... ${Math.round(pct)}%`);
     }
   },
   (err) => {
-    console.warn('GLB not available — using placeholder geometry:', err.message);
+    console.warn('GLB not available — using procedural preview:', err && err.message);
     setProgress(100, 'Using procedural preview');
-    setTimeout(hideLoading, 600);
+    setTimeout(hideLoading, 500);
   }
 );
 
@@ -341,19 +361,22 @@ function applyDayNight(night) {
   isNight = night;
   if (night) {
     scene.background.set(0x020810);
-    scene.fog = new THREE.FogExp2(0x020810, 0.00048);
-    sun.intensity = 1.8; sun.color.set(0x8ab4f8);
-    ambient.intensity = 1.2; ambient.color.set(0x1a3a6a);
-    bloom.strength = 0.6;
-    renderer.toneMappingExposure = 1.15;
+    scene.fog = new THREE.FogExp2(0x05101e, 0.00035);
+    sun.intensity = 1.7; sun.color.set(0x8ab4f8);
+    ambient.intensity = 1.1; ambient.color.set(0x1a3a6a);
+    bloom.strength = 0.65;
+    renderer.toneMappingExposure = 1.1;
   } else {
-    scene.background.set(0x87ceeb);
-    scene.fog = new THREE.FogExp2(0xa8d0f0, 0.00025);
-    sun.intensity = 3.8; sun.color.set(0xfff4cc);
-    ambient.intensity = 2.2; ambient.color.set(0x6090b0);
-    bloom.strength = 0.08;
-    renderer.toneMappingExposure = 0.9;
+    scene.background.set(0x9fc6ea);
+    scene.fog = new THREE.FogExp2(0xbcd8f0, 0.00022);
+    sun.intensity = 3.6; sun.color.set(0xfff4cc);
+    ambient.intensity = 2.0; ambient.color.set(0x88aacc);
+    bloom.strength = 0.12;
+    renderer.toneMappingExposure = 0.95;
   }
+  sky?.setDayNight?.(night);
+  environment?.setDayNight?.(night);
+  buildingsCtl?.setDayNight?.(night);
   document.querySelector('#btn-night')?.classList.toggle('active', night);
   document.querySelector('#btn-day')?.classList.toggle('active', !night);
 }
@@ -383,12 +406,10 @@ controls.addEventListener('end', () => {
 function selectFacility(f) {
   selectedFacilityId = f.id;
 
-  // Sidebar highlight
   document.querySelectorAll('.bldg-item').forEach(item => {
     item.classList.toggle('selected', item.dataset.id === f.id);
   });
 
-  // Populate info panel
   document.querySelector('#info-number').textContent = `#${String(f.number).padStart(2,'0')}`;
   document.querySelector('#info-name').textContent   = f.name;
   const distName = f.district.replace(/_/g, ' ').toUpperCase();
@@ -401,7 +422,6 @@ function selectFacility(f) {
   document.querySelector('#info-fly').onclick = () => flyToFacility(f);
   elInfoPanel.classList.remove('hidden');
 
-  // Mesh highlight
   applyHighlight(f.id);
 }
 
@@ -410,7 +430,7 @@ function applyHighlight(id) {
     selectedMesh.material = savedMaterial;
     selectedMesh = null; savedMaterial = null;
   }
-  const source = campus ? [] : Array.from(placeholderMap.values());
+  const source = [];
   if (campus) campus.traverse(o => { if (o.isMesh && o.userData.facilityId === id) source.push(o); });
   const mesh = source.find(o => o.userData?.facilityId === id) || placeholderMap.get(id);
   if (mesh) {
@@ -437,8 +457,8 @@ let mouseDownPos  = null;
 
 function getMeshTargets() {
   const targets = [];
-  if (campus) campus.traverse(o => { if (o.isMesh) targets.push(o); });
-  else        placeholderMap.forEach(m => targets.push(m));
+  if (campus && placeholderGroup.visible === false) campus.traverse(o => { if (o.isMesh && o.userData.facilityId) targets.push(o); });
+  else placeholderMap.forEach(m => targets.push(m));
   return targets;
 }
 
@@ -461,7 +481,6 @@ renderer.domElement.addEventListener('mouseup', e => {
 
   const fid = hits[0].object.userData?.facilityId;
   if (!fid) {
-    // Nearest-facility fallback
     let best = null, bestD = Infinity;
     FACILITIES.forEach(f => {
       const d = Math.hypot(hits[0].point.x - f.position[0], hits[0].point.y - f.position[1]);
@@ -519,13 +538,11 @@ function drawMinimap() {
   minimapCtx.fillStyle = '#020a14';
   minimapCtx.fillRect(0, 0, W, H);
 
-  // Grid lines
   minimapCtx.strokeStyle = 'rgba(0,207,255,0.08)';
   minimapCtx.lineWidth = 0.5;
   for (let x = 0; x < W; x += W/8)  { minimapCtx.beginPath(); minimapCtx.moveTo(x,0); minimapCtx.lineTo(x,H); minimapCtx.stroke(); }
   for (let y = 0; y < H; y += H/5)  { minimapCtx.beginPath(); minimapCtx.moveTo(0,y); minimapCtx.lineTo(W,y); minimapCtx.stroke(); }
 
-  // Buildings
   FACILITIES.forEach(f => {
     const px = f.position[0] * sx;
     const py = H - f.position[1] * sy;
@@ -541,7 +558,6 @@ function drawMinimap() {
     minimapCtx.fillRect(px - pw/2, py - ph/2, pw, ph);
   });
 
-  // Camera target dot
   const cx = controls.target.x * sx;
   const cy = H - controls.target.y * sy;
   minimapCtx.beginPath();
@@ -551,18 +567,6 @@ function drawMinimap() {
   minimapCtx.lineWidth = 7;
   minimapCtx.strokeStyle = 'rgba(0,207,255,0.25)';
   minimapCtx.stroke();
-
-  // Minimap viewport rectangle based on camera frustum estimate
-  const vSize = Math.max(20, Math.min(80, 20000 / (camera.position.z + 1)));
-  const vx = cx - vSize * 1.6 / 2;
-  const vy = cy - vSize / 2;
-  minimapCtx.strokeStyle = 'rgba(0,207,255,0.5)';
-  minimapCtx.lineWidth = 0.8;
-  minimapCtx.strokeRect(
-    Math.max(0, Math.min(W - vSize*1.6, vx)),
-    Math.max(0, Math.min(H - vSize,     vy)),
-    Math.min(vSize*1.6, W), Math.min(vSize, H)
-  );
 }
 
 // ─── HUD ────────────────────────────────────────────────────────────────────
@@ -570,23 +574,6 @@ function updateHUD() {
   if (!elHudCoords) return;
   const p = camera.position;
   elHudCoords.textContent = `CAM ${p.x.toFixed(0)}, ${p.y.toFixed(0)}, ${p.z.toFixed(0)}`;
-}
-
-// ─── Particle animation ───────────────────────────────────────────────────────
-const pBuf = particleGeo.attributes.position.array;
-
-function animateParticles(dt) {
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const v = pVelocities[i], spd = pSpeeds[i] * dt * 30;
-    pBuf[i*3]   += v.x * spd;
-    pBuf[i*3+1] += v.y * spd;
-    if (pBuf[i*3]   > CAMPUS_W) pBuf[i*3]   = 0;
-    if (pBuf[i*3]   < 0)        pBuf[i*3]   = CAMPUS_W;
-    if (pBuf[i*3+1] > CAMPUS_D) pBuf[i*3+1] = 0;
-    if (pBuf[i*3+1] < 0)        pBuf[i*3+1] = CAMPUS_D;
-  }
-  particleGeo.attributes.position.needsUpdate = true;
-  particleMat.opacity = isNight ? 0.45 + 0.25 * Math.sin(Date.now() * 0.0009) : 0.15;
 }
 
 // ─── Resize ──────────────────────────────────────────────────────────────────
@@ -600,24 +587,40 @@ window.addEventListener('resize', () => {
 
 // ─── Render loop ─────────────────────────────────────────────────────────────
 let prevTime = performance.now();
+const startTime = prevTime;
 let minimapTick = 0;
+let firstFrame = true;
 
 function loop() {
   requestAnimationFrame(loop);
   const now = performance.now();
   const dt  = Math.min((now - prevTime) / 1000, 0.05);
   prevTime  = now;
+  const elapsed = (now - startTime) / 1000;
 
   controls.update();
-  animateParticles(dt);
+  sky?.update?.(dt, elapsed, isNight);
+  environment?.update?.(dt, elapsed, isNight);
+  buildingsCtl?.update?.(dt, elapsed);
   checkHover();
   updateHUD();
 
   if (++minimapTick % 8 === 0) drawMinimap();
 
   composer.render();
+
+  // First successful frame → tell the watchdog we're alive even if the GLB
+  // is still streaming, so the splash never traps the user.
+  if (firstFrame) { firstFrame = false; boot.ready(); }
 }
 
 // ─── Boot ────────────────────────────────────────────────────────────────────
-drawMinimap();
-loop();
+try {
+  drawMinimap();
+  loop();
+  // Safety: if the GLB callback never fires for any reason, still reveal.
+  setTimeout(() => { if (!loadingHidden) hideLoading(); }, 14000);
+} catch (e) {
+  console.error('Fatal viewer error:', e);
+  boot.fail(e && e.message ? e.message : 'Renderer error');
+}

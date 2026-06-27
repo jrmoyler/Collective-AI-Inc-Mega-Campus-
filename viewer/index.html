@@ -4,9 +4,74 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Collective AI Mega Campus — Investor Viewer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpolygon points='16,1 31,8.5 31,23.5 16,31 1,23.5 1,8.5' fill='%2300cfff'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+
+  <!-- Local Three.js (vendored — no CDN dependency, guarantees loadability) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/build/three.module.js",
+      "three/addons/": "./vendor/jsm/"
+    }
+  }
+  </script>
+  <link rel="modulepreload" href="./vendor/build/three.module.js">
+  <link rel="modulepreload" href="./vendor/build/three.core.js">
+
+  <!-- Loading watchdog: classic script, runs even if the ES module fails to load.
+       Guarantees the loading screen never traps the user. main.js calls
+       window.__campusBoot.ready() on success; any fatal error or timeout
+       force-dismisses the overlay and surfaces a diagnostic. -->
+  <script>
+  (function () {
+    var REVEAL_TIMEOUT_MS = 20000;
+    var booted = false, failed = false;
+    function hideOverlay() {
+      var el = document.getElementById('loading-screen');
+      if (!el) return;
+      el.style.transition = 'opacity 0.8s ease';
+      el.style.opacity = '0';
+      setTimeout(function () { el.style.display = 'none'; }, 850);
+    }
+    function showError(msg) {
+      if (booted) return; // module took over successfully
+      var lbl = document.getElementById('progress-label');
+      var sub = document.querySelector('.loading-subtitle');
+      if (sub) sub.textContent = 'Load problem detected';
+      if (lbl) {
+        lbl.style.color = '#ff6688';
+        lbl.textContent = (msg || 'Could not initialize 3D engine') + ' — showing fallback view';
+      }
+      var bar = document.getElementById('progress-bar');
+      if (bar) bar.style.width = '100%';
+      // Reveal whatever did render after a short beat so the user is never stuck.
+      setTimeout(hideOverlay, 1800);
+    }
+    window.__campusBoot = {
+      ready: function () { booted = true; },
+      fail: function (msg) { if (!failed) { failed = true; showError(msg); } }
+    };
+    // Hard ceiling: if nothing signalled ready in REVEAL_TIMEOUT_MS, bail out gracefully.
+    window.__campusWatchdog = setTimeout(function () {
+      if (!booted) window.__campusBoot.fail('Initialization timed out');
+    }, REVEAL_TIMEOUT_MS);
+    // Catch module-resolution / runtime errors that would otherwise hang the splash.
+    window.addEventListener('error', function (e) {
+      if (booted) return;
+      var t = e && e.target;
+      if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) {
+        window.__campusBoot.fail('A required script failed to load');
+      }
+    }, true);
+    window.addEventListener('unhandledrejection', function () {
+      if (booted) return;
+      window.__campusBoot.fail('A module failed to initialize');
+    });
+  })();
+  </script>
 </head>
 <body>
 
