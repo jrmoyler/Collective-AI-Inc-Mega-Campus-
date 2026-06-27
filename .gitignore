@@ -8,3 +8,9 @@ __pycache__/
 # Python virtual environment
 .venv/
 venv/
+
+# Node / test artifacts
+node_modules/
+package-lock.json
+scratchpad_*.mjs
+scratchpad_*.png
