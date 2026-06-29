@@ -1,0 +1,39 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.4",
+	"Category": "Architecture",
+	"Description": "Collective AI Inc. — Mega Campus architectural walkthrough. A data-driven first/third-person walkthrough of the 30-facility campus.",
+	"Modules": [
+		{
+			"Name": "CollectiveCampus",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"CoreUObject"
+			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "EnhancedInput",
+			"Enabled": true
+		},
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true
+		},
+		{
+			"Name": "Interchange",
+			"Enabled": true
+		},
+		{
+			"Name": "InterchangeEditor",
+			"Enabled": true
+		},
+		{
+			"Name": "GLTFExporter",
+			"Enabled": true
+		}
+	]
+}

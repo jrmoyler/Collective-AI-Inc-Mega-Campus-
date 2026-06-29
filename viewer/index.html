@@ -127,7 +127,14 @@
       <!-- Populated by JS -->
     </div>
 
-    <div class="section-label">CAMERA</div>
+    <div class="section-label">VIEW MODE</div>
+    <div class="mode-controls">
+      <button class="mode-btn active" id="btn-mode-orbit" title="Orbit / fly around the campus">&#9737; Orbit</button>
+      <button class="mode-btn" id="btn-mode-walk" title="Walk the campus in first person (WASD + mouse)">&#9650; Walk</button>
+      <button class="mode-btn" id="btn-mode-cinematic" title="Hands-off cinematic flythrough">&#9655; Cinematic</button>
+    </div>
+
+    <div class="section-label">CAMERA PRESETS</div>
     <div class="camera-controls">
       <button class="cam-btn" id="btn-hero">&#9651; Hero Aerial</button>
       <button class="cam-btn" id="btn-ground">&#9711; Ground Level</button>
@@ -184,6 +191,48 @@
 
   <!-- Tooltip -->
   <div id="tooltip" class="tooltip hidden"></div>
+
+  <!-- First-person crosshair (shown only in walk mode) -->
+  <div id="crosshair" class="hidden"></div>
+
+  <!-- Walk-mode controls hint -->
+  <div id="walk-hint" class="hidden">
+    <span class="key">W A S D</span> Move
+    <span class="key">Mouse</span> Look
+    <span class="key">Shift</span> Sprint
+    <span class="key">Esc</span> Release cursor
+  </div>
+
+  <!-- Cinematic "now touring" indicator -->
+  <div id="cinematic-bar" class="hidden">
+    <span class="cine-dot"></span> CINEMATIC FLYTHROUGH
+    <button id="cine-stop" title="Stop tour">&#9632; Stop</button>
+  </div>
+
+  <!-- Cinematic intro / pitch overlay (first user gesture: unlocks audio + pointer lock) -->
+  <div id="intro-overlay">
+    <div class="intro-vignette"></div>
+    <div class="intro-inner">
+      <div class="intro-brand">
+        <div class="intro-hex"></div>
+        <span>COLLECTIVE AI</span>
+      </div>
+      <h1 class="intro-title">MEGA CAMPUS</h1>
+      <p class="intro-tagline">A living 180-acre AI city — 30 facilities, six districts, one autonomous future.</p>
+      <div class="intro-stats">
+        <div class="intro-stat"><span class="is-val" id="is-facilities">30</span><span class="is-lbl">Facilities</span></div>
+        <div class="intro-stat"><span class="is-val" id="is-area">4.9M</span><span class="is-lbl">Sq Ft</span></div>
+        <div class="intro-stat"><span class="is-val">180</span><span class="is-lbl">Acres</span></div>
+        <div class="intro-stat"><span class="is-val">6</span><span class="is-lbl">Districts</span></div>
+      </div>
+      <div class="intro-actions">
+        <button id="btn-begin" class="intro-btn primary">&#9655; Begin Cinematic Tour</button>
+        <button id="btn-explore" class="intro-btn">Explore Freely &rarr;</button>
+        <button id="btn-walk-in" class="intro-btn">&#9650; Walk In</button>
+      </div>
+      <div class="intro-hint">Sound on for the full experience &middot; Click and drag to look around</div>
+    </div>
+  </div>
 
   <script type="module" src="main.js"></script>
 </body>
