@@ -46,10 +46,64 @@ The Collective AI Mega Campus is a purpose-built environment for the full stack 
 
 This repository provides:
 
+- **`viewer/`** — a real-time, AAA-grade **interactive WebGL campus** (Three.js) you can demo from a single URL — orbit, first-person walk, and a cinematic auto-tour
+- **`unreal/`** — a real **Unreal Engine 5.4 C++** project scaffold (data-driven, walkable) for the long-term, game-engine-grade build
 - **`data/facilities.json`** — authoritative master data for all 30 buildings, 6 districts, roads, water features, solar arrays, and wind turbines
 - **`scripts/parse_dossier.py`** — re-generates and validates `facilities.json` from embedded source constants
 - **`scripts/render_scene.py`** — produces 4 presentation-quality renders using a custom isometric + perspective rasterizer (matplotlib/numpy, no Blender required)
 - **`scripts/run_pipeline.sh`** — orchestrates the complete pipeline in a single command
+
+---
+
+## Live Interactive Viewer (AAA Demo)
+
+The `viewer/` directory is a self-contained, real-time 3D experience built on **Three.js r185** (vendored locally — no CDN dependency) and deployed on Vercel. It is the **instant, link-and-walk demo** for investor presentations: open the URL and you are standing in the campus.
+
+**Run it locally:**
+
+```bash
+npm run serve          # serves on http://localhost:8080
+# then open  http://localhost:8080/viewer/
+```
+
+**What it does:**
+
+- **Three view modes** — **Orbit** (cinematic fly-around), **Walk** (first-person WASD + mouselook with building collision, so it feels like you are really there), and **Cinematic** (a hands-off ~80-second auto-tour through the landmark buildings — perfect for pitch playback).
+- **A living campus** — instanced pedestrians on the sidewalks, vehicles driving the road network, swaying trees, drifting drones, and street lamps that switch on at night.
+- **AAA rendering** — ACES Filmic tonemapping, Unreal-style bloom, PBR building materials with PMREM reflections and emissive window grids, a full day/night system with a gradient sky dome, sun/moon, drifting clouds and a twinkling starfield.
+- **Procedural ambient audio** — a synthesized soundscape (wind, distant city hum, birds by day, crickets by night, footsteps while walking) — entirely Web Audio, no asset files.
+- **Pitch-ready UI** — cinematic intro card, district filter, building directory, live minimap, and per-building info panels.
+
+**Controls (Walk mode):** `W A S D` / arrows to move · mouse to look · `Shift` to sprint · `Esc` to release the cursor · `M` to mute audio.
+
+**Viewer architecture** (`viewer/lib/`):
+
+| Module | Responsibility |
+|---|---|
+| `world.js` | Single source of truth — 30 facilities, district palette, world bounds, road network, footprint collision helpers |
+| `cameras.js` | Camera director — orbit / first-person walk / cinematic spline tour |
+| `population.js` | Instanced pedestrians, vehicles, trees, lamps, drones |
+| `environment.js` | Ground, road network, sidewalks, plazas, parks, water, fog |
+| `buildings.js` | PBR material enhancement, window emissive grids, env reflections |
+| `sky.js` | Day/night sky dome, sun/moon, clouds, starfield |
+| `audio.js` | Procedural Web Audio ambient soundscape |
+| `main.js` | Scene orchestration, render loop, UI wiring |
+
+---
+
+## Unreal Engine 5 Track (`unreal/`)
+
+A real, idiomatic **UE 5.4 C++** project scaffold for the game-engine-grade build. It is **data-driven from the same 30 facilities** (`unreal/Content/Data/Facilities.csv` → `DT_Facilities`) and walkable out of the box. This track is built and packaged locally in the Unreal Editor — see **`unreal/README.md`** for exact build steps.
+
+| Class | Responsibility |
+|---|---|
+| `ACampusGameMode` | Default pawn / controller / HUD wiring |
+| `ACampusPlayerCharacter` | First/third-person walker, Enhanced Input (move/look/sprint/interact) |
+| `ACampusBuilding` | Data-driven building actor sized from an `FFacilityRow` |
+| `ACampusDirector` | Spawns one building per `DT_Facilities` row at the converted location |
+| `UCampusHUDWidget` | UMG base for the building-info panel |
+
+> Note: the UE project uses honest placeholder volumes; the production meshes come from importing the existing GLBs in `assets/glb/buildings/` via Interchange/glTF (documented in `unreal/README.md`). It requires UE 5.4 and is **not** the instant web demo — that is the `viewer/`.
 
 ---
 
@@ -84,6 +138,19 @@ Collective-AI-Inc-Mega-Campus-/
 │   ├── dusk_render.png                # Dusk/night palette with glow effects
 │   ├── district_overview.png          # Near-vertical district plan view
 │   └── ground_level.png               # Cinematic street-level perspective
+│
+├── viewer/                            # Real-time AAA WebGL campus (Three.js) — the live demo
+│   ├── index.html                     # Entry point + importmap + loading watchdog
+│   ├── main.js                        # Scene orchestration, render loop, UI wiring
+│   ├── style.css                      # Pitch-grade HUD / intro overlay styling
+│   └── lib/                           # world, cameras, population, environment,
+│                                      #   buildings, sky, audio modules
+│
+├── unreal/                            # Unreal Engine 5.4 C++ project scaffold
+│   ├── CollectiveCampus.uproject
+│   ├── Source/CollectiveCampus/       # Game module, character, building, director, HUD
+│   ├── Content/Data/Facilities.csv    # 30-facility DataTable source
+│   └── README.md                      # UE build & play instructions
 │
 └── reference/
     ├── building_mapping.md            # Building-to-district mapping notes

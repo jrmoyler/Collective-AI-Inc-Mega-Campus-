@@ -16,9 +16,12 @@ import { RenderPass }      from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass }      from 'three/addons/postprocessing/OutputPass.js';
 
-import { createEnvironment } from './lib/environment.js';
-import { enhanceBuildings }  from './lib/buildings.js';
-import { createSky }         from './lib/sky.js';
+import { createEnvironment }    from './lib/environment.js';
+import { enhanceBuildings }     from './lib/buildings.js';
+import { createSky }            from './lib/sky.js';
+import { createCameraDirector } from './lib/cameras.js';
+import { createPopulation }     from './lib/population.js';
+import { createAudio }          from './lib/audio.js';
 
 const boot = (typeof window !== 'undefined' && window.__campusBoot) || { ready(){}, fail(){} };
 
@@ -203,6 +206,32 @@ const highlightMat = new THREE.MeshStandardMaterial({
   roughness: 0.25, metalness: 0.8, transparent: true, opacity: 0.92,
 });
 
+// ─── AAA subsystems: living campus + spatial audio + camera director ──────────
+let population = null, audio = null, director = null;
+try {
+  population = createPopulation(THREE, scene, { quality: 'high', startNight: isNight });
+} catch (e) { console.warn('Population init failed:', e); }
+try {
+  audio = createAudio({ initialVolume: 0.6 });
+} catch (e) { console.warn('Audio init failed:', e); }
+try {
+  director = createCameraDirector(THREE, {
+    camera, domElement: renderer.domElement, orbitControls: controls, scene,
+  });
+  director.onChange(updateModeUI);
+} catch (e) { console.warn('Camera director init failed:', e); }
+
+// Reflects the active view mode (orbit / walk / cinematic) into the HUD chrome.
+// Hoisted function declaration so director.onChange above can reference it.
+function updateModeUI(mode) {
+  document.querySelector('#btn-mode-orbit')?.classList.toggle('active', mode === 'orbit');
+  document.querySelector('#btn-mode-walk')?.classList.toggle('active', mode === 'walk');
+  document.querySelector('#btn-mode-cinematic')?.classList.toggle('active', mode === 'cinematic');
+  document.querySelector('#crosshair')?.classList.toggle('hidden', mode !== 'walk');
+  document.querySelector('#walk-hint')?.classList.toggle('hidden', mode !== 'walk');
+  document.querySelector('#cinematic-bar')?.classList.toggle('hidden', mode !== 'cinematic');
+}
+
 // ─── Loading helpers ─────────────────────────────────────────────────────────
 function setProgress(pct, msg) {
   if (elProgressBar) elProgressBar.style.width = pct + '%';
@@ -254,7 +283,7 @@ gltfLoader.load(
 
     // Enhance building materials / mark selectable meshes
     try {
-      buildingsCtl = enhanceBuildings(THREE, campus, FACILITIES, DISTRICT_COLORS, { isNight });
+      buildingsCtl = enhanceBuildings(THREE, campus, FACILITIES, DISTRICT_COLORS, { isNight, renderer });
     } catch (e) { console.warn('Building enhancement failed:', e); }
 
     const newSelectable = [];
@@ -330,6 +359,8 @@ document.querySelector('#sidebar-toggle')?.addEventListener('click', () => {
 
 // ─── Camera fly-to ────────────────────────────────────────────────────────────
 function flyTo(pos, target, dur = 1500) {
+  // Camera presets always operate in orbit mode — leave walk/cinematic first.
+  if (director && director.getMode() !== 'orbit') director.setMode('orbit');
   const s0 = camera.position.clone(), t0 = controls.target.clone();
   const s1 = new THREE.Vector3(...pos), t1 = new THREE.Vector3(...target);
   const start = performance.now();
@@ -356,6 +387,25 @@ document.querySelector('#btn-ground')?.addEventListener('click', () => flyTo([52
 document.querySelector('#btn-north')?.addEventListener('click',  () => flyTo([548,1350,500],  [548,332,0]));
 document.querySelector('#btn-east')?.addEventListener('click',   () => flyTo([1450,332,350],  [548,332,0]));
 
+// ─── View-mode switcher (orbit / walk / cinematic) ────────────────────────────
+document.querySelector('#btn-mode-orbit')?.addEventListener('click',     () => director?.setMode('orbit'));
+document.querySelector('#btn-mode-walk')?.addEventListener('click',      () => { audio?.start(); director?.setMode('walk'); });
+document.querySelector('#btn-mode-cinematic')?.addEventListener('click', () => { audio?.start(); director?.startCinematic(); });
+document.querySelector('#cine-stop')?.addEventListener('click',          () => director?.stopCinematic());
+
+// ─── Cinematic intro / pitch overlay ──────────────────────────────────────────
+const elIntro = document.querySelector('#intro-overlay');
+function dismissIntro() { elIntro?.classList.add('hidden'); audio?.start(); }
+document.querySelector('#btn-begin')?.addEventListener('click',   () => { dismissIntro(); director?.startCinematic(); });
+document.querySelector('#btn-explore')?.addEventListener('click', () => { dismissIntro(); director?.setMode('orbit'); });
+document.querySelector('#btn-walk-in')?.addEventListener('click', () => { dismissIntro(); director?.setMode('walk'); });
+
+// ─── Audio: unlock on first user gesture; 'M' toggles mute ────────────────────
+const unlockAudio = () => audio?.start();
+window.addEventListener('pointerdown', unlockAudio, { once: true });
+window.addEventListener('keydown',     unlockAudio, { once: true });
+window.addEventListener('keydown', (e) => { if (e.key === 'm' || e.key === 'M') audio?.toggleMute(); });
+
 // ─── Day / Night toggle ───────────────────────────────────────────────────────
 function applyDayNight(night) {
   isNight = night;
@@ -377,6 +427,8 @@ function applyDayNight(night) {
   sky?.setDayNight?.(night);
   environment?.setDayNight?.(night);
   buildingsCtl?.setDayNight?.(night);
+  population?.setDayNight?.(night);
+  audio?.setDayNight?.(night);
   document.querySelector('#btn-night')?.classList.toggle('active', night);
   document.querySelector('#btn-day')?.classList.toggle('active', !night);
 }
@@ -598,11 +650,23 @@ function loop() {
   prevTime  = now;
   const elapsed = (now - startTime) / 1000;
 
-  controls.update();
+  // One director drives orbit, first-person walk, and the cinematic tour.
+  if (director) director.update(dt, elapsed);
+  else controls.update();
+
   sky?.update?.(dt, elapsed, isNight);
   environment?.update?.(dt, elapsed, isNight);
   buildingsCtl?.update?.(dt, elapsed);
-  checkHover();
+  population?.update?.(dt, elapsed, isNight);
+  audio?.update?.(dt, {
+    mode:   director ? director.getMode()  : 'orbit',
+    moving: director ? director.isMoving() : false,
+    isNight,
+    speed:  1,
+  });
+
+  // Skip hover raycasts in first-person (cursor is pointer-locked).
+  if (!director || !director.isWalking()) checkHover();
   updateHUD();
 
   if (++minimapTick % 8 === 0) drawMinimap();

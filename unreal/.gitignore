@@ -1,0 +1,32 @@
+# Collective AI Inc. — Mega Campus — Unreal Engine project
+
+# Build / transient
+Binaries/
+Intermediate/
+DerivedDataCache/
+Saved/
+
+# Build artifacts
+*.target
+*.modules
+
+# IDE / project files (regenerated via "Generate Project Files")
+.vs/
+.vscode/
+.idea/
+*.sln
+*.xcodeproj/
+*.xcworkspace/
+*.VC.db
+*.opensdf
+*.sdf
+*.suo
+
+# Platform / OS noise
+.DS_Store
+
+# Crash logs
+*.log
+
+# Keep:
+#   Source/, Config/, Content/ (incl. Facilities.csv), *.uproject

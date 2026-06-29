@@ -31,6 +31,78 @@ export function enhanceBuildings(THREE, campusRoot, facilities, districtColors, 
   districtColors = districtColors || {};
 
   // ──────────────────────────────────────────────────────────────────────────
+  // PMREM environment — a procedural gradient "room" scene baked to a prefiltered
+  // env map so metal/glass materials get believable reflections without an HDRI.
+  // Exposed on the returned object as `.envMap`. Applied to every created material.
+  // ──────────────────────────────────────────────────────────────────────────
+  let pmremGen = null;
+  let envMap = null;
+  let envSourceTex = null; // the pre-PMREM equirect gradient (disposed if PMREM ran)
+
+  // Procedural equirectangular sky/room gradient → canvas → texture. Bright cool
+  // sky up top, warm horizon band, dark ground below, with a soft sun lobe.
+  function makeEnvEquirect() {
+    if (typeof document === 'undefined' || !document.createElement) return null;
+    const w = 512, h = 256;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    if (!ctx) return null;
+    // vertical gradient: top (zenith) -> horizon -> bottom (nadir)
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0.0, '#9fc3ee');   // zenith sky
+    grad.addColorStop(0.45, '#cfe2f2');  // upper haze
+    grad.addColorStop(0.52, '#f2ecd8');  // horizon warm
+    grad.addColorStop(0.60, '#6a7079');  // ground start
+    grad.addColorStop(1.0, '#2a2e34');   // nadir
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+    // soft sun lobe (NW, above horizon)
+    const sx = w * 0.32, sy = h * 0.30;
+    const sun = ctx.createRadialGradient(sx, sy, 0, sx, sy, w * 0.22);
+    sun.addColorStop(0, 'rgba(255,248,225,0.95)');
+    sun.addColorStop(0.4, 'rgba(255,236,196,0.35)');
+    sun.addColorStop(1, 'rgba(255,236,196,0.0)');
+    ctx.fillStyle = sun;
+    ctx.fillRect(0, 0, w, h);
+    const tex = new THREE.CanvasTexture(c);
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    if ('colorSpace' in tex && THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  function buildEnvMap() {
+    envSourceTex = makeEnvEquirect();
+    if (!envSourceTex) return null;
+    createdTextures.push(envSourceTex);
+    // If a renderer is available, prefilter with PMREM for correct roughness
+    // response; otherwise fall back to the raw equirect reflection map.
+    if (opts.renderer && typeof THREE.PMREMGenerator === 'function') {
+      try {
+        pmremGen = new THREE.PMREMGenerator(opts.renderer);
+        const rt = pmremGen.fromEquirectangular(envSourceTex);
+        envMap = rt.texture;
+        return envMap;
+      } catch (e) {
+        try { if (pmremGen) pmremGen.dispose(); } catch (_) {}
+        pmremGen = null;
+      }
+    }
+    envMap = envSourceTex;
+    return envMap;
+  }
+  buildEnvMap();
+
+  // Apply env reflections (and a sensible intensity) to a created material.
+  function applyEnv(mat, intensity) {
+    if (!envMap) return;
+    mat.envMap = envMap;
+    mat.envMapIntensity = intensity != null ? intensity : 1.0;
+    mat.needsUpdate = true;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
   // Architectural family definitions. emissive = night window glow color.
   // dayI / nightI are the emissiveIntensity day/night targets.
   // ──────────────────────────────────────────────────────────────────────────
@@ -321,6 +393,10 @@ export function enhanceBuildings(THREE, campusRoot, facilities, districtColors, 
       }
     }
 
+    // Env reflections: stronger on metal/glass, subtle on matte facades.
+    const envI = glassish ? 1.4 : (0.4 + metalness * 0.9);
+    applyEnv(mat, envI);
+
     createdMaterials.push(mat);
     tracked.push({
       mat,
@@ -399,6 +475,10 @@ export function enhanceBuildings(THREE, campusRoot, facilities, districtColors, 
     if (mesh.geometry && mesh.geometry.attributes && mesh.geometry.attributes.color) {
       mat.vertexColors = true;
     }
+
+    // Reflective env on water / solar / metallic env parts only.
+    if (cat === 'water') applyEnv(mat, 1.5);
+    else if (cat === 'solar' || cat === 'turbine' || cat === 'marker') applyEnv(mat, 0.8);
 
     createdMaterials.push(mat);
     tracked.push({
@@ -503,6 +583,83 @@ export function enhanceBuildings(THREE, campusRoot, facilities, districtColors, 
   }
 
   // ──────────────────────────────────────────────────────────────────────────
+  // Roof / parapet accents — a thin emissive trim ring riding the top edge of
+  // each facility's tallest mesh. Reads as illuminated parapet coping at night.
+  // One shared geometry per facility (cheap), added under an accents group.
+  // ──────────────────────────────────────────────────────────────────────────
+  const accentGroup = new THREE.Group();
+  accentGroup.name = 'roofAccents';
+  const accentMeshes = [];
+  const accentGeometries = [];
+  function buildRoofAccents() {
+    if (!campusRoot || typeof campusRoot.add !== 'function') return;
+    const box = new THREE.Box3();
+    const size = new THREE.Vector3();
+    const ctr = new THREE.Vector3();
+    // Pick, per facility, the mesh with the largest footprint (its main mass).
+    const facMain = new Map(); // facId -> { mesh, area }
+    for (const mesh of meshes) {
+      const f = meshFacility.get(mesh);
+      if (!f) continue;
+      const a = meshArea.get(mesh) || 0;
+      const cur = facMain.get(f.id);
+      if (!cur || a > cur.area) facMain.set(f.id, { mesh, area: a, f });
+    }
+    for (const { mesh, f } of facMain.values()) {
+      const famKey = ID_TO_FAMILY[f.id] || 'DEFAULT';
+      const fam = FAMILIES[famKey] || FAMILIES.DEFAULT;
+      box.setFromObject(mesh);
+      if (!isFinite(box.min.x) || box.isEmpty()) continue;
+      box.getSize(size);
+      box.getCenter(ctr);
+      // World is Z-up after the GLB's +90°X rotation; top edge is at box.max.z.
+      const w = size.x, d = size.y;
+      if (w < 4 || d < 4) continue;
+      const trimMat = new THREE.MeshStandardMaterial({
+        color: 0x14181e,
+        emissive: new THREE.Color(fam.glow || 0x99bbee),
+        emissiveIntensity: isNight ? 0.9 : 0.0,
+        metalness: 0.6, roughness: 0.35,
+      });
+      applyEnv(trimMat, 0.8);
+      createdMaterials.push(trimMat);
+      tracked.push({ mat: trimMat, dayI: 0.0, nightI: 0.9, base: 0.9, flickerPhase: Math.random() * Math.PI * 2, isWindow: true });
+
+      // Four thin bars forming a rectangle ring at the roofline.
+      const t = 0.8; // trim thickness
+      const zTop = box.max.z + 0.2;
+      const ringGeo = new THREE.BoxGeometry(1, 1, 0.6);
+      accentGeometries.push(ringGeo);
+      const addBar = (sx, sy, px, py) => {
+        const bar = new THREE.Mesh(ringGeo, trimMat);
+        bar.scale.set(sx, sy, 1);
+        bar.position.set(px, py, zTop);
+        accentGroup.add(bar);
+        accentMeshes.push(bar);
+      };
+      addBar(w, t, ctr.x, ctr.y + d / 2);
+      addBar(w, t, ctr.x, ctr.y - d / 2);
+      addBar(t, d, ctr.x + w / 2, ctr.y);
+      addBar(t, d, ctr.x - w / 2, ctr.y);
+    }
+    if (accentMeshes.length) {
+      // accents are in world space; add to scene root via campusRoot's parent if
+      // possible, else campusRoot (kept axis-aligned to world).
+      const host = campusRoot.parent || campusRoot;
+      // Our box coordinates are world-space; place accents at world level by
+      // attaching to the same parent as campusRoot (the scene).
+      if (campusRoot.parent) {
+        campusRoot.parent.add(accentGroup);
+      } else {
+        // Fallback: counter-rotate so world-space positions land correctly.
+        accentGroup.rotation.x = -Math.PI / 2;
+        campusRoot.add(accentGroup);
+      }
+    }
+  }
+  buildRoofAccents();
+
+  // ──────────────────────────────────────────────────────────────────────────
   // Controller API
   // ──────────────────────────────────────────────────────────────────────────
   function setDayNight(night) {
@@ -537,14 +694,23 @@ export function enhanceBuildings(THREE, campusRoot, facilities, districtColors, 
     for (const r of replacedMeshes) {
       if (r.mesh) r.mesh.material = r.originalMaterial;
     }
+    // Remove + free roof accents.
+    if (accentGroup.parent) accentGroup.parent.remove(accentGroup);
+    for (const g of accentGeometries) { if (g && g.dispose) g.dispose(); }
     for (const m of createdMaterials) disposeMaterial(m);
     for (const t of createdTextures) {
       if (t && typeof t.dispose === 'function') t.dispose();
     }
+    // Free PMREM env map + generator (envSourceTex is freed via createdTextures).
+    if (envMap && envMap !== envSourceTex && envMap.dispose) envMap.dispose();
+    if (pmremGen && pmremGen.dispose) pmremGen.dispose();
+    envMap = null; pmremGen = null; envSourceTex = null;
     tracked.length = 0;
     createdMaterials.length = 0;
     createdTextures.length = 0;
     replacedMeshes.length = 0;
+    accentGeometries.length = 0;
+    accentMeshes.length = 0;
   }
 
   // Initialize to day state.
@@ -555,6 +721,7 @@ export function enhanceBuildings(THREE, campusRoot, facilities, districtColors, 
     setDayNight,
     update,
     dispose,
-    stats: { meshes: meshes.length, matched: matchedCount, environment: envCount, materials: createdMaterials.length },
+    envMap,
+    stats: { meshes: meshes.length, matched: matchedCount, environment: envCount, materials: createdMaterials.length, accents: accentMeshes.length },
   };
 }
