@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {referenceExterior} from './reference-exteriors.js';
 import {addSignature} from './signatures.js';
 import {Batch,cylinder,ring,line,sign,materials} from './geometry.js';
 function block(b,x,z,w,d,h,levels=3){
@@ -10,13 +11,13 @@ function block(b,x,z,w,d,h,levels=3){
    b.box('gold',x,(k+1)*h/levels,z+side*d/2,w+.8,.38,.45);
    b.box('gold',x+side*w/2,(k+1)*h/levels,z,.45,.38,d+.8);
    for(let q=-w/2+2;q<w/2;q+=3.2){
-    b.box('stone',x+q,y,z+side*(d/2+.2),.25,h/levels,.35);
+    b.box('dark',x+q,y,z+side*(d/2+.2),.25,h/levels,.35);
     if((Math.round(q*10)+k)%3!==0)b.box('warm',x+q+1.15,y,z+side*(d/2+.12),1.6,h/levels-2,.12);
    }
-   for(let q=-d/2+2;q<d/2;q+=3.4){b.box('stone',x+side*(w/2+.2),y,z+q,.35,h/levels,.25);if(k%2===0)b.box('warm',x+side*(w/2+.12),y,z+q+1,.12,h/levels-2,1.3);}
+   for(let q=-d/2+2;q<d/2;q+=3.4){b.box('dark',x+side*(w/2+.2),y,z+q,.35,h/levels,.25);if(k%2===0)b.box('warm',x+side*(w/2+.12),y,z+q+1,.12,h/levels-2,1.3);}
   }
  }
- b.box('stone',x,h+.4,z,w+1.5,.8,d+1.5);
+ b.box('stone',x,h+.4,z,w+1.5,.45,d+1.5);
  b.box('dark',x,h+.9,z,w-3,.3,d-3);
  for(let q=0;q<Math.max(2,w/14);q++){b.box('solar',x-w*.36+q*11,h+1.4,z-d*.16,9,.35,d*.34);for(let j=0;j<5;j++)b.box('stone',x-w*.36+q*11-4+j*2,h+1.6,z-d*.16,.08,.06,d*.34);}
  for(let q=0;q<3;q++){b.box('stone',x-w*.25+q*5,h+2,z+d*.3,3.3,2,3);cylinder(b,'dark',x-w*.25+q*5,h+3.1,z+d*.3,1.1,.25);}
@@ -37,7 +38,9 @@ function dome(b,x,z,r,h){
 export function createFacility(f){
  const b=new Batch();const {w,d,h,form}=f;
  b.box('path',0,.16,0,w+12,.3,d+12);
- if(form==='prism'){
+ if(referenceExterior(b,f,{block,drum})){
+  // Individual facility reference silhouette.
+ }else if(form==='prism'){
   block(b,0,0,w*1.2,d*1.15,10,2);
   // Faceted tapered shell with independently rising crown fins.
   const pts=[[-w*.42,-d*.35],[w*.3,-d*.45],[w*.48,d*.2],[0,d*.43],[-w*.43,d*.2]];
