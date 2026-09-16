@@ -80,7 +80,7 @@ export function createFacility(f){
   if(form==='vault')drum(b,0,-d*.1,w*.13,h*.8);
  }else {
   block(b,0,0,w,d,h,Math.min(4,f.levels+1));
-  if(form==='sawtooth')for(let x=-w*.43;x<w*.5;x+=w/6){const geo=new T.CylinderGeometry(d*.48,d*.48,w/6,3);b.add(geo,'stone',x,h+3,0,.12,1,1,0,Math.PI/2);geo.dispose();}
+  if(form==='sawtooth')for(let x=-w/2+w/12;x<w/2;x+=w/6){const pitch=w/6;const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute([-pitch/2,0,-d/2,pitch/2,0,-d/2,0,5,-d/2,-pitch/2,0,d/2,pitch/2,0,d/2,0,5,d/2],3));geo.setIndex([0,2,1,3,4,5,0,3,5,0,5,2,1,2,5,1,5,4,0,1,4,0,4,3]);geo.computeVertexNormals();b.add(geo,'stone',x,h+1,0);geo.dispose();} 
   if(form==='factory'||form==='warehouse'||form==='sawtooth')for(let x=-w*.35;x<w*.4;x+=w/5){b.box('dark',x,3.4,d/2+.25,7,6,.5);b.box('gold',x,6.8,d/2+2,8,.4,4);}
   if(form==='utility')for(let i=0;i<3;i++){cylinder(b,'stone',-w*.25+i*w*.25,h+9,-d*.15,3,18);ring(b,'cyan',-w*.25+i*w*.25,h+16,-d*.15,3,.18);}
   if(form==='water')for(let x=-1;x<=1;x+=2){cylinder(b,'stone',x*w*.68,2,0,11,4);cylinder(b,'glass',x*w*.68,4.2,0,10,.2);}

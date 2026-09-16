@@ -1,3 +1,11 @@
+# Current web explorer (September 2026)
+
+The active app is Vite + Three.js exterior + lazy Babylon.js interiors. Run `npm ci`, `npm test`, `npm run build`; deploy `dist/`. `npm run dev` is the local preview. Canonical web data: `data/campus-program.json` (35 facilities, 74 floors). Exterior reference placements: `viewer/campus/data.js`. Earlier `data/facilities.json`, `viewer/lib`, Python GLBs and Unreal scaffold are historical and are not used by the current web app. Do not reintroduce the 30-facility/180-acre baseline.
+
+Read DESIGN.md and .img2threejs/analysis.md for the reference contract. Do not call the result an exact match without visual comparison and device evidence. Preserve CF-24/25 area uncertainty. Use actual geometry rather than pasted reference art.
+
+The following instructions describe the older rendering pipeline only.
+
 # AGENTS.md
 
 ## Cursor Cloud specific instructions

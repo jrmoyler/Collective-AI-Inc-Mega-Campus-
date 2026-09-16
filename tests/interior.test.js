@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createCanvas} from '@napi-rs/canvas';
+import {NullEngine} from '@babylonjs/core/Engines/nullEngine.js';
+import {FACILITIES} from '../viewer/campus/data.js';
+import {createInterior} from '../viewer/campus/interior.js';
+globalThis.devicePixelRatio=1;
+globalThis.window={addEventListener(){},removeEventListener(){},setTimeout,clearTimeout};
+globalThis.document={addEventListener(){},removeEventListener(){},createElement:()=>createCanvas(512,128)};
+test('all 74 Babylon floor scenes construct and dispose without missing registrations',()=>{let floors=0;for(const f of FACILITIES){const engine=new NullEngine({renderWidth:800,renderHeight:600});const canvas={addEventListener(){},removeEventListener(){}};const interior=createInterior(canvas,f,{engineOverride:engine,reduced:true,onRoom(){},onFloor(l,rooms){assert.equal(rooms.length,6);floors++;}});engine.stopRenderLoop();for(let l=1;l<f.levels;l++)interior.setFloor(l);interior.dispose();assert.equal(engine.scenes.length,0);}assert.equal(floors,74);});

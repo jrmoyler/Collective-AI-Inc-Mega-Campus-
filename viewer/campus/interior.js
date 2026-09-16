@@ -13,8 +13,8 @@ import '@babylonjs/core/Collisions/collisionCoordinator.js';
 const MeshBuilder={CreateBox,CreatePlane};
 import {animate} from 'animejs';
 import {floorLayout} from './data.js';
-export function createInterior(canvas,f,{onRoom,onFloor,reduced=false}){
- const engine=new Engine(canvas,true,{preserveDrawingBuffer:false,stencil:false});engine.setHardwareScalingLevel(Math.max(1,devicePixelRatio/1.5));
+export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOverride=null}){
+ const engine=engineOverride||new Engine(canvas,true,{preserveDrawingBuffer:false,stencil:false});engine.setHardwareScalingLevel(Math.max(1,devicePixelRatio/1.5));
  let scene,camera,layout,level=0,flight=null,currentRoom=null,disposed=false;const held=new Set();
  function material(name,hex,emission=0){const m=new StandardMaterial(name,scene);m.diffuseColor=Color3.FromHexString(hex);m.specularColor=new Color3(.15,.15,.15);if(emission)m.emissiveColor=m.diffuseColor.scale(emission);return m;}
  function box(name,x,y,z,w,h,d,mat,collision=true){const m=MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);m.position.set(x,y,z);m.material=mat;m.checkCollisions=collision;return m;}
@@ -50,8 +50,8 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false}){
   onFloor(l,layout.rooms);onRoom('Arrival corridor');
  }
  function stop(){flight?.pause();flight=null;}
- function visit(index){stop();const r=layout.rooms[index];if(!r)return;const prior=currentRoom===null?null:layout.rooms[currentRoom];
-  const points=[];if(prior)points.push([prior.doorX,0]);points.push([r.doorX,0],[r.doorX,Math.sign(r.z)*(layout.corridor/2+1)],[r.doorX,r.z]);let k=0;camera.detachControl();
+ function visit(index){stop();const r=layout.rooms[index];if(!r)return;const prior=layout.rooms.find(room=>Math.abs(camera.position.x-room.x)<room.w/2&&Math.abs(camera.position.z-room.z)<room.d/2);
+  const points=[];if(prior)points.push([prior.doorX,camera.position.z],[prior.doorX,0]);points.push([r.doorX,0],[r.doorX,Math.sign(r.z)*(layout.corridor/2+1)],[r.doorX,r.z]);let k=0;camera.detachControl();
   function next(){if(disposed)return;if(k>=points.length){currentRoom=index;camera.setTarget(new Vector3(r.x+1,1.7,r.z));camera.attachControl(canvas,true);flight=null;onRoom(r.name);return;}const [x,z]=points[k++];camera.setTarget(new Vector3(x,1.7,z));flight=animate(camera.position,{x,z,duration:reduced?0:Math.max(350,Math.hypot(x-camera.position.x,z-camera.position.z)*100),ease:'inOutSine',onComplete:next});}next();
  }
  function interrupt(){stop();camera?.attachControl(canvas,true);}

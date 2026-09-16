@@ -1,3 +1,19 @@
+# 220-acre reference campus explorer
+
+The current web app is in `viewer/`. Run `npm ci`, `npm run dev` (or `npm run build` and serve `dist/`). Vercel builds the Vite app with local dependencies; `/viewer/` is retained as a compatibility route.
+
+The September 16 package controls the current 35-facility register in `data/campus-program.json`. Exterior placement in `viewer/campus/data.js` traces the supplied full-expansion artwork, **not** the independent CAD rectangular test fit. The prior 30-facility data and Python/Unreal pipeline below remain historical and do not feed this viewer.
+
+Select any facility in the scene or searchable directory, then choose **Explore inside**. All 74 proposed floors expose the six scheduled program zones, with guided room stops and keyboard/touch walking. Furnishings are interpreted, not surveyed interiors. The two unresolved facility areas remain identified as assumptions.
+
+Three.js renders the exterior; Babylon.js loads on demand for interiors; Anime.js drives camera and tour transitions. Blender 4.5.3 authored `public/models/synergy-node.glb`; reproduce it with `blender -b --python scripts/blender_reference_node.py`. No reference artwork is used as world geometry or billboards.
+
+Validation: `npm test` and `npm run build`. `scripts/export_reference_scene.mjs` exports a geometry-only review scene for Blender and verifies finite coordinates. Browser interaction, exact visual likeness, and physical mobile performance must be verified separately; see `evidence/VALIDATION.md`.
+
+---
+
+## Historical rendering pipeline
+
 ```
   ╔══════════════════════════════════════════════════════════════════════════╗
   ║                                                                          ║

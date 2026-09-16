@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {Batch,materials,cylinder,ring,line,seeded} from './geometry.js';
 import {FACILITIES,SPIRES,LAKES,SITE} from './data.js';
 export function createLandscape(){
@@ -28,12 +29,19 @@ export function createLandscape(){
   const pts=[];for(let i=0;i<=80;i++){const a=i/80*6.283,r=1+.065*Math.sin(a*3);pts.push([x+Math.cos(a)*(rx+2)*r,.48,z-Math.sin(a)*(rz+2)*r]);}line(b,'path',pts,1.5);
   for(let k=-1;k<=1;k++){const fx=x+k*rx*.38;ring(b,'gold',fx,.7,z,3,.22);cylinder(b,'cyan',fx,2,z,.14,4);const fountain=new T.SphereGeometry(1,12,8,0,6.283,0,Math.PI/2);b.add(fountain,'cyan',fx,.5,z,2.8,4,2.8);fountain.dispose();}
  }
+ // Planted water channels connect the gardens, with road decks crossing above.
+ const waterMaterial=new T.MeshStandardMaterial({color:0x17536b,metalness:.7,roughness:.17,side:T.DoubleSide});
+ for(const points of [[[-62,-200],[-37,-178],[-75,-160]],[[-90,-93],[-74,-62],[-32,-5],[-30,105],[-65,131]],[[-55,173],[-25,187],[13,205]],[[37,240],[50,264],[57,279]],[[52,322],[66,369],[-14,407]]]){
+  const curve=new T.CatmullRomCurve3(points.map(([x,z])=>new T.Vector3(x,.12,z)));const positions=[],indices=[];
+  for(let i=0;i<=60;i++){const p=curve.getPoint(i/60),v=curve.getTangent(i/60);for(const side of [-1,1])positions.push(p.x-v.z*3.5*side,.16,p.z+v.x*3.5*side);if(i<60){const j=i*2;indices.push(j,j+2,j+1,j+1,j+2,j+3);}}
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setIndex(indices);g.computeVertexNormals();root.add(new T.Mesh(g,waterMaterial));
+ }
  // Short pedestrian bridges cross the ponds and connect both banks.
  for(const [x,z,rx,rz] of LAKES.slice(0,5)){b.box('path',x+rx*.2,2.1,z,6,.6,rz*2.3);for(const side of [-1,1]){b.box('gold',x+rx*.2+side*2.8,3.3,z,.18,.2,rz*2.3);for(let dz=-rz;dz<rz;dz+=5)b.box('stone',x+rx*.2+side*2.8,2.7,z+dz,.2,1.4,.2);}}
  const nearRoad=[];for(const r of roads)for(let i=0;i<200;i++)nearRoad.push(r.curve.getPoint(i/200));
  function free(x,z){if(FACILITIES.some(f=>Math.abs(x-f.x)<f.w/2+10&&Math.abs(z-f.z)<f.d/2+10))return false;if(LAKES.some(([a,c,rx,rz])=>((x-a)/(rx+5))**2+((z-c)/(rz+5))**2<1))return false;if(nearRoad.some(p=>(x-p.x)**2+(z-p.z)**2<150))return false;return true;}
- const trees=[];for(let i=0;i<12500;i++){const x=(random()-.5)*1300,z=(random()-.5)*1150;if(free(x,z))trees.push({x,z,s:3.2+random()*3.5,pink:random()<.12});if(trees.length===4200)break;}
- const trunkG=new T.CylinderGeometry(.5,.8,1,5),leafG=new T.IcosahedronGeometry(1,1),dummy=new T.Object3D();
+ const trees=[];for(let i=0;i<12500;i++){const x=(random()-.5)*1300,z=(random()-.5)*1150;if(free(x,z))trees.push({x,z,s:4.1+random()*3.5,pink:random()<.12});if(trees.length===4200)break;}
+ const trunkG=new T.CylinderGeometry(.5,.8,1,5),leafG=mergeGeometries([new T.SphereGeometry(1,8,6).translate(0,.15,0),new T.SphereGeometry(.72,7,5).translate(.55,-.15,.15),new T.SphereGeometry(.7,7,5).translate(-.4,-.15,.3)]),dummy=new T.Object3D();
  for(const type of ['trunk','leaf','pink']){const list=type==='trunk'?trees:trees.filter(t=>t.pink===(type==='pink'));const mesh=new T.InstancedMesh(type==='trunk'?trunkG:leafG,materials[type],list.length);mesh.name=type+'-groves';for(let i=0;i<list.length;i++){const t=list[i];dummy.position.set(t.x,type==='trunk'?t.s*.5:t.s*1.5,t.z);dummy.scale.set(type==='trunk'?.5:t.s,type==='trunk'?t.s:t.s*1.2,type==='trunk'?.5:t.s);dummy.rotation.set(0,random()*6.28,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);if(type!=='trunk')mesh.setColorAt(i,new T.Color().setHSL(type==='pink'?.92:.23+random()*.06,.25+random()*.25,.22+random()*.15));}mesh.castShadow=false;root.add(mesh);}
  // Path lighting, hedges and seating distributed on real route tangents.
  for(const r of roads)for(let i=0;i<70;i++){const p=r.curve.getPoint(i/70),v=r.curve.getTangent(i/70);for(const side of [-1,1]){const x=p.x-v.z*(r.width/2+4)*side,z=p.z+v.x*(r.width/2+4)*side;b.box('dark',x,2.3,z,.22,4.6,.22);b.box('warm',x,4.6,z,1,.3,.8);if(i%4===0){b.box('gold',x+3,.7,z,3,.25,1);b.box('dark',x+3,.3,z,2,.5,.7);}}}
@@ -60,6 +68,19 @@ export function createInfrastructure(){
  for(let i=0;i<8;i++){b.box('white',360+i%4*8,2.7,373+Math.floor(i/4)*10,6,5,8);b.box('cyan',360+i%4*8,3,377+Math.floor(i/4)*10,4,.4,.1);}
  const turbines=[];for(let i=0;i<5;i++){const x=-453+i*38,z=-374; cylinder(b,'white',x,21,z,.7,42,.4);const rotor=new T.Group();rotor.position.set(x,43,z);for(let j=0;j<3;j++){const blade=new T.Mesh(new T.BoxGeometry(1.2,18,.35),materials.white);blade.position.set(Math.sin(j*2.094)*9,Math.cos(j*2.094)*9,0);blade.rotation.z=-j*2.094;rotor.add(blade);}root.add(rotor);turbines.push(rotor);}
  const thermal=line(energy,'warm',[[108,1,-310],[-111,1,0],[-265,1,33]],.4);
+ // Explicit supply connections; kinetic remains local, as specified in the package.
+ for(const [mat,pts] of [
+ ['gold',[[-360,1,380],[-290,1,406],[278,1,406],[418,1,344]]],
+ ['cyan',[[-377,1,-374],[460,1,-390],[478,1,340],[418,1,344]]],
+ ['gold',[[495,1,375],[450,1,375],[418,1,344]]],
+ ['leaf',[[195,1,365],[285,1,402],[418,1,344]]],
+ ['cyan',[[376,1,383],[330,1,383],[330,1,319],[418,1,344]]],
+ ['warm',[[330,1,319],[275,1,273],[250,1,28],[-111,1,39]]],
+ ['cyan',[[0,1,380],[-40,1,380],[-40,1,390]]]
+ ])energyPaths.push(line(energy,mat,pts,.35));
+ for(let x=-35;x<30;x+=3)for(let z=381;z<393;z+=3)b.box((x+z)%3?'dark':'cyan',x,.24,z,2.7,.2,2.7);
+ for(let i=0;i<6;i++){ring(b,'gold',330+i*3,.5,364,1,.15);}
+
  root.add(b.finish('mesh-spires-and-energy-sources'));const network=net.finish('wireless-mesh'),flows=energy.finish('energy-distribution');root.add(network,flows);
  const movers=[];for(const [curves,mat,count] of [[paths,materials.cyan,30],[energyPaths,materials.warm,50]]){const geo=new T.SphereGeometry(.9,6,4);const m=new T.InstancedMesh(geo,mat,count);root.add(m);movers.push({m,curves,count,network:mat===materials.cyan});}
  const dummy=new T.Object3D();return {root,network,flows,setNetwork(v){network.visible=v;movers[0].m.visible=v;},setEnergy(v){flows.visible=v;movers[1].m.visible=v;},update(t){for(const a of movers){for(let i=0;i<a.count;i++){const p=a.curves[i%a.curves.length].getPoint((t*.055+i*.071)%1);dummy.position.copy(p);dummy.updateMatrix();a.m.setMatrixAt(i,dummy.matrix);}a.m.instanceMatrix.needsUpdate=true;}turbines.forEach((r,i)=>r.rotation.z=t*(.35+i*.03));}};

@@ -1,0 +1,8 @@
+{
+  "meshes": 722,
+  "vertices": 1681338,
+  "facilities": 35,
+  "treeCount": 4200,
+  "finitePositions": true,
+  "renderer": "Three.js scene graph export, not WebGL"
+}

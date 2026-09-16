@@ -23,5 +23,5 @@ export function floorLayout(f,level){
  if(!Number.isInteger(level)||level<0||level>=f.levels)throw new RangeError('Unknown floor');
  const w=f.width*.3048,d=f.depth*.3048,core=Math.min(16,f.width*.14)*.3048,corridor=12*.3048;
  const rw=(w-2*core)/3,rh=(d-corridor)/2;
- return {w,d,core,corridor,rooms:f.program[Math.min(level,f.program.length-1)].split(';').map((name,i)=>({name,x:-w/2+core+rw*(i%3+.5),z:(i<3?-1:1)*(corridor/2+rh/2),w:rw,d:rh,doorX:-w/2+core+rw*(i%3+.45)+Math.min(4,f.width/5)*.3048/2}))};
+ return {w,d,core,corridor,rooms:f.program[Math.min(level,f.program.length-1)].split(';').map((name,i)=>({name,x:-w/2+core+rw*(i%3+.5),z:(i<3?-1:1)*(corridor/2+rh/2),w:rw,d:rh,doorX:-w/2+core+rw*(i%3+.45)+Math.min(4,(f.width-2*Math.min(16,f.width*.14))/15)*.3048/2}))};
 }
