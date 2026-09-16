@@ -1,9 +1,10 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 export const materials={
+ steel:new T.MeshStandardMaterial({color:0x939fa2,metalness:.85,roughness:.3}),
  glazing:new T.MeshStandardMaterial({color:0x648e98,metalness:.18,roughness:.18,transparent:true,opacity:.32,depthWrite:false,side:T.DoubleSide}),magenta:new T.MeshStandardMaterial({color:0xe9a9ea,emissive:0xd769d6,emissiveIntensity:.9}),track:new T.MeshStandardMaterial({color:0x845d65,roughness:.9}),
- stone:new T.MeshStandardMaterial({color:0xc8c1a8,roughness:.78}),dark:new T.MeshStandardMaterial({color:0x18252b,metalness:.55,roughness:.4}),
- glass:new T.MeshStandardMaterial({color:0x34697d,metalness:.7,roughness:.2}),gold:new T.MeshStandardMaterial({color:0xbda572,metalness:.65,roughness:.36}),
+ stone:new T.MeshStandardMaterial({color:0x99988c,roughness:.78}),dark:new T.MeshStandardMaterial({color:0x263039,metalness:.35,roughness:.4}),
+ glass:new T.MeshStandardMaterial({color:0x28434f,metalness:.42,roughness:.23}),gold:new T.MeshStandardMaterial({color:0xbda572,metalness:.65,roughness:.36}),
  warm:new T.MeshStandardMaterial({color:0xf6d69a,emissive:0xf6ba62,emissiveIntensity:.75,roughness:.5}),cyan:new T.MeshStandardMaterial({color:0x74e2ee,emissive:0x20bdd9,emissiveIntensity:1.8}),
  violet:new T.MeshStandardMaterial({color:0xbe9df6,emissive:0x964aff,emissiveIntensity:2}),grass:new T.MeshStandardMaterial({color:0x446347,roughness:1}),
  road:new T.MeshStandardMaterial({color:0x3c4549,roughness:.96}),path:new T.MeshStandardMaterial({color:0xb4af98,roughness:1}),solar:new T.MeshStandardMaterial({color:0x203d62,metalness:.65,roughness:.25}),

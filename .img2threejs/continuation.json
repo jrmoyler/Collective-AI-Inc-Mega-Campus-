@@ -5,7 +5,7 @@
   "assessment": "assessment.json",
   "reason": "Full multi-facility environment exceeds single-object generation route; references are internally inconsistent",
   "acceptance": "not-met",
-  "strategy": "Trace aerial layout, build distinct silhouette families, import all 74 floor programs, instance landscape and animate routed fleets",
+  "strategy": "Shared detailed geometry kit, room-specific PBR tour assemblies, individual infographic silhouette overrides, offline multi-angle review and opt-in device reports",
   "evidence": "../../evidence",
   "legacyStateSha256": "9cfcd7fea68609365645636ee5c17a7be21490ce5d92a3c48cd2f754161ba5e5",
   "assessmentSha256": "880597dff5279059f5308f72f9bdf86262de8cfc7be84c2a828b4356fe0f380c",
@@ -19,7 +19,12 @@
       "action": "refine-code",
       "evidence": "evidence/browser-portrait-plan.jpg",
       "reason": "Added Prism Oculus and cantilevers, Eden planted terraces, facility equipment and physical sky. Verified GPU-independent floor plans on desktop and 412px iframe. Added offline detail renders. Exact-match acceptance remains unmet."
+    },
+    {
+      "action": "refine-code",
+      "evidence": "evidence/VALIDATION-PR8.md",
+      "reason": "User locked aerial placement / facility architecture precedence. Rebuilt multi-part furnished interiors, corrected reciprocal pixel scaling, added PBR textures and lighting; replaced conflicting facility silhouettes. Offline review exposed duplicate walls, furnishing sparsity and shelf orientation; corrected them. Browser GPU remains disabled, preview protected; no exact-match acceptance."
     }
   ],
-  "blocker": "Authorized Vercel preview accessible; browser GPU/WebGL disabled. Physical mobile unavailable. Reference architectural fidelity remains incomplete."
+  "blocker": "GPU browser rendering and physical Galaxy A15 validation unavailable; visual reference reconstruction still approximate."
 }

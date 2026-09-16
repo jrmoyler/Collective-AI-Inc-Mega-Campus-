@@ -17,14 +17,12 @@ export function addSignature(b,f){const {w,d,h}=f;const random=seeded(f.id*837);
  switch(f.id){
  case 1:{
   // Oculus and three occupied cantilever suites distinguish the facility atlas view.
-  const r=w*.28;cylinder(b,'stone',0,h-2,0,r+1,.7);ring(b,'cyan',0,h+2,0,r+1,.35);ring(b,'stone',0,h+2,0,r+1,.16);
-  for(let a=0;a<6.28;a+=Math.PI/12){const x=Math.sin(a)*(r+1),z=Math.cos(a)*(r+1);b.box('stone',x,h,z,.18,4,.18);}
   for(const y of [h*.24,h*.48,h*.73]){workroom(b,w*.36,y,d*.24,w*.38,d*.49);terrace(b,w*.36,y+5.4,d*.24,w*.42,d*.52);line(b,'stone',[[w*.17,y-5,d*.25],[w*.52,y,d*.25]],.45);}
   for(let i=-3;i<=3;i++){const x=i*w*.105;line(b,'dark',[[x,10,d*.405],[x*.64,h-4,d*.405*.64]],.16);}
   b.box('dark',-w*.31,h*.43,d*.31,w*.22,h*.49,.35);terrace(b,0,10.6,0,w*1.18,d*1.11);break;
  }
  case 2:workroom(b,0,h+1,0,w*.62,d*.4);for(let i=0;i<7;i++)b.box('cyan',-w*.28+i*w*.09,h+3.1,d*.22,w*.06,1.6,.15);break;
- case 3:case 30:{tanks(b,-w*.18,0,-d*.08,3,w*.065);for(let i=0;i<8;i++){b.box('gold',-w*.42+i*w*.12,4,d*.51,.5,8,1);}ring(b,'cyan',0,h*.62,0,w*.16,.2);break;}
+ case 3:{tanks(b,-w*.18,0,-d*.08,3,w*.065);for(let i=0;i<8;i++){b.box('gold',-w*.42+i*w*.12,4,d*.51,.5,8,1);}ring(b,'cyan',0,h*.62,0,w*.16,.2);break;}
  case 4:for(let x=-w*.4;x<w*.45;x+=w/12){b.box('stone',x,5,d*.43,.7,10,.7);}terrace(b,0,11,d*.39,w*.9,d*.22);break;
  case 5:glazing(b,0,2,d*.52,w*.65,9,8);b.box('violet',0,6,d*.515,w*.4,5,.1);for(let i=-2;i<=2;i++)b.box('dark',i*w*.12,9,d*.57,.5,3,.5);break;
  case 6:case 23:case 31:terrace(b,0,h*.55,0,w*1.05,d*.94);break;
@@ -43,7 +41,7 @@ export function addSignature(b,f){const {w,d,h}=f;const random=seeded(f.id*837);
   break;
  }
  case 12:case 13:case 14:terrace(b,0,1,d*.43,w*.8,d*.17);for(let i=-2;i<=2;i++)cylinder(b,'white',i*w*.16,3,d*.53,.65,6);break;
- case 15:{const pts=[];for(let i=0;i<=100;i++){const a=i/100*6.283;pts.push([Math.cos(a)*w*.46,.9,Math.sin(a)*d*.42]);}line(b,'track',pts,3.5);for(let j=0;j<3;j++)line(b,'white',pts.map(([x,y,z])=>[x*(1+j*.015),y+.03,z*(1+j*.015)]),.07);for(const x of [-w*.45,w*.45])for(const z of [-d*.35,d*.35]){b.box('dark',x,10,z,.4,20,.4);b.box('warm',x,20,z,4,.8,.4);}break;}
+ case 15:{const pts=[];for(let i=0;i<=100;i++){const a=i/100*6.283;pts.push([Math.cos(a)*w*.46,h+1.2,Math.sin(a)*d*.42]);}line(b,'track',pts,3.5);for(let j=0;j<3;j++)line(b,'white',pts.map(([x,y,z])=>[x*(1+j*.015),y+.03,z*(1+j*.015)]),.07);for(const x of [-w*.45,w*.45])for(const z of [-d*.35,d*.35]){b.box('dark',x,10,z,.4,20,.4);b.box('warm',x,20,z,4,.8,.4);}break;}
  case 16:for(let a=0;a<6.28;a+=Math.PI/10){cylinder(b,'stone',Math.sin(a)*w*.56,3,Math.cos(a)*w*.56,.45,6);}break;
  case 17:case 29:for(let i=-2;i<=2;i++)glazing(b,i*w*.17,h+1,0,w*.13,4,d*.63);break;
  case 18:for(let i=-2;i<=2;i++){b.box('stone',i*w*.16,.6,d*.56,w*.1,.7,10);b.box('cyan',i*w*.16,3.4,d*.6,w*.08,.4,.2);}break;
