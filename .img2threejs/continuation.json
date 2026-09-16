@@ -14,7 +14,12 @@
       "action": "refine-code",
       "evidence": "evidence/offline-aerial.jpg",
       "reason": "Offline review: roof silhouette defect; overly spherical trees; ponds disconnected. Corrected roof prisms, compound tree crowns, connecting water channels. Materials and individual facade details still approximate. Browser visual check blocked."
+    },
+    {
+      "action": "refine-code",
+      "evidence": "evidence/browser-portrait-plan.jpg",
+      "reason": "Added Prism Oculus and cantilevers, Eden planted terraces, facility equipment and physical sky. Verified GPU-independent floor plans on desktop and 412px iframe. Added offline detail renders. Exact-match acceptance remains unmet."
     }
   ],
-  "blocker": "Automatic approval review denied redirected Vercel browser access; physical device unavailable"
+  "blocker": "Authorized Vercel preview accessible; browser GPU/WebGL disabled. Physical mobile unavailable. Reference architectural fidelity remains incomplete."
 }

@@ -20,7 +20,14 @@ The visible geometry is a procedural reconstruction, not an identical reproducti
 
 No exact-match score or browser visual pass is claimed. Offline geometry reviews do not certify actual Three.js rendering, Babylon browser controls, mobile interaction or performance.
 
-## Browser access blocker
-Local preview attempts at 127.0.0.1:5173 and localhost:8080 were blocked by the provided browser. The Vercel preview redirected toward Vercel sign-in; automatic approval review rejected browser access to the Vercel origin because separate authenticated dashboard/account access had not been approved. No alternate browser, protection bypass or share token was used to circumvent that rejection.
+## Browser verification — authorized preview
+The user authorized Vercel access. The scoped preview was accessed successfully and deployment `2b41c27` was READY. The provided browser reports WebGL disabled (`GL_RENDERER=Disabled`, context creation failed), so actual exterior rendering and Babylon movement cannot be verified here.
 
-Remaining checks after authorized preview access: startup/loading failure, scene render, facility selection from model and directory, all floor selectors, guided stops, WASD/touch collision behavior, exit/re-entry, layer toggles, desktop and mobile screenshot comparison, and physical Galaxy A15 frame-time/memory testing. Keep the PR draft until those checks and visual acceptance are satisfied.
+Verified in the deployed browser:
+- Capability failure displays the schematic campus map and directory instead of a reload-only dead end.
+- CF-01 selection, opening its floor plan, changing to L12 and selecting Observation gallery.
+- Directory search for Hearth and CF-35 selection with its two floors.
+- Desktop floor-plan modal and a 412px-wide iframe layout, including room selection. Screenshots are `browser-desktop-plan.jpg` and `browser-portrait-plan.jpg`. The latter is viewport layout simulation, not mobile hardware emulation.
+- All floor-plan interactions remain available independently of WebGL. The 3D tour button correctly reports unavailability in this browser.
+
+Remaining checks: actual Three.js scene rendering and picking, guided stops, WASD/touch collision behavior, exit/re-entry, layer toggles, GPU desktop/mobile screenshot comparison, and physical Galaxy A15 frame-time/memory testing. Exact visual acceptance remains unmet. Keep this PR draft.
