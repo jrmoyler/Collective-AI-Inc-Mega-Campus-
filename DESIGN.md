@@ -15,3 +15,6 @@ States: visible gold focus ring, teal selected state, disabled controls while tr
 Motion: anime.js camera and panel easing 900ms (0 for reduced motion); delta-time fleet motion on defined paths. Three.js exterior; lazy Babylon.js interior engine only on entry, dispose on return. Shared instancing and bounded pixel ratio for mobile. Reference/cutaway interiors cannot reveal all hidden detail: implemented furnishing is an interpretation of the schematic programs.
 
 Validation: all 35 IDs and 74 levels, no blank program, geometry finite, build succeeds, facility click/tour/floor/return, search, keyboard, narrow viewport and screenshot comparison. Physical Galaxy A15 performance is a separate device gate.
+
+## Capability failure and schematic plans
+Bind facility browsing before GPU startup. A failed WebGL context opens a clearly labelled schematic campus map with the same 35 selectable facilities. Never label this a 3D tour. Keep the directory, source areas and floor programs available. Add a separate floor-plan modal for all browsers, with true schematic bay proportions, two support cores, a 12-foot corridor and six accessible room buttons. The plan can be opened alongside the optional 3D tour on capable devices. On narrow screens the plan stacks below its header and above the room list; modal focus returns to its initiating action.

@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {addSignature} from './signatures.js';
 import {Batch,cylinder,ring,line,sign,materials} from './geometry.js';
 function block(b,x,z,w,d,h,levels=3){
  b.box('dark',x,h/2,z,w,h,d);
@@ -85,6 +86,7 @@ export function createFacility(f){
   if(form==='utility')for(let i=0;i<3;i++){cylinder(b,'stone',-w*.25+i*w*.25,h+9,-d*.15,3,18);ring(b,'cyan',-w*.25+i*w*.25,h+16,-d*.15,3,.18);}
   if(form==='water')for(let x=-1;x<=1;x+=2){cylinder(b,'stone',x*w*.68,2,0,11,4);cylinder(b,'glass',x*w*.68,4.2,0,10,.2);}
  }
+ addSignature(b,f);
  const root=b.finish(f.key);root.position.set(f.x,0,f.z);root.userData.facility=f.id;root.traverse(o=>{o.userData.facility=f.id;});
  const label=sign(f.key+'  '+f.name.toUpperCase(),Math.min(w*.85,48),3);label.position.set(0,Math.min(h*.65,12),d/2+.7);root.add(label);label.userData.facility=f.id;
  root.userData.sculptRuntime={parts:root.children.map(c=>c.name),clickable:true};return root;
