@@ -1,95 +1,315 @@
+// @ts-nocheck
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {Batch,materials,cylinder,ring,line,seeded} from './geometry.js';
+import {Batch,materials,cylinder,ring,line,seeded,kineticRoadMaterial,textures} from './geometry.js';
 import {FACILITIES,SPIRES,LAKES,SITE} from './data.js';
+
+const haloMat=new T.MeshBasicMaterial({
+ color:0x3dfff4,transparent:true,opacity:.62,blending:T.AdditiveBlending,depthWrite:false,toneMapped:false,fog:false,side:T.DoubleSide,
+});
+const goldHaloMat=new T.MeshBasicMaterial({
+ color:0xffc45a,transparent:true,opacity:.84,blending:T.AdditiveBlending,depthWrite:false,toneMapped:false,fog:false,side:T.DoubleSide,
+});
+
+function ribbon(pts,width,closed,y=0.22){
+ const curve=new T.CatmullRomCurve3(pts.map(([x,z])=>new T.Vector3(x,y,z)),closed,'catmullrom',.25);
+ const p=[],uv=[],idx=[],n=240;
+ for(let i=0;i<=n;i++){
+  const t=i/n,c=curve.getPoint(t),d=curve.getTangent(t);
+  const nx=-d.z,nz=d.x,len=Math.hypot(nx,nz)||1;
+  for(const s of [0,1]){
+   p.push(c.x+(nx/len)*(width/2)*(s?1:-1),c.y,c.z+(nz/len)*(width/2)*(s?1:-1));
+   uv.push(t*curve.getLength()/18,s);
+  }
+  if(i<n){const j=i*2;idx.push(j,j+2,j+1,j+1,j+2,j+3);}
+ }
+ const g=new T.BufferGeometry();
+ g.setAttribute('position',new T.Float32BufferAttribute(p,3));
+ g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));
+ g.setIndex(idx);g.computeVertexNormals();
+ return {curve,width,g};
+}
+
 export function createLandscape(){
  const root=new T.Group();root.name='landscape';const b=new Batch();const random=seeded(22035);
- const canvas=document.createElement('canvas');canvas.width=canvas.height=256;const ctx=canvas.getContext('2d');ctx.fillStyle='#42513b';ctx.fillRect(0,0,256,256);for(let i=0;i<12000;i++){ctx.fillStyle=`rgba(${80+random()*35},${100+random()*35},${50+random()*30},.15)`;ctx.fillRect(random()*256,random()*256,3,3);}const tex=new T.CanvasTexture(canvas);tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.repeat.set(25,25);tex.colorSpace=T.SRGBColorSpace;
- const ground=new T.Mesh(new T.PlaneGeometry(2600,2300),new T.MeshStandardMaterial({map:tex,roughness:1}));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;root.add(ground);
+ const kineticMats=[];
+ const automated=typeof navigator!=='undefined'&&(navigator.webdriver||/Headless/i.test(navigator.userAgent||''));
+ const treeInner=automated?400:1600;
+ const treeOuter=automated?280:1800;
+ const skylineCount=automated?36:170;
+ const lampEvery=automated?12:36;
+
+ const ground=new T.Mesh(new T.PlaneGeometry(2800,2500,8,8),materials.grass);
+ ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;ground.name='forest-floor';root.add(ground);
+
+ const oval=new T.Shape();oval.absellipse(0,0,SITE.width*.52,SITE.depth*.52,0,Math.PI*2,false,0);
+ const ovalGeo=new T.ShapeGeometry(oval,64);ovalGeo.rotateX(-Math.PI/2);
+ const campusMat=materials.grass.clone();campusMat.color=new T.Color(0x3f6e32);campusMat.map=textures.grass;campusMat.emissive=new T.Color(0x163010);campusMat.emissiveIntensity=.12;
+ const campusPad=new T.Mesh(ovalGeo,campusMat);campusPad.position.y=.04;campusPad.receiveShadow=true;campusPad.name='campus-lawn';root.add(campusPad);
+
  const roads=[];
- function road(pts,width=12,closed=false){const curve=new T.CatmullRomCurve3(pts.map(([x,z])=>new T.Vector3(x,.25,z)),closed,'catmullrom',.25);roads.push({curve,width});const p=[],idx=[],n=400;for(let i=0;i<=n;i++){const t=i/n,c=curve.getPoint(t),d=curve.getTangent(t),normal=new T.Vector3(-d.z,0,d.x);for(const s of [-1,1]){const q=c.clone().addScaledVector(normal,width/2*s);p.push(q.x,q.y,q.z);}if(i<n){const j=i*2;idx.push(j,j+2,j+1,j+1,j+2,j+3);}}
- const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setIndex(idx);g.computeVertexNormals();const m=new T.Mesh(g,materials.road);m.receiveShadow=true;root.add(m);
- for(let i=0;i<n;i+=4){const t=i/n,c=curve.getPoint(t),d=curve.getTangent(t),ang=Math.atan2(d.x,d.z);b.box('gold',c.x,.3,c.z,.18,.03,2.8,ang);for(const s of [-1,1]){const x=c.x-d.z*(width/2+.8)*s,z=c.z+d.x*(width/2+.8)*s;b.box('path',x,.2,z,1,.3,7,ang);}}
- return curve;}
- road([[-462,-345],[-350,-400],[0,-402],[363,-390],[481,-285],[485,130],[464,398],[208,430],[-298,425],[-476,331],[-491,20]],18,true);
- road([[-472,-60],[-312,-65],[-210,-53],[-60,-37],[120,-17],[317,-2],[476,8]],12);
- road([[-464,242],[-328,289],[-124,279],[47,270],[227,272],[441,272]],13);
- road([[-445,-214],[-358,-182],[-293,-171],[-181,-192],[-70,-194],[94,-206],[309,-224],[466,-240]],12);
- road([[-279,-389],[-260,-275],[-177,-246],[-165,-147],[-197,-54],[-207,81],[-272,184],[-289,280],[-310,410]],11);
- road([[42,-390],[55,-276],[42,-221],[49,-106],[10,-22],[-9,60],[-40,120],[-16,254],[49,407]],11);
- road([[332,-392],[358,-268],[330,-211],[347,-105],[273,-25],[250,99],[251,179],[277,276],[279,415]],12);
- road([[-468,111],[-336,117],[-239,111],[-177,136],[-113,121],[13,115],[130,119],[229,139],[432,167]],10);
+ function road(pts,width=12,closed=false,kind='cyan'){
+  const {curve,g}=ribbon(pts,width,closed,.22);
+  roads.push({curve,width});
+  const base=ribbon(pts,width+1.4,closed,.16);
+  root.add(new T.Mesh(base.g,materials.road));
+  const mat=kineticRoadMaterial(kind);kineticMats.push(mat);
+  const m=new T.Mesh(g,mat);m.receiveShadow=true;m.name=kind==='gold'?'gold-ring-road':'kinetic-road';root.add(m);
+  const haloR=ribbon(pts,width+(kind==='gold'?7.4:5.0),closed,.3);
+  const halo=new T.Mesh(haloR.g,kind==='gold'?goldHaloMat:haloMat);halo.name=kind==='gold'?'gold-road-halo':'road-halo';root.add(halo);
+  const walk=ribbon(pts,width+5.2,closed,.12);
+  const sidewalk=new T.Mesh(walk.g,materials.path);sidewalk.receiveShadow=true;sidewalk.name='walk';root.add(sidewalk);
+  return curve;
+ }
+ road([[-462,-345],[-350,-400],[0,-402],[363,-390],[481,-285],[485,130],[464,398],[208,430],[-298,425],[-476,331],[-491,20]],24,true,'gold');
+ road([[-472,-60],[-312,-65],[-210,-53],[-60,-37],[120,-17],[317,-2],[476,8]],13);
+ road([[-464,242],[-328,289],[-124,279],[47,270],[227,272],[441,272]],14);
+ road([[-445,-214],[-358,-182],[-293,-171],[-181,-192],[-70,-194],[94,-206],[309,-224],[466,-240]],13);
+ road([[-279,-389],[-260,-275],[-177,-246],[-165,-147],[-197,-54],[-207,81],[-272,184],[-289,280],[-310,410]],12);
+ road([[42,-390],[55,-276],[42,-221],[49,-106],[10,-22],[-9,60],[-40,120],[-16,254],[49,407]],12);
+ road([[332,-392],[358,-268],[330,-211],[347,-105],[273,-25],[250,99],[251,179],[277,276],[279,415]],13);
+ road([[-468,111],[-336,117],[-239,111],[-177,136],[-113,121],[13,115],[130,119],[229,139],[432,167]],11);
+
  const waters=[];
  for(const [x,z,rx,rz] of LAKES){
-  const s=new T.Shape();for(let i=0;i<=80;i++){const a=i/80*Math.PI*2,r=1+.065*Math.sin(a*3);const xx=Math.cos(a)*rx*r,zz=Math.sin(a)*rz*r;if(i===0)s.moveTo(xx,zz);else s.lineTo(xx,zz);}
-  const g=new T.ShapeGeometry(s,64);g.rotateX(-Math.PI/2);
-  const mat=new T.MeshStandardMaterial({color:0x17536b,metalness:.72,roughness:.16,side:T.DoubleSide});
-  mat.onBeforeCompile=shader=>{shader.uniforms.uTime={value:0};waters.push(shader);shader.vertexShader='uniform float uTime;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n transformed.y += sin(position.x*.55+uTime)*.09 + cos(position.z*.7+uTime*.8)*.07;');};
-  const m=new T.Mesh(g,mat);m.position.set(x,.4,z);root.add(m);
-  const pts=[];for(let i=0;i<=80;i++){const a=i/80*6.283,r=1+.065*Math.sin(a*3);pts.push([x+Math.cos(a)*(rx+2)*r,.48,z-Math.sin(a)*(rz+2)*r]);}line(b,'path',pts,1.5);
-  for(let k=-1;k<=1;k++){const fx=x+k*rx*.38;ring(b,'gold',fx,.7,z,3,.22);cylinder(b,'cyan',fx,2,z,.14,4);const fountain=new T.SphereGeometry(1,12,8,0,6.283,0,Math.PI/2);b.add(fountain,'cyan',fx,.5,z,2.8,4,2.8);fountain.dispose();}
+  const s=new T.Shape();
+  for(let i=0;i<=64;i++){
+   const a=i/64*Math.PI*2,r=1+.07*Math.sin(a*3)+.03*Math.cos(a*5);
+   const xx=Math.cos(a)*rx*r,zz=Math.sin(a)*rz*r;
+   if(i===0)s.moveTo(xx,zz);else s.lineTo(xx,zz);
+  }
+  const g=new T.ShapeGeometry(s,48);g.rotateX(-Math.PI/2);
+  const mat=new T.MeshStandardMaterial({color:0x1ec8dc,metalness:.84,roughness:.07,envMapIntensity:2.3,emissive:0x0a6080,emissiveIntensity:.72,side:T.DoubleSide});
+  mat.onBeforeCompile=shader=>{
+   shader.uniforms.uTime={value:0};waters.push(shader);
+   shader.vertexShader='uniform float uTime;\n'+shader.vertexShader;
+   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
+    '#include <begin_vertex>\n transformed.y += sin(position.x*.45+uTime*1.1)*.11 + cos(position.z*.6+uTime*.9)*.08;');
+  };
+  const m=new T.Mesh(g,mat);m.position.set(x,.38,z);m.name='lake';root.add(m);
+  const pts=[];for(let i=0;i<=48;i++){const a=i/48*6.283,r=1+.07*Math.sin(a*3);pts.push([x+Math.cos(a)*(rx+2.4)*r,.5,z-Math.sin(a)*(rz+2.4)*r]);}
+  line(b,'path',pts,1.6);line(b,'kinetic',pts.map(([px,py,pz])=>[px,py+.04,pz]),.14);
+  ring(b,'gold',x,.72,z,3.2,.2);
+  cylinder(b,'cyan',x,2.4,z,.12,4.6);
+  const fountain=new T.SphereGeometry(1,12,8,0,6.283,0,Math.PI/2);
+  b.add(fountain,'cyan',x,.55,z,3.1,5.2,3.1);fountain.dispose();
  }
- // Planted water channels connect the gardens, with road decks crossing above.
- const waterMaterial=new T.MeshStandardMaterial({color:0x17536b,metalness:.7,roughness:.17,side:T.DoubleSide});
+ const waterMaterial=new T.MeshStandardMaterial({color:0x1ec8dc,metalness:.8,roughness:.1,emissive:0x0a6080,emissiveIntensity:.5,side:T.DoubleSide});
  for(const points of [[[-62,-200],[-37,-178],[-75,-160]],[[-90,-93],[-74,-62],[-32,-5],[-30,105],[-65,131]],[[-55,173],[-25,187],[13,205]],[[37,240],[50,264],[57,279]],[[52,322],[66,369],[-14,407]]]){
-  const curve=new T.CatmullRomCurve3(points.map(([x,z])=>new T.Vector3(x,.12,z)));const positions=[],indices=[];
-  for(let i=0;i<=60;i++){const p=curve.getPoint(i/60),v=curve.getTangent(i/60);for(const side of [-1,1])positions.push(p.x-v.z*3.5*side,.16,p.z+v.x*3.5*side);if(i<60){const j=i*2;indices.push(j,j+2,j+1,j+1,j+2,j+3);}}
-  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setIndex(indices);g.computeVertexNormals();root.add(new T.Mesh(g,waterMaterial));
+  const curve=new T.CatmullRomCurve3(points.map(([x,z])=>new T.Vector3(x,.14,z)));const positions=[],indices=[];
+  for(let i=0;i<=40;i++){
+   const p=curve.getPoint(i/40),v=curve.getTangent(i/40);
+   for(const side of [-1,1])positions.push(p.x-v.z*3.6*side,.18,p.z+v.x*3.6*side);
+   if(i<40){const j=i*2;indices.push(j,j+2,j+1,j+1,j+2,j+3);}
+  }
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setIndex(indices);g.computeVertexNormals();
+  root.add(new T.Mesh(g,waterMaterial));
  }
- // Short pedestrian bridges cross the ponds and connect both banks.
- for(const [x,z,rx,rz] of LAKES.slice(0,5)){b.box('path',x+rx*.2,2.1,z,6,.6,rz*2.3);for(const side of [-1,1]){b.box('gold',x+rx*.2+side*2.8,3.3,z,.18,.2,rz*2.3);for(let dz=-rz;dz<rz;dz+=5)b.box('stone',x+rx*.2+side*2.8,2.7,z+dz,.2,1.4,.2);}}
- const nearRoad=[];for(const r of roads)for(let i=0;i<200;i++)nearRoad.push(r.curve.getPoint(i/200));
- function free(x,z){if(FACILITIES.some(f=>Math.abs(x-f.x)<f.w/2+10&&Math.abs(z-f.z)<f.d/2+10))return false;if(LAKES.some(([a,c,rx,rz])=>((x-a)/(rx+5))**2+((z-c)/(rz+5))**2<1))return false;if(nearRoad.some(p=>(x-p.x)**2+(z-p.z)**2<150))return false;return true;}
- const trees=[];for(let i=0;i<12500;i++){const x=(random()-.5)*1300,z=(random()-.5)*1150;if(free(x,z))trees.push({x,z,s:4.1+random()*3.5,pink:random()<.12});if(trees.length===4200)break;}
- const trunkG=new T.CylinderGeometry(.5,.8,1,5),leafG=mergeGeometries(Array.from({length:9},(_,i)=>{const a=i*2.399,g=new T.IcosahedronGeometry(.43+(i%3)*.06,0);const pos=g.attributes.position,n=g.attributes.normal;for(let v=0;v<pos.count;v++){const q=new T.Vector3().fromBufferAttribute(pos,v).normalize();n.setXYZ(v,q.x,q.y,q.z);}g.scale(1,.82,1);g.translate(Math.sin(a)*(.42+(i%2)*.18),.18+Math.cos(i*1.7)*.50,Math.cos(a)*.54);return g;})),dummy=new T.Object3D();
- for(const type of ['trunk','leaf','pink']){const list=type==='trunk'?trees:trees.filter(t=>t.pink===(type==='pink'));const mesh=new T.InstancedMesh(type==='trunk'?trunkG:leafG,materials[type],list.length);mesh.name=type+'-groves';for(let i=0;i<list.length;i++){const t=list[i];dummy.position.set(t.x,type==='trunk'?t.s*.5:t.s*1.5,t.z);dummy.scale.set(type==='trunk'?.5:t.s,type==='trunk'?t.s:t.s*1.2,type==='trunk'?.5:t.s);dummy.rotation.set(0,random()*6.28,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);if(type!=='trunk')mesh.setColorAt(i,new T.Color().setHSL(type==='pink'?.92:.23+random()*.06,.25+random()*.25,.22+random()*.15));}mesh.castShadow=type!=='trunk';mesh.receiveShadow=true;root.add(mesh);}
- const contact=new T.InstancedMesh(new T.CircleGeometry(1,16),new T.MeshBasicMaterial({color:0x12291b,transparent:true,opacity:.12,depthWrite:false}),trees.length);
- for(let i=0;i<trees.length;i++){const t=trees[i];dummy.position.set(t.x,.018,t.z);dummy.rotation.set(-Math.PI/2,0,0);dummy.scale.set(t.s*.7,t.s*.7,1);dummy.updateMatrix();contact.setMatrixAt(i,dummy.matrix);}contact.name='canopy-ground-contact';root.add(contact);
- // Path lighting, hedges and seating distributed on real route tangents.
- for(const r of roads)for(let i=0;i<70;i++){const p=r.curve.getPoint(i/70),v=r.curve.getTangent(i/70);for(const side of [-1,1]){const x=p.x-v.z*(r.width/2+4)*side,z=p.z+v.x*(r.width/2+4)*side;b.box('dark',x,2.3,z,.22,4.6,.22);b.box('warm',x,4.6,z,1,.3,.8);if(i%4===0){b.box('gold',x+3,.7,z,3,.25,1);b.box('dark',x+3,.3,z,2,.5,.7);}}}
- // Layered foundation planting and paved approach gardens seen in the facility cutaways.
- for(const f of FACILITIES){for(const side of [-1,1]){
-  b.box('stone',f.x+side*(f.w/2+3),.65,f.z,1.7,1.1,f.d*.8);
-  for(let z=-f.d*.37;z<f.d*.4;z+=2.2){cylinder(b,'leaf',f.x+side*(f.w/2+3),1.3,f.z+z,1.1,1.0,.8,7);if(Math.round(z)%3===0)cylinder(b,'pink',f.x+side*(f.w/2+3),1.85,f.z+z,.5,.22,.35,6);}
-  for(let x=-f.w*.35;x<f.w*.4;x+=8){b.box('dark',f.x+x,.7,f.z+side*(f.d/2+5),.18,1.4,.18);b.box('warm',f.x+x,1.42,f.z+side*(f.d/2+5),.3,.10,.3);}
- }}
- // Low context skyline; no source artwork appears on any scene surface.
- for(let i=0;i<110;i++){const x=(random()-.5)*2200,z=-650-random()*300,h=8+random()*52;b.box('dark',x,h/2,z,12+random()*30,h,12+random()*25);}
+
+ const CELL=16,COLS=200,ROWS=180,OX=1600,OZ=1440;
+ const blocked=new Uint8Array(COLS*ROWS);
+ const mark=(x,z,r)=>{
+  const i0=Math.max(0,Math.floor((x-r+OX)/CELL)),i1=Math.min(COLS-1,Math.floor((x+r+OX)/CELL));
+  const j0=Math.max(0,Math.floor((z-r+OZ)/CELL)),j1=Math.min(ROWS-1,Math.floor((z+r+OZ)/CELL));
+  for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++)blocked[i*ROWS+j]=1;
+ };
+ for(const f of FACILITIES)mark(f.x,f.z,Math.max(f.w,f.d)*.5+8);
+ for(const [a,c,rx,rz] of LAKES)mark(a,c,Math.max(rx,rz)+6);
+ for(const r of roads){
+  const n=Math.max(48,Math.round(r.curve.getLength()/8));
+  for(let i=0;i<=n;i++){const p=r.curve.getPoint(i/n);mark(p.x,p.z,r.width*.6+14);}
+ }
+ const ovalRx=SITE.width*.52,ovalRz=SITE.depth*.52;
+ const free=(x,z)=>{
+  const i=Math.floor((x+OX)/CELL),j=Math.floor((z+OZ)/CELL);
+  return i>=0&&j>=0&&i<COLS&&j<ROWS&&!blocked[i*ROWS+j];
+ };
+ const trees=[];
+ for(let i=0;i<9000&&trees.length<treeInner;i++){
+  const a=random()*Math.PI*2;
+  const rad=random()*380;
+  const x=Math.cos(a)*rad*(SITE.width/SITE.depth)*.85;
+  const z=Math.sin(a)*rad;
+  if((x/ovalRx)**2+(z/ovalRz)**2>0.88)continue;
+  if(free(x,z))trees.push({x,z,s:3.8+random()*3.6,pink:random()<.52});
+ }
+ const beltTarget=trees.length+(automated?70:460);
+ for(let i=0;i<9000&&trees.length<beltTarget;i++){
+  const a=random()*Math.PI*2;
+  const u=.74+random()*.14;
+  const x=Math.cos(a)*ovalRx*u;
+  const z=Math.sin(a)*ovalRz*u;
+  if(free(x,z))trees.push({x,z,s:4.6+random()*4.2,pink:true});
+ }
+ for(let i=0;i<10000&&trees.length<beltTarget+treeOuter;i++){
+  const a=random()*Math.PI*2;
+  const rad=548+random()*360;
+  const x=Math.cos(a)*rad*(SITE.width/SITE.depth);
+  const z=Math.sin(a)*rad;
+  if(free(x,z))trees.push({x,z,s:5.6+random()*5.8,pink:random()<.12});
+ }
+ const trunkG=new T.CylinderGeometry(.28,.58,1,7);
+ const leafG=mergeGeometries([
+  (()=>{const g=new T.SphereGeometry(1,9,7);g.scale(1.08,.72,1.08);g.translate(0,.12,0);return g;})(),
+  (()=>{const g=new T.SphereGeometry(.58,8,6);g.translate(.42,.2,.16);return g;})(),
+  (()=>{const g=new T.SphereGeometry(.5,8,6);g.translate(-.36,.16,-.22);return g;})(),
+  (()=>{const g=new T.SphereGeometry(.46,8,6);g.translate(.06,.4,-.3);return g;})(),
+ ]);
+ const dummy=new T.Object3D();
+ for(const type of ['trunk','leaf','pink']){
+  const list=type==='trunk'?trees:trees.filter(t=>t.pink===(type==='pink'));
+  if(!list.length)continue;
+  const mesh=new T.InstancedMesh(type==='trunk'?trunkG:leafG,materials[type],list.length);
+  mesh.name=type+'-groves';mesh.castShadow=false;mesh.receiveShadow=false;
+  for(let i=0;i<list.length;i++){
+   const t=list[i];
+   dummy.position.set(t.x,type==='trunk'?t.s*.5:t.s*1.48,t.z);
+   dummy.scale.set(type==='trunk'?.5:t.s,type==='trunk'?t.s:t.s*1.18,type==='trunk'?.5:t.s);
+   dummy.rotation.set(0,random()*6.28,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
+   if(type!=='trunk')mesh.setColorAt(i,new T.Color().setHSL(type==='pink'?.95:.28+random()*.05,.58+random()*.18,.46+random()*.16));
+  }
+  root.add(mesh);
+ }
+
+ const lampPosts=[],lampHeads=[];
+ for(const r of roads){
+ const n=lampEvery;
+  for(let i=0;i<n;i++){
+   const p=r.curve.getPoint(i/n),v=r.curve.getTangent(i/n);
+   for(const side of [-1,1]){
+    lampPosts.push({x:p.x-v.z*(r.width/2+4.2)*side,z:p.z+v.x*(r.width/2+4.2)*side});
+   }
+  }
+ }
+ const postMesh=new T.InstancedMesh(new T.BoxGeometry(.2,5,.2),materials.dark,lampPosts.length);
+ const headMesh=new T.InstancedMesh(new T.BoxGeometry(1.15,.28,.9),materials.warm,lampPosts.length);
+ for(let i=0;i<lampPosts.length;i++){
+  const l=lampPosts[i];
+  dummy.position.set(l.x,2.5,l.z);dummy.rotation.set(0,0,0);dummy.scale.set(1,1,1);dummy.updateMatrix();postMesh.setMatrixAt(i,dummy.matrix);
+  dummy.position.set(l.x,5.05,l.z);dummy.updateMatrix();headMesh.setMatrixAt(i,dummy.matrix);
+ }
+ postMesh.name='lamps';headMesh.name='lamp-heads';root.add(postMesh,headMesh);
+
+ for(const f of FACILITIES){
+  for(const side of [-1,1]){
+   b.box('stone',f.x+side*(f.w/2+3.2),.7,f.z,1.8,1.15,f.d*.5);
+   cylinder(b,'leaf',f.x+side*(f.w/2+3.2),1.6,f.z-f.d*.18,1.2,1.4,.9,7);
+   cylinder(b,'pink',f.x+side*(f.w/2+3.2),1.9,f.z+f.d*.18,.7,.35,.5,6);
+  }
+ }
+
+ const skyRand=seeded(614);
+ for(let i=0;i<skylineCount;i++){
+  const x=(skyRand()-.5)*2400;
+  const z=-820-skyRand()*280;
+  const downtown=Math.abs(x)<320;
+  const h=24+skyRand()*80+(downtown?120:0)+(Math.abs(x)<90?80:0);
+  const bw=10+skyRand()*28,bd=10+skyRand()*22;
+  const skin=skyRand()>.72?'copper':skyRand()>.45?'night':'dark';
+  b.box(skin,x,h/2,z,bw,h,bd);
+  const floors=Math.max(3,Math.round(h/7));
+  for(let k=1;k<floors;k++){
+   if(skyRand()<.38)continue;
+   const y=k*(h/floors);
+   const ww=bw*(.16+skyRand()*.32);
+   b.box('warmWin',x+(skyRand()-.5)*bw*.28,y,z+bd/2+.1,ww,h/floors*.42,.1);
+   if(skyRand()>.58)b.box('warmWin',x+bw/2+.08,y,z+(skyRand()-.5)*bd*.3,.1,h/floors*.38,bd*(.12+skyRand()*.22));
+  }
+  if(downtown&&skyRand()>.45){b.box('gold',x,h+5,z,bw*.2,8,bd*.2);b.box('cyan',x,h+12,z,.14,8,.14);}
+ }
+
  root.add(b.finish('roads-gardens-street-furniture'));
- return {root,roads,update(t){waters.forEach(s=>s.uniforms.uTime.value=t);},treeCount:trees.length};
+ return {
+  root,roads,kineticMats,
+  update(t){waters.forEach(s=>s.uniforms.uTime.value=t);kineticMats.forEach(m=>m.uniforms.uTime.value=t);},
+  treeCount:trees.length,
+ };
 }
+
 export function createInfrastructure(){
  const root=new T.Group(),b=new Batch(),net=new Batch(),energy=new Batch();root.name='infrastructure';
  const nodes=[];
  for(const [x,z] of SPIRES){
-  cylinder(b,'stone',x,1,z,8,2);ring(b,'cyan',x,2.3,z,7,.35);cylinder(b,'glass',x,20,z,1.4,36,.7,8);
-  for(let a=0;a<6.28;a+=Math.PI/2)line(b,'stone',[[x+Math.sin(a)*5,2,z+Math.cos(a)*5],[x+Math.sin(a)*1.2,30,z+Math.cos(a)*1.2],[x,45,z]],.38);
-  ring(b,'violet',x,32,z,5,.5);ring(b,'violet',x,33,z,3.5,.3);cylinder(b,'violet',x,39,z,.22,22,.06);
-  nodes.push(new T.Vector3(x,32,z));
-  for(let a=0;a<6.28;a+=Math.PI/3){const nx=x+Math.sin(a)*10,nz=z+Math.cos(a)*10;cylinder(b,'dark',nx,1.4,nz,.65,2.8);ring(b,'cyan',nx,2.8,nz,.7,.1);}
+  cylinder(b,'stone',x,1.1,z,8.5,2.2);
+  ring(b,'cyan',x,2.4,z,7.4,.4);
+  cylinder(b,'blueGlass',x,28,z,1.6,52,.7,8);
+  for(let a=0;a<6.28;a+=Math.PI/2)line(b,'stone',[[x+Math.sin(a)*5.2,2.2,z+Math.cos(a)*5.2],[x+Math.sin(a)*1.15,42,z+Math.cos(a)*1.15],[x,68,z]],.42);
+  ring(b,'violet',x,48,z,7.2,.7);
+  ring(b,'violet',x,50,z,5.2,.42);
+  cylinder(b,'violet',x,64,z,.26,36,.08);
+  ring(b,'kinetic',x,42,z,6.2,.28);
+  nodes.push(new T.Vector3(x,48,z));
+  for(let a=0;a<6.28;a+=Math.PI/3){
+   const nx=x+Math.sin(a)*11,nz=z+Math.cos(a)*11;
+   cylinder(b,'dark',nx,1.5,nz,.7,3);
+   ring(b,'cyan',nx,3.1,nz,.78,.12);
+  }
  }
- const paths=[];for(let i=0;i<nodes.length;i++){const a=nodes[i],others=nodes.map((n,j)=>({j,d:a.distanceTo(n)})).filter(o=>o.j>i).sort((a,b)=>a.d-b.d).slice(0,2);for(const {j} of others){const z=nodes[j],mid=a.clone().lerp(z,.5);mid.y+=5;paths.push(line(net,'cyan',[a.toArray(),mid.toArray(),z.toArray()],.16));}}
+ const paths=[];
+ for(let i=0;i<nodes.length;i++){
+  const a=nodes[i],others=nodes.map((n,j)=>({j,d:a.distanceTo(n)})).filter(o=>o.j>i).sort((a,b)=>a.d-b.d).slice(0,2);
+  for(const {j} of others){
+   const z=nodes[j],mid=a.clone().lerp(z,.5);mid.y+=8;
+   paths.push(line(net,'cyan',[a.toArray(),mid.toArray(),z.toArray()],.2));
+  }
+ }
  const plant=FACILITIES.find(f=>f.id===21);const energyPaths=[];
- for(const f of FACILITIES){const pts=[[plant.x,1.1,plant.z],[278,1.1,280],[250,1.1,f.z+f.d/2+14],[f.x,1.1,f.z+f.d/2+14],[f.x,1.1,f.z+f.d/2]];energyPaths.push(line(energy,'gold',pts,.27));}
- // Distributed generation: solar field, wind rotors, battery storage, geothermal and thermal connections.
- for(let x=-422;x<-305;x+=14)for(let z=355;z<395;z+=11){b.box('solar',x,3,z,12,.4,8);b.box('stone',x,1.5,z,.4,3,.4);}
- for(let i=0;i<8;i++){b.box('white',360+i%4*8,2.7,373+Math.floor(i/4)*10,6,5,8);b.box('cyan',360+i%4*8,3,377+Math.floor(i/4)*10,4,.4,.1);}
- const turbines=[];for(let i=0;i<5;i++){const x=-453+i*38,z=-374; cylinder(b,'white',x,21,z,.7,42,.4);const rotor=new T.Group();rotor.position.set(x,43,z);for(let j=0;j<3;j++){const blade=new T.Mesh(new T.BoxGeometry(1.2,18,.35),materials.white);blade.position.set(Math.sin(j*2.094)*9,Math.cos(j*2.094)*9,0);blade.rotation.z=-j*2.094;rotor.add(blade);}root.add(rotor);turbines.push(rotor);}
- const thermal=line(energy,'warm',[[108,1,-310],[-111,1,0],[-265,1,33]],.4);
- // Explicit supply connections; kinetic remains local, as specified in the package.
+ for(const f of FACILITIES){
+  const pts=[[plant.x,1.15,plant.z],[278,1.15,280],[250,1.15,f.z+f.d/2+14],[f.x,1.15,f.z+f.d/2+14],[f.x,1.15,f.z+f.d/2]];
+  energyPaths.push(line(energy,'gold',pts,.3));
+ }
+ for(let x=-422;x<-305;x+=14)for(let z=355;z<395;z+=11){b.box('solar',x,3.1,z,12,.42,8);b.box('stone',x,1.55,z,.42,3.1,.42);}
+ for(let i=0;i<8;i++){b.box('white',360+i%4*8,2.8,373+Math.floor(i/4)*10,6,5.2,8);b.box('cyan',360+i%4*8,3.1,377+Math.floor(i/4)*10,4,.42,.12);}
+ const turbines=[];
+ for(let i=0;i<12;i++){
+  const a=i/12*Math.PI*2;
+  const x=Math.cos(a)*580*(SITE.width/SITE.depth);
+  const z=Math.sin(a)*580;
+  cylinder(b,'white',x,26,z,.8,52,.45);
+  const rotor=new T.Group();rotor.position.set(x,52,z);
+  for(let j=0;j<3;j++){
+   const blade=new T.Mesh(new T.BoxGeometry(1.2,24,.32),materials.white);
+   blade.position.set(Math.sin(j*2.094)*12,Math.cos(j*2.094)*12,0);blade.rotation.z=-j*2.094;rotor.add(blade);
+  }
+  root.add(rotor);turbines.push(rotor);
+ }
+ line(energy,'warm',[[108,1.1,-310],[-111,1.1,0],[-265,1.1,33]],.42);
  for(const [mat,pts] of [
- ['gold',[[-360,1,380],[-290,1,406],[278,1,406],[418,1,344]]],
- ['cyan',[[-377,1,-374],[460,1,-390],[478,1,340],[418,1,344]]],
- ['gold',[[495,1,375],[450,1,375],[418,1,344]]],
- ['leaf',[[195,1,365],[285,1,402],[418,1,344]]],
- ['cyan',[[376,1,383],[330,1,383],[330,1,319],[418,1,344]]],
- ['warm',[[330,1,319],[275,1,273],[250,1,28],[-111,1,39]]],
- ['cyan',[[0,1,380],[-40,1,380],[-40,1,390]]]
- ])energyPaths.push(line(energy,mat,pts,.35));
- for(let x=-35;x<30;x+=3)for(let z=381;z<393;z+=3)b.box((x+z)%3?'dark':'cyan',x,.24,z,2.7,.2,2.7);
- for(let i=0;i<6;i++){ring(b,'gold',330+i*3,.5,364,1,.15);}
+  ['gold',[[-360,1.1,380],[-290,1.1,406],[278,1.1,406],[418,1.1,344]]],
+  ['cyan',[[-377,1.1,-374],[460,1.1,-390],[478,1.1,340],[418,1.1,344]]],
+  ['gold',[[495,1.1,375],[450,1.1,375],[418,1.1,344]]],
+  ['leaf',[[195,1.1,365],[285,1.1,402],[418,1.1,344]]],
+  ['cyan',[[376,1.1,383],[330,1.1,383],[330,1.1,319],[418,1.1,344]]],
+  ['warm',[[330,1.1,319],[275,1.1,273],[250,1.1,28],[-111,1.1,39]]],
+  ['kinetic',[[0,1.1,380],[-40,1.1,380],[-40,1.1,390]]],
+ ])energyPaths.push(line(energy,mat,pts,.38));
+ for(let x=-35;x<30;x+=3)for(let z=381;z<393;z+=3)b.box((x+z)%3?'dark':'cyan',x,.26,z,2.7,.22,2.7);
+ for(let i=0;i<6;i++)ring(b,'gold',330+i*3,.55,364,1.05,.16);
 
- root.add(b.finish('mesh-spires-and-energy-sources'));const network=net.finish('wireless-mesh'),flows=energy.finish('energy-distribution');root.add(network,flows);
- const movers=[];for(const [curves,mat,count] of [[paths,materials.cyan,30],[energyPaths,materials.warm,50]]){const geo=new T.SphereGeometry(.9,6,4);const m=new T.InstancedMesh(geo,mat,count);root.add(m);movers.push({m,curves,count,network:mat===materials.cyan});}
- const dummy=new T.Object3D();return {root,network,flows,setNetwork(v){network.visible=v;movers[0].m.visible=v;},setEnergy(v){flows.visible=v;movers[1].m.visible=v;},update(t){for(const a of movers){for(let i=0;i<a.count;i++){const p=a.curves[i%a.curves.length].getPoint((t*.055+i*.071)%1);dummy.position.copy(p);dummy.updateMatrix();a.m.setMatrixAt(i,dummy.matrix);}a.m.instanceMatrix.needsUpdate=true;}turbines.forEach((r,i)=>r.rotation.z=t*(.35+i*.03));}};
+ root.add(b.finish('mesh-spires-and-energy-sources'));
+ const network=net.finish('wireless-mesh'),flows=energy.finish('energy-distribution');root.add(network,flows);
+ const movers=[];
+ for(const [curves,mat,count] of [[paths,materials.cyan,36],[energyPaths,materials.warm,56]]){
+  const geo=new T.SphereGeometry(.95,8,6);const m=new T.InstancedMesh(geo,mat,count);root.add(m);
+  movers.push({m,curves,count,network:mat===materials.cyan});
+ }
+ const dummy=new T.Object3D();
+ return {
+  root,network,flows,
+  setNetwork(v){network.visible=v;movers[0].m.visible=v;},
+  setEnergy(v){flows.visible=v;movers[1].m.visible=v;},
+  update(t){
+   for(const a of movers){
+    for(let i=0;i<a.count;i++){
+     const curve=a.curves[i%a.curves.length];
+     if(!curve)continue;
+     const p=curve.getPoint((t*.06+i*.071)%1);
+     if(!p||!Number.isFinite(p.x))continue;
+     dummy.position.copy(p);dummy.updateMatrix();a.m.setMatrixAt(i,dummy.matrix);
+    }
+    a.m.instanceMatrix.needsUpdate=true;
+   }
+   turbines.forEach((r,i)=>r.rotation.z=t*(.4+i*.03));
+  },
+ };
 }
