@@ -1,0 +1,776 @@
+[
+  {
+    "id": 1,
+    "name": "The Prism",
+    "source_area": 80000,
+    "design_area": 80000,
+    "levels": 12,
+    "width": 80,
+    "depth": 83.33333333333334,
+    "type": "office",
+    "program": [
+      "Arrival / client reception;Demo suites;Consulting rooms;Briefing lounge;Security intake;Client support",
+      "Consulting team;Project rooms;Client review;Workshop studio;Research desks;Partner rooms",
+      "Consulting teams;Training suite;Collaboration;Private review;Project archive;Support",
+      "Venture studio;Product strategy;Design review;Prototype demo;Portfolio teams;Support",
+      "Executive strategy;Board support;Finance admin;Private meetings;Operations;Support",
+      "Command theater;Decision rooms;ZenFlow liaison;Monitoring suite;Briefing room;Support",
+      "Client transformation;Workshop rooms;Advisory suite;Review rooms;Project offices;Support",
+      "Partner engagement;Investor briefings;Client lounge;Demo suites;Meeting rooms;Support",
+      "Executive offices;Boardroom;Secure review;Leadership lounge;Chief of staff;Support",
+      "Corporate operations;People operations;Planning office;Governance liaison;Meeting rooms;Support",
+      "Executive strategy;Confidential review;Board archive;Conference rooms;Leadership work;Support",
+      "Oculus indoor lounge;Observation gallery;Event room;Deck access lobby;Visitor support;Plant interface"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 1880.0,
+    "y": 2533.3333333333335,
+    "slot": [
+      3,
+      0
+    ]
+  },
+  {
+    "id": 2,
+    "name": "The Neural Block",
+    "source_area": 60000,
+    "design_area": 60000,
+    "levels": 2,
+    "width": 200,
+    "depth": 150.0,
+    "type": "data",
+    "program": [
+      "GPU data hall;Power distribution;Liquid cooling;Network rooms;Secure receiving;Infrastructure lab",
+      "Mission control;Agent operations;Platform R&D;Routing lab;Telemetry studio;Operations gallery"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 2360.0,
+    "y": 2500.0,
+    "slot": [
+      4,
+      0
+    ]
+  },
+  {
+    "id": 3,
+    "name": "The Vault",
+    "source_area": 40000,
+    "design_area": 40000,
+    "levels": 2,
+    "width": 200,
+    "depth": 100.0,
+    "type": "secure",
+    "program": [
+      "Treasury operations;Risk command;Watchtower command;Evidence transfer;Secure intake;Security offices",
+      "Cold storage vault;Faraday suite;Restricted storage;Incident response;Secure archive;Backup systems"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 2900.0,
+    "y": 2525.0,
+    "slot": [
+      5,
+      0
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Royal Library & Hybrid Living Academy",
+    "source_area": 100000,
+    "design_area": 100000,
+    "levels": 4,
+    "width": 200,
+    "depth": 125.0,
+    "type": "library",
+    "program": [
+      "Library entry;Public collection;Learner onboarding;Knowledge Core;Lecture hall;Community study",
+      "Academy classrooms;Learning studios;Recording class;Faculty rooms;Learner support;Group study",
+      "Research collection;Digital archive;Quiet study;Seminar rooms;Curriculum lab;LMS studios",
+      "Advanced learning;Partner rooms;Special collection;Study mezzanine;Faculty work;Archive support"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 200.0,
+    "y": 2512.5,
+    "slot": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Nexus Labs Production Complex",
+    "source_area": 60000,
+    "design_area": 60000,
+    "levels": 2,
+    "width": 200,
+    "depth": 150.0,
+    "type": "media",
+    "program": [
+      "LED volume 40 x 60;Soundstage;Audio booths;Motion capture;Equipment store;Production support",
+      "Editing suites;Creator lounge;Podcast studios;Render access;Content rights;Production offices"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 740.0,
+    "y": 2500.0,
+    "slot": [
+      1,
+      0
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Signal Velocity Growth War Room",
+    "source_area": 14000,
+    "design_area": 14000,
+    "levels": 2,
+    "width": 100,
+    "depth": 70.0,
+    "type": "office",
+    "program": [
+      "Launch theater;Creative review;Conversion lab;SEO content bay;Offer testing;Creator sync",
+      "Campaign analytics;Growth teams;CRM operations;Approval review;Launch archive;Meeting rooms"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 1330.0,
+    "y": 2540.0,
+    "slot": [
+      2,
+      0
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Binary Loom Manufacturing Foundry / Glyph Forge Works",
+    "source_area": 60000,
+    "design_area": 60000,
+    "levels": 1,
+    "width": 300,
+    "depth": 200.0,
+    "type": "industrial",
+    "program": [
+      "Print farm;Soft goods studio;Electronics bench;Machine/tool room;Packaging and QC;Prototype gallery"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 1770.0,
+    "y": 1555.0,
+    "slot": [
+      3,
+      2
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Titan Works",
+    "source_area": 200000,
+    "design_area": 200000,
+    "levels": 1,
+    "width": 500,
+    "depth": 400.0,
+    "type": "industrial",
+    "program": [
+      "Robotics assembly;Android assembly;Machine integration;Safety test lanes;Tool crib;Service and receiving"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 2210.0,
+    "y": 995.0,
+    "slot": [
+      4,
+      3
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Vector Hub",
+    "source_area": 150000,
+    "design_area": 150000,
+    "levels": 1,
+    "width": 375,
+    "depth": 400.0,
+    "type": "logistics",
+    "program": [
+      "Cross-dock terminal;Freight dispatch;Battery swap;Vehicle maintenance;Drone ground support;Logistics control"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 2812.5,
+    "y": 995.0,
+    "slot": [
+      5,
+      3
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Materials + Inventory Warehouse",
+    "source_area": 45000,
+    "design_area": 45000,
+    "levels": 1,
+    "width": 250,
+    "depth": 180.0,
+    "type": "warehouse",
+    "program": [
+      "Racked inventory;Climate storage;Quarantine intake;Pick-pack line;Receiving and QC;Returns and rework"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 1795.0,
+    "y": 1105.0,
+    "slot": [
+      3,
+      3
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Eden Spire",
+    "source_area": 50000,
+    "design_area": 50000,
+    "levels": 2,
+    "width": 200,
+    "depth": 125.0,
+    "type": "farm",
+    "program": [
+      "Aeroponic growing;Nutrient plant;Algae panels;Harvest handling;Crop analytics;Public viewing",
+      "Growing racks;Research crops;Environmental lab;Seed preparation;Operations;Observation gallery"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 1280.0,
+    "y": 672.5,
+    "slot": [
+      2,
+      4
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Vitality Center",
+    "source_area": 40000,
+    "design_area": 40000,
+    "levels": 2,
+    "width": 200,
+    "depth": 100.0,
+    "type": "lab",
+    "program": [
+      "Patient intake;Clinic pods;Healthtech work;Clinical review;Lab support;Privacy offices",
+      "Planned BSL-2 suite;Bioprinting research;Bio-digital lab;Wearable intake;Partner lab;Research support"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 1280.0,
+    "y": 1605.0,
+    "slot": [
+      2,
+      2
+    ]
+  },
+  {
+    "id": 13,
+    "name": "Eon Core Longevity Research Pavilion",
+    "source_area": 18000,
+    "design_area": 18000,
+    "levels": 2,
+    "width": 100,
+    "depth": 90.0,
+    "type": "lab",
+    "program": [
+      "Research intake;Wearable streams;Clinical review;Consent rooms;Data work;Research support",
+      "Longevity research;Analysis lab;Study rooms;Private review;Research offices;Archive"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 1330.0,
+    "y": 2070.0,
+    "slot": [
+      2,
+      1
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Cognara Mind Behavioral Intelligence Institute",
+    "source_area": 15000,
+    "design_area": 15000,
+    "levels": 1,
+    "width": 150,
+    "depth": 100.0,
+    "type": "office",
+    "program": [
+      "Behavior booths;Prototype testing;Cognitive load lab;Interview rooms;Ethics control;Anonymized data"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 765.0,
+    "y": 2065.0,
+    "slot": [
+      1,
+      1
+    ]
+  },
+  {
+    "id": 15,
+    "name": "Kinetic Edge Performance Center",
+    "source_area": 60000,
+    "design_area": 60000,
+    "levels": 1,
+    "width": 300,
+    "depth": 200.0,
+    "type": "sport",
+    "program": [
+      "Indoor sprint / turf;Motion capture;Biometric analysis;Recovery rooms;Coach review;Changing and support"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 2850.0,
+    "y": 175.0,
+    "slot": [
+      5,
+      5
+    ]
+  },
+  {
+    "id": 16,
+    "name": "Civic Core Public Hub",
+    "source_area": 30000,
+    "design_area": 30000,
+    "levels": 2,
+    "width": 150,
+    "depth": 100.0,
+    "type": "civic",
+    "program": [
+      "Civic help desks;Computer lab;Maker space;Grant intake;Community lounge;Accessible support",
+      "Auditorium;Training rooms;Nonprofit teams;Meeting rooms;Community programs;Event support"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 225.0,
+    "y": 1605.0,
+    "slot": [
+      0,
+      2
+    ]
+  },
+  {
+    "id": 17,
+    "name": "Terra Axis Living Systems Yard",
+    "source_area": 75000,
+    "design_area": 75000,
+    "levels": 1,
+    "width": 300,
+    "depth": 250.0,
+    "type": "industrial",
+    "program": [
+      "Property materials;Housing demo hall;Helios operations;Inspection hardware;Maintenance lab;Field equipment"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 690.0,
+    "y": 610.0,
+    "slot": [
+      1,
+      4
+    ]
+  },
+  {
+    "id": 18,
+    "name": "Nomad Nexus Global Mobility Hub",
+    "source_area": 12000,
+    "design_area": 12000,
+    "levels": 2,
+    "width": 100,
+    "depth": 60.0,
+    "type": "office",
+    "program": [
+      "Axiom field kit bay;Portable office demo;Mobility map wall;Visitor intake;Travel devices;Kit support",
+      "Visa intelligence;Housing intelligence;Partner portals;Deployment planning;Policy review;Mobility teams"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 790.0,
+    "y": 1165.0,
+    "slot": [
+      1,
+      3
+    ]
+  },
+  {
+    "id": 19,
+    "name": "Juris Guard Regulatory Command Wing",
+    "source_area": 12000,
+    "design_area": 12000,
+    "levels": 2,
+    "width": 100,
+    "depth": 60.0,
+    "type": "secure",
+    "program": [
+      "Evidence intake;Contract operations;Regulatory hall;Secure lockers;Privileged review;Legal support",
+      "Aegis review;Policy ledger;Legal teams;Contract automation;Secure archive;Meeting rooms"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 2410.0,
+    "y": 2085.0,
+    "slot": [
+      4,
+      1
+    ]
+  },
+  {
+    "id": 20,
+    "name": "Aether Link Mesh Operations Spire",
+    "source_area": 25000,
+    "design_area": 25000,
+    "levels": 2,
+    "width": 125,
+    "depth": 100.0,
+    "type": "office",
+    "program": [
+      "Mesh operations;Field terminal sync;Network lab;Translation QA;Spectrum monitoring;Service support",
+      "Signal command;Failover control;Antenna systems;Network teams;Training;Equipment support"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 2397.5,
+    "y": 685.0,
+    "slot": [
+      4,
+      4
+    ]
+  },
+  {
+    "id": 21,
+    "name": "EnerGenius + Helios Central Utility Plant",
+    "source_area": 50000,
+    "design_area": 50000,
+    "levels": 1,
+    "width": 250,
+    "depth": 200.0,
+    "type": "utility",
+    "program": [
+      "Microgrid switchgear;Battery interface;Cooling plant;Thermal equipment;Water reuse;Utility control"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 2335.0,
+    "y": 175.0,
+    "slot": [
+      4,
+      5
+    ]
+  },
+  {
+    "id": 22,
+    "name": "Visitor, Security and Campus Operations Center",
+    "source_area": 25000,
+    "design_area": 25000,
+    "levels": 2,
+    "width": 125,
+    "depth": 100.0,
+    "type": "civic",
+    "program": [
+      "Visitor arrival;Screening;Badge intake;Demo theater;Shuttle dispatch;Visitor services",
+      "Emergency operations;Facilities command;Security teams;Access control;Incident review;Operations support"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 237.5,
+    "y": 1145.0,
+    "slot": [
+      0,
+      3
+    ]
+  },
+  {
+    "id": 23,
+    "name": "Employee Commons and Wellness Village",
+    "source_area": 90000,
+    "design_area": 90000,
+    "levels": 3,
+    "width": 200,
+    "depth": 150.0,
+    "type": "civic",
+    "program": [
+      "Food hall;Commercial kitchen;Staff services;Commons lounge;Family reception;Delivery support",
+      "Wellness studio;Family support;Training rooms;Quiet work;People services;Support",
+      "All-hands forum;Event support;Learning rooms;Meeting suites;Staff lounge;Operations"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 register; S13 program",
+    "x": 1280.0,
+    "y": 1120.0,
+    "slot": [
+      2,
+      3
+    ]
+  },
+  {
+    "id": 24,
+    "name": "Kinetic Energy Operations Center (KEOC)",
+    "source_area": null,
+    "design_area": 60000,
+    "levels": 2,
+    "width": 200,
+    "depth": 150.0,
+    "type": "utility",
+    "program": [
+      "Kinetic systems test;Paving sensor lab;Telemetry work;Hardware service;Demonstration;Operations",
+      "Data analysis;Device validation;Research teams;Control room;Archive;Training"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S14 conflicting allowance adopted as study only",
+    "x": 740.0,
+    "y": 200.0,
+    "slot": [
+      1,
+      5
+    ]
+  },
+  {
+    "id": 25,
+    "name": "Gaia Synthesis Bio-Energy Center",
+    "source_area": null,
+    "design_area": 104000,
+    "levels": 2,
+    "width": 260,
+    "depth": 200.0,
+    "type": "lab",
+    "program": [
+      "Circular systems pilot;Algae research;Water polishing pilot;Feedstock handling;Lab support;Operations",
+      "Bioenergy research;Analysis labs;Process review;Environmental data;Research teams;Training"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S14 conflicting allowance adopted as study only",
+    "x": 1250.0,
+    "y": 175.0,
+    "slot": [
+      2,
+      5
+    ]
+  },
+  {
+    "id": 26,
+    "name": "The Orbital Foundry \u2014 Astral Forge",
+    "source_area": 65000,
+    "design_area": 65000,
+    "levels": 1,
+    "width": 325,
+    "depth": 200.0,
+    "type": "industrial",
+    "program": [
+      "Aerospace assembly;Integration test;Engineering support;Controlled parts;Receiving;Quality review"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 expansion program",
+    "x": 2837.5,
+    "y": 1555.0,
+    "slot": [
+      5,
+      2
+    ]
+  },
+  {
+    "id": 27,
+    "name": "The Matter Works \u2014 Materia Nova",
+    "source_area": 85000,
+    "design_area": 85000,
+    "levels": 2,
+    "width": 250,
+    "depth": 170.0,
+    "type": "lab",
+    "program": [
+      "Materials pilots;Process validation;Sample preparation;Analysis lab;Receiving;Research support",
+      "Materials research;Characterization;Design teams;Testing lab;Collaboration;Data analysis"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 expansion program",
+    "x": 2335.0,
+    "y": 1570.0,
+    "slot": [
+      4,
+      2
+    ]
+  },
+  {
+    "id": 28,
+    "name": "The Water Observatory \u2014 Aqua Meridian",
+    "source_area": 50000,
+    "design_area": 50000,
+    "levels": 2,
+    "width": 200,
+    "depth": 125.0,
+    "type": "lab",
+    "program": [
+      "Water treatment pilots;Sampling intake;Water analysis;Plant interface;Equipment lab;Research support",
+      "Water science;Environmental data;Process analysis;Research teams;Collaboration;Training"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 expansion program",
+    "x": 1820.0,
+    "y": 212.5,
+    "slot": [
+      3,
+      5
+    ]
+  },
+  {
+    "id": 29,
+    "name": "The Living Provision \u2014 Nourish Grid",
+    "source_area": 60000,
+    "design_area": 60000,
+    "levels": 2,
+    "width": 200,
+    "depth": 150.0,
+    "type": "industrial",
+    "program": [
+      "Food processing;Nutrition test kitchen;Packaging;Food receiving;Distribution staging;Quality lab",
+      "Nutrition research;Food systems teams;Packaging development;Partner rooms;Analysis;Training"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 expansion program",
+    "x": 1820.0,
+    "y": 660.0,
+    "slot": [
+      3,
+      4
+    ]
+  },
+  {
+    "id": 30,
+    "name": "The Trust Vault \u2014 Sovereign Key",
+    "source_area": 35000,
+    "design_area": 35000,
+    "levels": 2,
+    "width": 175,
+    "depth": 100.0,
+    "type": "secure",
+    "program": [
+      "Visitor demonstration;Identity operations;Credential lab;Consent review;Controlled intake;Support",
+      "Trust systems;Security review;Data teams;Consent archive;Integration lab;Training"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 expansion program",
+    "x": 1832.5,
+    "y": 2065.0,
+    "slot": [
+      3,
+      1
+    ]
+  },
+  {
+    "id": 31,
+    "name": "The Resilience House \u2014 Praesidium Mutual",
+    "source_area": 40000,
+    "design_area": 40000,
+    "levels": 2,
+    "width": 200,
+    "depth": 100.0,
+    "type": "office",
+    "program": [
+      "Client consultation;Resilience modeling;Insurance research;Scenario room;Partner meetings;Support",
+      "Analytics teams;Risk research;Model validation;Collaboration;Governance liaison;Training"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 expansion program",
+    "x": 2900.0,
+    "y": 2065.0,
+    "slot": [
+      5,
+      1
+    ]
+  },
+  {
+    "id": 32,
+    "name": "The Exchange Pavilion \u2014 Mercantile Circuit",
+    "source_area": 55000,
+    "design_area": 55000,
+    "levels": 2,
+    "width": 220,
+    "depth": 125.0,
+    "type": "civic",
+    "program": [
+      "Demonstration retail;Marketplace hall;Public reception;Commerce lab;Partner showcase;Service receiving",
+      "Commerce operations;Marketplace research;Seller support;Growth liaison;Collaboration;Training"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 expansion program",
+    "x": 730.0,
+    "y": 1592.5,
+    "slot": [
+      1,
+      2
+    ]
+  },
+  {
+    "id": 33,
+    "name": "The Human Systems Institute \u2014 Human Foundry",
+    "source_area": 50000,
+    "design_area": 50000,
+    "levels": 2,
+    "width": 200,
+    "depth": 125.0,
+    "type": "office",
+    "program": [
+      "Workforce learning;Teaching rooms;Organization lab;Learner support;Collaboration;Public reception",
+      "Organizational research;Workforce analytics;Training studios;Team systems;Partner rooms;Support"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 expansion program",
+    "x": 200.0,
+    "y": 2052.5,
+    "slot": [
+      0,
+      1
+    ]
+  },
+  {
+    "id": 34,
+    "name": "The Energy Commons \u2014 Volta Grid",
+    "source_area": 60000,
+    "design_area": 60000,
+    "levels": 2,
+    "width": 200,
+    "depth": 150.0,
+    "type": "utility",
+    "program": [
+      "Energy demonstration;Grid intelligence;Integration testing;Equipment lab;Utility interface;Research support",
+      "Energy modeling;Analysis teams;Research rooms;Control visualization;Collaboration;Training"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 expansion program",
+    "x": 2900.0,
+    "y": 660.0,
+    "slot": [
+      5,
+      4
+    ]
+  },
+  {
+    "id": 35,
+    "name": "The Care Village \u2014 Hearth Nexus",
+    "source_area": 70000,
+    "design_area": 70000,
+    "levels": 2,
+    "width": 250,
+    "depth": 140.0,
+    "type": "care",
+    "program": [
+      "Family arrival;Care support;Accessible-home demo;Caregiver training;Quiet lounge;Service support",
+      "Care learning;Accessible-home demo;Support teams;Private consultation;Family rooms;Quiet activities"
+    ],
+    "status": "PROPOSED GEOMETRY",
+    "source": "S16 expansion program",
+    "x": 175.0,
+    "y": 665.0,
+    "slot": [
+      0,
+      4
+    ]
+  }
+]

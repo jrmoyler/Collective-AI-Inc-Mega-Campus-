@@ -1,0 +1,25 @@
+{
+  "route": "direct-threejs-blender-and-babylon",
+  "authorization": "User requested complete overhaul against ZIP, interior tours and full infrastructure in a new PR",
+  "legacyState": "state.json",
+  "assessment": "assessment.json",
+  "reason": "Full multi-facility environment exceeds single-object generation route; references are internally inconsistent",
+  "acceptance": "not-met",
+  "strategy": "Trace aerial layout, build distinct silhouette families, import all 74 floor programs, instance landscape and animate routed fleets",
+  "evidence": "../../evidence",
+  "legacyStateSha256": "9cfcd7fea68609365645636ee5c17a7be21490ce5d92a3c48cd2f754161ba5e5",
+  "assessmentSha256": "880597dff5279059f5308f72f9bdf86262de8cfc7be84c2a828b4356fe0f380c",
+  "reviewHistory": [
+    {
+      "action": "refine-code",
+      "evidence": "evidence/offline-aerial.jpg",
+      "reason": "Offline review: roof silhouette defect; overly spherical trees; ponds disconnected. Corrected roof prisms, compound tree crowns, connecting water channels. Materials and individual facade details still approximate. Browser visual check blocked."
+    },
+    {
+      "action": "refine-code",
+      "evidence": "evidence/browser-portrait-plan.jpg",
+      "reason": "Added Prism Oculus and cantilevers, Eden planted terraces, facility equipment and physical sky. Verified GPU-independent floor plans on desktop and 412px iframe. Added offline detail renders. Exact-match acceptance remains unmet."
+    }
+  ],
+  "blocker": "Authorized Vercel preview accessible; browser GPU/WebGL disabled. Physical mobile unavailable. Reference architectural fidelity remains incomplete."
+}

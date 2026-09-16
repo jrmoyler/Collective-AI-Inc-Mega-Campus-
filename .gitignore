@@ -11,6 +11,7 @@ venv/
 
 # Node / test artifacts
 node_modules/
-package-lock.json
 scratchpad_*.mjs
 scratchpad_*.png
+
+dist/
