@@ -71,3 +71,14 @@ export function line(batch,mat,pts,r=.2){const curve=new T.CatmullRomCurve3(pts.
 export function seeded(seed){return()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};}
 export function sign(text,w=14,h=3,color='#f3dba5'){const c=document.createElement('canvas');c.width=1024;c.height=192;const ctx=c.getContext('2d');ctx.fillStyle='#09131d';ctx.fillRect(0,0,1024,192);ctx.strokeStyle='#00d9b5';ctx.lineWidth=6;ctx.strokeRect(6,6,1012,180);ctx.fillStyle=color;ctx.font='600 48px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,512,98,960);const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=8;return new T.Mesh(new T.PlaneGeometry(w,h,2,1),new T.MeshBasicMaterial({map:tex,side:T.DoubleSide,toneMapped:false}));}
 export function setDuskMaterials(dusk){materials.warm.emissiveIntensity=dusk?3.4:.22;materials.warmWin.emissiveIntensity=dusk?5.6:.28;materials.cyan.emissiveIntensity=dusk?4.4:.7;materials.violet.emissiveIntensity=dusk?5.2:.85;materials.gold.emissiveIntensity=dusk?1.35:.12;materials.kinetic.emissiveIntensity=dusk?7.2:1.1;materials.blueGlass.emissiveIntensity=dusk?1.45:.28;materials.magenta.emissiveIntensity=dusk?2.6:.45;materials.pink.emissiveIntensity=dusk?.62:.18;materials.leaf.emissiveIntensity=dusk?.16:0;materials.grass.emissiveIntensity=dusk?.1:0;}
+
+export function kineticRoadMaterial(kind='cyan'){
+ const glow=kind==='gold'?0xffc45a:0x3dfff4;
+ const trim=kind==='gold'?0xfff3c4:0xffd078;
+ return new T.ShaderMaterial({
+  fog:false,toneMapped:false,
+  uniforms:{uTime:{value:0},uAsphalt:{value:new T.Color(0x0c1418)},uGlow:{value:new T.Color(glow)},uGold:{value:new T.Color(trim)}},
+  vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+  fragmentShader:`uniform float uTime;uniform vec3 uAsphalt;uniform vec3 uGlow;uniform vec3 uGold;varying vec2 vUv;void main(){float edge=smoothstep(.18,0.,min(vUv.y,1.-vUv.y));float inner=smoothstep(.32,.12,min(vUv.y,1.-vUv.y));float center=smoothstep(.05,0.,abs(vUv.y-.5));float dash=step(.42,fract(vUv.x*70.));float pulse=.7+.3*sin(uTime*2.1+vUv.x*22.);float flow=smoothstep(.15,0.,abs(fract(vUv.x*6.-uTime*.35)-.5));vec3 col=uAsphalt;col+=uGlow*edge*4.2*pulse;col+=uGlow*inner*.85;col+=uGlow*flow*edge*2.2;col+=uGold*center*dash*1.8;float spec=pow(1.-abs(vUv.y-.5)*2.,5.)*.22;col+=vec3(spec);gl_FragColor=vec4(col,1.0);}`,
+ });
+}
