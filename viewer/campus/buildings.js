@@ -5,7 +5,8 @@ import {addSignature} from './signatures.js';
 import {Batch,cylinder,ring,line,sign} from './geometry.js';
 
 function skinFor(form){
- if(['factory','warehouse','sawtooth','utility'].includes(form))return 'dark';
+ if(form==='utility')return 'dark';
+ if(['factory','warehouse','sawtooth'].includes(form))return 'copper';
  if(['civic','academy','round'].includes(form))return 'civic';
  if(['office','vault','village'].includes(form))return 'white';
  if(form==='water')return 'copper';
@@ -22,7 +23,6 @@ function block(b,x,z,w,d,h,levels=3,skin='stone'){
  b.box(body,x,h*cap/2,z,w,h*cap,d);
  if(cap<1)b.box(body,x,h*cap+(h*(1-cap))/2,z,w*.86,h*(1-cap),d*.86);
  for(const sx of [-1,1])for(const sz of [-1,1])b.box(body,x+sx*(w/2-.32),h*.48,z+sz*(d/2-.32),.64,h*.96,.64);
- for(let k=1;k<floors;k++)b.box('dark',x,k*fh,z,w+.18,.1,d+.18);
  for(let k=0;k<floors;k++){
   if(k===0&&fh<4.5)continue;
   const y=(k+.55)*fh;

@@ -34,8 +34,8 @@ export function createLandscape(){
  const root=new T.Group();root.name='landscape';const b=new Batch();const random=seeded(22035);
  const kineticMats=[];
  const automated=typeof navigator!=='undefined'&&(navigator.webdriver||/Headless/i.test(navigator.userAgent||''));
- const treeInner=automated?220:1500;
- const treeOuter=automated?180:1700;
+ const treeInner=automated?400:1600;
+ const treeOuter=automated?280:1800;
  const skylineCount=automated?36:170;
  const lampEvery=automated?12:36;
 

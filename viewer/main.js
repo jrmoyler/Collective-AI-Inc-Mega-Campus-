@@ -4,7 +4,6 @@ import {createPerformanceReport} from './campus/performance-report.js';
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {Sky} from 'three/addons/objects/Sky.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
@@ -29,43 +28,64 @@ function select(id){document.body.classList.add('exploring');selected=FACILITIES
 function moveCamera(position,target){if(!graphicsReady)return;document.body.classList.add('exploring');flight?.pause();flyover=false;$('#tour')?.classList.remove('active');const state={x:camera.position.x,y:camera.position.y,z:camera.position.z,tx:controls.target.x,ty:controls.target.y,tz:controls.target.z};flight=animate(state,{x:position[0],y:position[1],z:position[2],tx:target[0],ty:target[1],tz:target[2],duration:reduced?0:1200,ease:'inOutCubic',onUpdate:()=>{camera.position.set(state.x,state.y,state.z);controls.target.set(state.tx,state.ty,state.tz);controls.update();},onComplete:()=>flight=null});}
 function focus(){if(!selected)return;const f=selected;moveCamera([f.x+f.w*1.2,f.h+f.w*.8,f.z+f.d*1.9],[f.x,f.h*.35,f.z]);}
 function createDuskSky(){
- const sky=new Sky();
- sky.scale.setScalar(6500);
- sky.name='dusk-sky';
- sky.material.uniforms.turbidity.value=14;
- sky.material.uniforms.rayleigh.value=3.15;
- sky.material.uniforms.mieCoefficient.value=0.022;
- sky.material.uniforms.mieDirectionalG.value=0.88;
- return sky;
+ const group=new T.Group();group.name='dusk-sky';
+ const mat=new T.ShaderMaterial({
+  side:T.BackSide,fog:false,toneMapped:false,depthWrite:false,
+  uniforms:{
+   uTop:{value:new T.Color(0x1c0818)},
+   uMid:{value:new T.Color(0xb44876)},
+   uHorizon:{value:new T.Color(0xff9a58)},
+   uDay:{value:0},
+  },
+  vertexShader:`varying vec3 vN;void main(){vN=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+  fragmentShader:`
+   varying vec3 vN;uniform vec3 uTop,uMid,uHorizon;uniform float uDay;
+   void main(){
+    float h=vN.y;
+    vec3 dusk=mix(uHorizon,uMid,smoothstep(-0.08,0.24,h));
+    dusk=mix(dusk,uTop,smoothstep(0.24,0.82,h));
+    vec3 day=mix(vec3(0.86,0.92,0.97),vec3(0.38,0.64,0.84),smoothstep(0.0,0.85,h));
+    vec3 col=mix(dusk,day,uDay);
+    float cloud=smoothstep(0.4,0.85,sin(vN.x*3.4+vN.z*2.0)*sin(vN.z*1.7-vN.x)*0.5+0.5);
+    col+=vec3(0.16,0.09,0.11)*cloud*(1.0-uDay);
+    gl_FragColor=vec4(col,1.0);
+   }
+  `,
+ });
+ const dome=new T.Mesh(new T.SphereGeometry(4800,32,20),mat);dome.name='dusk-dome';group.add(dome);
+ const sunDisc=new T.Mesh(new T.SphereGeometry(90,16,12),new T.MeshBasicMaterial({color:0xffc078,fog:false,toneMapped:false}));
+ sunDisc.name='sun-disc';group.add(sunDisc);
+ group.userData.skyMat=mat;group.userData.sunDisc=sunDisc;
+ return group;
 }
 function setDay(day){
  if(!sky||!sun||!hemi||!rim)return;
- const polar=day?48:87, azi=205;
+ const polar=day?48:86, azi=208;
  const direction=new T.Vector3().setFromSphericalCoords(1,T.MathUtils.degToRad(polar),T.MathUtils.degToRad(azi));
  sun.position.copy(direction).multiplyScalar(1400);
- if(sky.material.uniforms.sunPosition){
+ if(sky.userData?.skyMat){
+  sky.userData.skyMat.uniforms.uDay.value=day?1:0;
+  sky.userData.sunDisc.position.copy(direction).multiplyScalar(2400);
+  sky.userData.sunDisc.visible=!day;
+ }else if(sky.material?.uniforms?.sunPosition){
   sky.material.uniforms.sunPosition.value.copy(direction);
-  sky.material.uniforms.turbidity.value=day?2.2:14;
-  sky.material.uniforms.rayleigh.value=day?1.15:3.2;
-  sky.material.uniforms.mieCoefficient.value=day?0.005:0.022;
-  sky.material.uniforms.mieDirectionalG.value=day?0.7:0.88;
  }
  $('#day')?.setAttribute('aria-pressed',String(day));
- hemi.intensity=day?1.2:.9;
+ hemi.intensity=day?1.2:.95;
  hemi.color.set(day?0xd4e8f4:0xffc4a8);
  hemi.groundColor.set(day?0x3a4a32:0x3a2018);
- sun.intensity=day?3.1:2.55;
+ sun.intensity=day?3.1:2.7;
  sun.color.set(day?0xfff3dc:0xff8a42);
- rim.intensity=day?.55:1.25;
+ rim.intensity=day?.55:1.3;
  rim.color.set(day?0x7eb4c8:0xc090ff);
- scene.background.set(day?0x8eb6c8:0x5a2848);
- scene.fog.color.set(day?0x8eb6c8:0xe07858);
- scene.fog.near=day?1600:1050;
- scene.fog.far=day?4000:2750;
+ scene.background.set(day?0x8eb6c8:0x6a2848);
+ scene.fog.color.set(day?0x8eb6c8:0xe88870);
+ scene.fog.near=day?2200:1700;
+ scene.fog.far=day?5200:4000;
  setDuskMaterials(!day);
  if(bloom){bloom.strength=day?0.12:0.48;bloom.threshold=day?1.1:0.58;}
- renderer.toneMappingExposure=day?1.08:0.88;
- if(ambient)ambient.intensity=day?.45:.3;
+ renderer.toneMappingExposure=day?1.08:0.9;
+ if(ambient)ambient.intensity=day?.45:.32;
  if(scene.environment)scene.environmentIntensity=day?.7:.42;
 }
 async function enter(){if(!graphicsReady)return;if(!selected||entering||interior)return;entering=true;if($('#enter')){$('#enter').disabled=true;$('#enter').textContent='Opening interior…';}const f=selected;try{const {createInterior}=await import('./campus/interior.js');flight?.pause();flyover=false;$('#interior').hidden=false;$('#inside-key').textContent=f.key;$('#inside-name').textContent=f.name;$('#floor-select').replaceChildren();for(let i=0;i<f.levels;i++){const option=document.createElement('option');option.value=i;option.textContent=f.id===3?`B${i+1}`:`L${String(i+1).padStart(2,'0')}`;$('#floor-select').append(option);}interior=createInterior($('#interior-canvas'),f,{reduced,quality,onFrame:sample=>performanceReport.record({...sample,quality}),onRoom:name=>{$('#room-status').textContent=name;},onFloor:(l,rooms)=>{$('#floor-select').value=l;$('#room-list').hidden=false;$('#rooms-toggle').setAttribute('aria-expanded','true');$('#room-list').replaceChildren();rooms.forEach((r,i)=>{const button=document.createElement('button');button.textContent=`${i+1}. ${r.name}`;button.onclick=()=>{interior?.visit(i);if(innerWidth<761){$('#room-list').hidden=true;$('#rooms-toggle').setAttribute('aria-expanded','false');}};$('#room-list').append(button);});}});$('#interior-canvas').focus();message('');}catch(e){console.error(e);$('#interior').hidden=true;interior?.dispose();interior=null;message('Interior could not open. Please try again.');}finally{entering=false;if($('#enter')){$('#enter').disabled=false;$('#enter').innerHTML='Explore inside <span>↗</span>';}}}
@@ -115,7 +135,7 @@ async function boot(){
  try{
  bind();
  renderer=new T.WebGLRenderer({antialias:!mobile,powerPreference:'high-performance',preserveDrawingBuffer:true,alpha:false});renderer.setPixelRatio(exteriorPixelRatio(devicePixelRatio,quality,mobile));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;renderer.shadowMap.enabled=!mobile;if(!mobile)renderer.shadowMap.type=T.PCFSoftShadowMap;attachCanvas();
- scene=new T.Scene();scene.background=new T.Color(0x5a2848);scene.fog=new T.Fog(0xe07858,1050,2750);sky=createDuskSky();scene.add(sky);camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.5,9000);camera.position.set(40,mobile?720:680,mobile?980:920);controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,10,-40);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.02;controls.minDistance=8;controls.maxDistance=2300;controls.update();controls.addEventListener('start',()=>{document.body.classList.add('exploring');flight?.pause();flight=null;flyover=false;$('#tour')?.classList.remove('active');});
+ scene=new T.Scene();scene.background=new T.Color(0x6a2848);scene.fog=new T.Fog(0xe88870,1700,4000);sky=createDuskSky();scene.add(sky);camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.5,9000);camera.position.set(40,mobile?720:680,mobile?980:920);controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,10,-40);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.02;controls.minDistance=8;controls.maxDistance=2300;controls.update();controls.addEventListener('start',()=>{document.body.classList.add('exploring');flight?.pause();flight=null;flyover=false;$('#tour')?.classList.remove('active');});
  try{
   const pmrem=new T.PMREMGenerator(renderer);const env=new RoomEnvironment();scene.environment=pmrem.fromScene(env,.04).texture;scene.environmentIntensity=.55;env.dispose();pmrem.dispose();
  }catch{scene.environment=null;}
