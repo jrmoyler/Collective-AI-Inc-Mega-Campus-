@@ -1,0 +1,1967 @@
+{
+  "method": "CPU fine-geometry and distance-visibility accounting; not FPS, texture memory or GPU allocation",
+  "maximumExportBaseline": {
+    "total": {
+      "detailGroups": 35,
+      "detailMeshes": 222,
+      "vertices": 1816969,
+      "bytes": 64609424,
+      "visibleDetailMeshes": 222,
+      "visibleVertices": 1816969
+    },
+    "facilities": [
+      {
+        "facility": "CF-01",
+        "detailGroups": 1,
+        "detailMeshes": 6,
+        "vertices": 10620,
+        "bytes": 373968,
+        "visibleDetailMeshes": 6,
+        "visibleVertices": 10620
+      },
+      {
+        "facility": "CF-02",
+        "detailGroups": 1,
+        "detailMeshes": 5,
+        "vertices": 6868,
+        "bytes": 241280,
+        "visibleDetailMeshes": 5,
+        "visibleVertices": 6868
+      },
+      {
+        "facility": "CF-03",
+        "detailGroups": 1,
+        "detailMeshes": 6,
+        "vertices": 1152,
+        "bytes": 40320,
+        "visibleDetailMeshes": 6,
+        "visibleVertices": 1152
+      },
+      {
+        "facility": "CF-04",
+        "detailGroups": 1,
+        "detailMeshes": 5,
+        "vertices": 18064,
+        "bytes": 635840,
+        "visibleDetailMeshes": 5,
+        "visibleVertices": 18064
+      },
+      {
+        "facility": "CF-05",
+        "detailGroups": 1,
+        "detailMeshes": 3,
+        "vertices": 3300,
+        "bytes": 116832,
+        "visibleDetailMeshes": 3,
+        "visibleVertices": 3300
+      },
+      {
+        "facility": "CF-06",
+        "detailGroups": 1,
+        "detailMeshes": 5,
+        "vertices": 7740,
+        "bytes": 273168,
+        "visibleDetailMeshes": 5,
+        "visibleVertices": 7740
+      },
+      {
+        "facility": "CF-07",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 4240,
+        "bytes": 149216,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 4240
+      },
+      {
+        "facility": "CF-08",
+        "detailGroups": 1,
+        "detailMeshes": 4,
+        "vertices": 6144,
+        "bytes": 217632,
+        "visibleDetailMeshes": 4,
+        "visibleVertices": 6144
+      },
+      {
+        "facility": "CF-09",
+        "detailGroups": 1,
+        "detailMeshes": 6,
+        "vertices": 2808,
+        "bytes": 98280,
+        "visibleDetailMeshes": 6,
+        "visibleVertices": 2808
+      },
+      {
+        "facility": "CF-10",
+        "detailGroups": 1,
+        "detailMeshes": 2,
+        "vertices": 1848,
+        "bytes": 65760,
+        "visibleDetailMeshes": 2,
+        "visibleVertices": 1848
+      },
+      {
+        "facility": "CF-11",
+        "detailGroups": 1,
+        "detailMeshes": 4,
+        "vertices": 1824,
+        "bytes": 64848,
+        "visibleDetailMeshes": 4,
+        "visibleVertices": 1824
+      },
+      {
+        "facility": "CF-12",
+        "detailGroups": 1,
+        "detailMeshes": 6,
+        "vertices": 3504,
+        "bytes": 123072,
+        "visibleDetailMeshes": 6,
+        "visibleVertices": 3504
+      },
+      {
+        "facility": "CF-13",
+        "detailGroups": 1,
+        "detailMeshes": 8,
+        "vertices": 32156,
+        "bytes": 1172752,
+        "visibleDetailMeshes": 8,
+        "visibleVertices": 32156
+      },
+      {
+        "facility": "CF-14",
+        "detailGroups": 1,
+        "detailMeshes": 8,
+        "vertices": 57264,
+        "bytes": 2171184,
+        "visibleDetailMeshes": 8,
+        "visibleVertices": 57264
+      },
+      {
+        "facility": "CF-15",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 23688,
+        "bytes": 868464,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 23688
+      },
+      {
+        "facility": "CF-16",
+        "detailGroups": 1,
+        "detailMeshes": 9,
+        "vertices": 26840,
+        "bytes": 994720,
+        "visibleDetailMeshes": 9,
+        "visibleVertices": 26840
+      },
+      {
+        "facility": "CF-17",
+        "detailGroups": 1,
+        "detailMeshes": 9,
+        "vertices": 68900,
+        "bytes": 2549800,
+        "visibleDetailMeshes": 9,
+        "visibleVertices": 68900
+      },
+      {
+        "facility": "CF-18",
+        "detailGroups": 1,
+        "detailMeshes": 6,
+        "vertices": 63264,
+        "bytes": 2344704,
+        "visibleDetailMeshes": 6,
+        "visibleVertices": 63264
+      },
+      {
+        "facility": "CF-19",
+        "detailGroups": 1,
+        "detailMeshes": 8,
+        "vertices": 34996,
+        "bytes": 1296152,
+        "visibleDetailMeshes": 8,
+        "visibleVertices": 34996
+      },
+      {
+        "facility": "CF-20",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 32440,
+        "bytes": 1190240,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 32440
+      },
+      {
+        "facility": "CF-21",
+        "detailGroups": 1,
+        "detailMeshes": 8,
+        "vertices": 16461,
+        "bytes": 644472,
+        "visibleDetailMeshes": 8,
+        "visibleVertices": 16461
+      },
+      {
+        "facility": "CF-22",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 48912,
+        "bytes": 1845696,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 48912
+      },
+      {
+        "facility": "CF-23",
+        "detailGroups": 1,
+        "detailMeshes": 5,
+        "vertices": 38492,
+        "bytes": 1455280,
+        "visibleDetailMeshes": 5,
+        "visibleVertices": 38492
+      },
+      {
+        "facility": "CF-24",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 38928,
+        "bytes": 1428288,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 38928
+      },
+      {
+        "facility": "CF-25",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 95832,
+        "bytes": 3267360,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 95832
+      },
+      {
+        "facility": "CF-26",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 18564,
+        "bytes": 632928,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 18564
+      },
+      {
+        "facility": "CF-27",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 88024,
+        "bytes": 3001184,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 88024
+      },
+      {
+        "facility": "CF-28",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 59780,
+        "bytes": 2038216,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 59780
+      },
+      {
+        "facility": "CF-29",
+        "detailGroups": 1,
+        "detailMeshes": 5,
+        "vertices": 155160,
+        "bytes": 5439600,
+        "visibleDetailMeshes": 5,
+        "visibleVertices": 155160
+      },
+      {
+        "facility": "CF-30",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 73908,
+        "bytes": 2517480,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 73908
+      },
+      {
+        "facility": "CF-31",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 162048,
+        "bytes": 5774352,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 162048
+      },
+      {
+        "facility": "CF-32",
+        "detailGroups": 1,
+        "detailMeshes": 6,
+        "vertices": 42072,
+        "bytes": 1431120,
+        "visibleDetailMeshes": 6,
+        "visibleVertices": 42072
+      },
+      {
+        "facility": "CF-33",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 175056,
+        "bytes": 6240720,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 175056
+      },
+      {
+        "facility": "CF-34",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 180348,
+        "bytes": 6362040,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 180348
+      },
+      {
+        "facility": "CF-35",
+        "detailGroups": 1,
+        "detailMeshes": 7,
+        "vertices": 215724,
+        "bytes": 7542456,
+        "visibleDetailMeshes": 7,
+        "visibleVertices": 215724
+      }
+    ]
+  },
+  "deferredRuntime": {
+    "startup": {
+      "total": {
+        "detailGroups": 0,
+        "detailMeshes": 0,
+        "vertices": 0,
+        "bytes": 0,
+        "visibleDetailMeshes": 0,
+        "visibleVertices": 0
+      },
+      "facilities": [
+        {
+          "facility": "CF-01",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-02",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-03",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-04",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-05",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-06",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-07",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-08",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-09",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-10",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-11",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-12",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-13",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-14",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-15",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-16",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-17",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-18",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-19",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-20",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-21",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-22",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-23",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-24",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-25",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-26",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-27",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-28",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-29",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-30",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-31",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-32",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-33",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-34",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-35",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        }
+      ]
+    },
+    "aerial": {
+      "total": {
+        "detailGroups": 0,
+        "detailMeshes": 0,
+        "vertices": 0,
+        "bytes": 0,
+        "visibleDetailMeshes": 0,
+        "visibleVertices": 0
+      },
+      "facilities": [
+        {
+          "facility": "CF-01",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-02",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-03",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-04",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-05",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-06",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-07",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-08",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-09",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-10",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-11",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-12",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-13",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-14",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-15",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-16",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-17",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-18",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-19",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-20",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-21",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-22",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-23",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-24",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-25",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-26",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-27",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-28",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-29",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-30",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-31",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-32",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-33",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-34",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-35",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        }
+      ]
+    },
+    "prismStreet": {
+      "total": {
+        "detailGroups": 4,
+        "detailMeshes": 25,
+        "vertices": 95636,
+        "bytes": 3281944,
+        "visibleDetailMeshes": 25,
+        "visibleVertices": 95636
+      },
+      "facilities": [
+        {
+          "facility": "CF-01",
+          "detailGroups": 1,
+          "detailMeshes": 6,
+          "vertices": 10620,
+          "bytes": 373968,
+          "visibleDetailMeshes": 6,
+          "visibleVertices": 10620
+        },
+        {
+          "facility": "CF-02",
+          "detailGroups": 1,
+          "detailMeshes": 5,
+          "vertices": 6868,
+          "bytes": 241280,
+          "visibleDetailMeshes": 5,
+          "visibleVertices": 6868
+        },
+        {
+          "facility": "CF-03",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-04",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-05",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-06",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-07",
+          "detailGroups": 1,
+          "detailMeshes": 7,
+          "vertices": 4240,
+          "bytes": 149216,
+          "visibleDetailMeshes": 7,
+          "visibleVertices": 4240
+        },
+        {
+          "facility": "CF-08",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-09",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-10",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-11",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-12",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-13",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-14",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-15",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-16",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-17",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-18",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-19",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-20",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-21",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-22",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-23",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-24",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-25",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-26",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-27",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-28",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-29",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-30",
+          "detailGroups": 1,
+          "detailMeshes": 7,
+          "vertices": 73908,
+          "bytes": 2517480,
+          "visibleDetailMeshes": 7,
+          "visibleVertices": 73908
+        },
+        {
+          "facility": "CF-31",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-32",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-33",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-34",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-35",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        }
+      ]
+    },
+    "southStreet": {
+      "total": {
+        "detailGroups": 4,
+        "detailMeshes": 28,
+        "vertices": 213164,
+        "bytes": 7753912,
+        "visibleDetailMeshes": 28,
+        "visibleVertices": 213164
+      },
+      "facilities": [
+        {
+          "facility": "CF-01",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-02",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-03",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-04",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-05",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-06",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-07",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-08",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-09",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-10",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-11",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-12",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-13",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-14",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-15",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-16",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-17",
+          "detailGroups": 1,
+          "detailMeshes": 9,
+          "vertices": 68900,
+          "bytes": 2549800,
+          "visibleDetailMeshes": 9,
+          "visibleVertices": 68900
+        },
+        {
+          "facility": "CF-18",
+          "detailGroups": 1,
+          "detailMeshes": 6,
+          "vertices": 63264,
+          "bytes": 2344704,
+          "visibleDetailMeshes": 6,
+          "visibleVertices": 63264
+        },
+        {
+          "facility": "CF-19",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-20",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-21",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-22",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-23",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-24",
+          "detailGroups": 1,
+          "detailMeshes": 7,
+          "vertices": 38928,
+          "bytes": 1428288,
+          "visibleDetailMeshes": 7,
+          "visibleVertices": 38928
+        },
+        {
+          "facility": "CF-25",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-26",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-27",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-28",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-29",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-30",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-31",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-32",
+          "detailGroups": 1,
+          "detailMeshes": 6,
+          "vertices": 42072,
+          "bytes": 1431120,
+          "visibleDetailMeshes": 6,
+          "visibleVertices": 42072
+        },
+        {
+          "facility": "CF-33",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-34",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-35",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        }
+      ]
+    },
+    "distantReturn": {
+      "total": {
+        "detailGroups": 0,
+        "detailMeshes": 0,
+        "vertices": 0,
+        "bytes": 0,
+        "visibleDetailMeshes": 0,
+        "visibleVertices": 0
+      },
+      "facilities": [
+        {
+          "facility": "CF-01",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-02",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-03",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-04",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-05",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-06",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-07",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-08",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-09",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-10",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-11",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-12",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-13",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-14",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-15",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-16",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-17",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-18",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-19",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-20",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-21",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-22",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-23",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-24",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-25",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-26",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-27",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-28",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-29",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-30",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-31",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-32",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-33",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-34",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        },
+        {
+          "facility": "CF-35",
+          "detailGroups": 0,
+          "detailMeshes": 0,
+          "vertices": 0,
+          "bytes": 0,
+          "visibleDetailMeshes": 0,
+          "visibleVertices": 0
+        }
+      ]
+    }
+  }
+}

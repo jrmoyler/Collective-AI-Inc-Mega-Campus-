@@ -30,12 +30,12 @@ textures.grass.repeat.set(48,42);textures.asphalt.repeat.set(8,1);textures.limes
 function std(params){return new T.MeshStandardMaterial({envMapIntensity:1.05,...params});}
 export const materials={
  steel:std({color:0xa8b2b6,metalness:.9,roughness:.24,map:textures.brushed}),
- glazing:std({color:0x6298aa,metalness:.16,roughness:.08,transparent:true,opacity:.36,depthWrite:false,side:T.DoubleSide,envMapIntensity:1.7}),
+ glazing:std({color:0x93b5c0,metalness:.16,roughness:.08,transparent:true,opacity:.36,depthWrite:false,side:T.DoubleSide,envMapIntensity:1.7}),
  magenta:std({color:0xe9a9ea,emissive:0xd769d6,emissiveIntensity:1.4,roughness:.4}),
  track:std({color:0x8a5d66,roughness:.92}),
  stone:std({color:0xe1dbcc,roughness:.68,map:textures.limestone}),
  dark:std({color:0x29323a,metalness:.52,roughness:.31,map:textures.charcoal}),
- glass:std({color:0x173746,metalness:.48,roughness:.1,envMapIntensity:1.7}),
+ glass:std({color:0x587a89,metalness:.32,roughness:.17,envMapIntensity:1.25}),
  gold:std({color:0xd8b76d,metalness:.83,roughness:.22,emissive:0x5e4319,emissiveIntensity:.32}),
  warm:std({color:0xffd89a,emissive:0xffb24a,emissiveIntensity:1.8,roughness:.36}),
  warmWin:std({color:0xffe2b0,emissive:0xffc066,emissiveIntensity:3.4,roughness:.28,metalness:.02}),
@@ -54,7 +54,7 @@ export const materials={
  copper:std({color:0xc47a48,metalness:.66,roughness:.34,emissive:0x4a2410,emissiveIntensity:.18,map:textures.copper}),
  concrete:std({color:0x969b98,roughness:.82,map:textures.charcoal}),
  night:std({color:0x101820,roughness:.46,metalness:.26,map:textures.charcoal}),
- water:std({color:0x1ec4d8,metalness:.84,roughness:.055,envMapIntensity:2.6,emissive:0x0a5870,emissiveIntensity:.62}),
+ water:std({color:0x406969,metalness:.3,roughness:.16,envMapIntensity:1.4}),
  kinetic:std({color:0x00e8d4,emissive:0x00fff0,emissiveIntensity:5.2,roughness:.14}),
 };
 
@@ -67,19 +67,41 @@ for(const [name,scale] of [['stone',.012],['path',.012],['road',.006],['civic',.
  materials[name].bumpMap=materials[name].map;materials[name].bumpScale=scale;
 }
 
+const paneGeo=new T.PlaneGeometry(1,1),horizontalPaneGeo=new T.PlaneGeometry(1,1).rotateX(-Math.PI/2);
 const boxGeo=new T.BoxGeometry(1,1,1,1,1,1);const temp=new T.Object3D();
 export class Batch{
  constructor(){this.items=new Map();}
  add(g,mat,x=0,y=0,z=0,sx=1,sy=1,sz=1,ry=0,rx=0){temp.position.set(x,y,z);temp.rotation.set(rx,ry,0);temp.scale.set(sx,sy,sz);temp.updateMatrix();const c=g.clone().applyMatrix4(temp.matrix);if(!c.index)c.setIndex(Array.from({length:c.attributes.position.count},(_,i)=>i));if(!c.attributes.uv)c.setAttribute('uv',new T.Float32BufferAttribute(new Float32Array(c.attributes.position.count*2),2));if(!this.items.has(mat))this.items.set(mat,[]);this.items.get(mat).push(c);}
- box(mat,x,y,z,w,h,d,ry=0){this.add(boxGeo,mat,x,y,z,w,h,d,ry);}
- finish(name='assembly'){const group=new T.Group();group.name=name;for(const [mat,gs] of this.items){const g=mergeGeometries(gs,false);gs.forEach(x=>x.dispose());const m=new T.Mesh(g,materials[mat]||mat);m.name=name+'-'+(typeof mat==='string'?mat:'surface');m.castShadow=true;m.receiveShadow=true;group.add(m);}this.items.clear();return group;}
+ pane(mat,x,y,z,w,h,ry=0){this.add(paneGeo,mat,x,y,z,w,h,1,ry);}
+ box(mat,x,y,z,w,h,d,ry=0){
+  // Thin clear panes need one two-sided surface, not two superimposed tinted
+  // faces plus invisible edges. Solid display cases and equipment stay volumetric.
+  if(mat==='glazing'||(mat?.isMaterial&&mat.transparent&&mat.opacity<.5)){
+   if(d<=.10){this.pane(mat,x,y,z,w,h,ry);return;}
+   if(w<=.10){this.pane(mat,x,y,z,d,h,ry+Math.PI/2);return;}
+   if(h<=.10){this.add(horizontalPaneGeo,mat,x,y,z,w,1,d,ry);return;}
+  }
+  this.add(boxGeo,mat,x,y,z,w,h,d,ry);
+ }
+ finish(name='assembly'){const group=new T.Group();group.name=name;for(const [mat,gs] of this.items){const g=mergeGeometries(gs,false);gs.forEach(x=>x.dispose());const m=new T.Mesh(g,materials[mat]||mat);m.name=name+'-'+(typeof mat==='string'?mat:'surface');m.castShadow=!(m.material.transparent&&m.material.alphaTest===0);m.receiveShadow=true;group.add(m);}this.items.clear();return group;}
 }
 export function cylinder(batch,mat,x,y,z,r,h,rt=r,n=32){const g=new T.CylinderGeometry(rt,r,h,n,1,false);batch.add(g,mat,x,y,z);g.dispose();}
 export function ring(batch,mat,x,y,z,r,t=.3,rx=Math.PI/2){const g=new T.TorusGeometry(r,t,8,72);batch.add(g,mat,x,y,z,1,1,1,0,rx);g.dispose();}
 export function line(batch,mat,pts,r=.2){const curve=new T.CatmullRomCurve3(pts.map(p=>new T.Vector3(...p)));const g=new T.TubeGeometry(curve,Math.max(12,pts.length*10),r,7,false);batch.add(g,mat);g.dispose();return curve;}
 export function seeded(seed){return()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};}
 export function sign(text,w=14,h=3,color='#f3dba5'){const c=document.createElement('canvas');c.width=1024;c.height=192;const ctx=c.getContext('2d');ctx.fillStyle='#09131d';ctx.fillRect(0,0,1024,192);ctx.strokeStyle='#00d9b5';ctx.lineWidth=6;ctx.strokeRect(6,6,1012,180);ctx.fillStyle=color;ctx.font='600 48px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,512,98,960);const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=8;return new T.Mesh(new T.PlaneGeometry(w,h,2,1),new T.MeshBasicMaterial({map:tex,side:T.DoubleSide,toneMapped:false}));}
-export function setDuskMaterials(dusk){materials.warm.emissiveIntensity=dusk?3.4:.22;materials.warmWin.emissiveIntensity=dusk?5.6:.28;materials.cyan.emissiveIntensity=dusk?4.4:.7;materials.violet.emissiveIntensity=dusk?5.2:.85;materials.gold.emissiveIntensity=dusk?1.35:.12;materials.kinetic.emissiveIntensity=dusk?7.2:1.1;materials.blueGlass.emissiveIntensity=dusk?1.45:.28;materials.magenta.emissiveIntensity=dusk?2.6:.45;materials.pink.emissiveIntensity=dusk?.62:.18;materials.leaf.emissiveIntensity=dusk?.16:0;materials.grass.emissiveIntensity=dusk?.1:0;}
+export function setDuskMaterials(dusk){
+ // Light sources glow; masonry, foliage and curtain walls never emit light.
+ materials.warm.emissiveIntensity=dusk?1.5:.12;
+ materials.warmWin.emissiveIntensity=dusk?2:.12;
+ materials.cyan.emissiveIntensity=dusk?1.3:.25;
+ materials.violet.emissiveIntensity=dusk?1.4:.3;
+ materials.gold.emissiveIntensity=dusk?.12:0;
+ materials.kinetic.emissiveIntensity=dusk?1.3:.28;
+ materials.magenta.emissiveIntensity=dusk?1:.18;
+ for(const name of ['blueGlass','pink','leaf','grass','copper'])materials[name].emissiveIntensity=0;
+}
+
 
 export function kineticRoadMaterial(kind='cyan'){
  const glow=kind==='gold'?0xffc45a:0x3dfff4;
@@ -88,6 +110,6 @@ export function kineticRoadMaterial(kind='cyan'){
   fog:false,toneMapped:false,
   uniforms:{uTime:{value:0},uAsphalt:{value:new T.Color(0x0c1418)},uGlow:{value:new T.Color(glow)},uGold:{value:new T.Color(trim)}},
   vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
-  fragmentShader:`uniform float uTime;uniform vec3 uAsphalt;uniform vec3 uGlow;uniform vec3 uGold;varying vec2 vUv;void main(){float edge=smoothstep(.18,0.,min(vUv.y,1.-vUv.y));float inner=smoothstep(.32,.12,min(vUv.y,1.-vUv.y));float center=smoothstep(.05,0.,abs(vUv.y-.5));float dash=step(.42,fract(vUv.x*70.));float pulse=.7+.3*sin(uTime*2.1+vUv.x*22.);float flow=smoothstep(.15,0.,abs(fract(vUv.x*6.-uTime*.35)-.5));vec3 col=uAsphalt;col+=uGlow*edge*4.2*pulse;col+=uGlow*inner*.85;col+=uGlow*flow*edge*2.2;col+=uGold*center*dash*1.8;float spec=pow(1.-abs(vUv.y-.5)*2.,5.)*.22;col+=vec3(spec);gl_FragColor=vec4(col,1.0);}`,
+  fragmentShader:`uniform float uTime;uniform vec3 uAsphalt;uniform vec3 uGlow;uniform vec3 uGold;varying vec2 vUv;void main(){float edge=(1.-smoothstep(0.,.18,min(vUv.y,1.-vUv.y)));float inner=(1.-smoothstep(.12,.32,min(vUv.y,1.-vUv.y)));float center=(1.-smoothstep(0.,.05,abs(vUv.y-.5)));float dash=step(.42,fract(vUv.x*70.));float pulse=.7+.3*sin(uTime*2.1+vUv.x*22.);float flow=(1.-smoothstep(0.,.15,abs(fract(vUv.x*6.-uTime*.35)-.5)));vec3 col=uAsphalt;col+=uGlow*edge*4.2*pulse;col+=uGlow*inner*.85;col+=uGlow*flow*edge*2.2;col+=uGold*center*dash*1.8;float spec=pow(1.-abs(vUv.y-.5)*2.,5.)*.22;col+=vec3(spec);gl_FragColor=vec4(col,1.0);}`,
  });
 }

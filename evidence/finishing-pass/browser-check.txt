@@ -1,0 +1,65 @@
+eric: "31"
+      - button "CF-32 The Exchange Pavilion — Mercantile Circuit":
+        - generic: "32"
+      - button "CF-33 The Human Systems Institute — Human Foundry":
+        - generic: "33"
+      - button "CF-34 The Energy Commons — Volta Grid":
+        - generic: "34"
+      - button "CF-35 The Care Village — Hearth Nexus":
+        - generic: "35"
+    - generic: Schematic overview · exterior locations follow the artwork · north at top
+- banner:
+  - link "△ COLLECTIVE AI THE LIVING CAMPUS":
+    - /url: ./
+    - generic: △
+    - text: COLLECTIVE AI
+    - generic: THE LIVING CAMPUS
+  - generic: 220 acres
+  - generic: 35 facilities
+  - generic: 6 districts
+  - button "Facilities ☰"
+- status: Schematic view · 3D graphics unavailable
+- button "Device check" [expanded]
+- complementary "Device acceptance checks":
+  - strong: Campus device check
+  - paragraph: Record actual tours, save views and test recovery. Files stay on this device.
+  - text: Device and conditions
+  - textbox "Device and conditions":
+    - /placeholder: Galaxy A15 · Chrome · battery / temperature
+    - text: Hosted cloud browser — graphics disabled; not a physical Galaxy A15
+  - button "Start recording"
+  - button "Download report" [active]
+  - button "Save current 3D view"
+  - button "Test graphics recovery"
+  - button "Reload campus"
+  - status: Saved failure evidence; no rendered frames were recorded.
+  - text: Build 2dd7e477. Device identity is self-reported. Inspect saved images before approving fidelity. acceptance checks":
+  - strong: Campus device check
+  - paragraph: Record actual tours, save views and test recovery. Files stay on this device.
+  - text: Device and conditions
+  - textbox "Device and conditions":
+    - /placeholder: Galaxy A15 · Chrome · battery / temperature
+    - text: Hosted cloud browser — graphics disabled; not a physical Galaxy A15
+  - button "Start recording"
+  - button "Download report"
+  - button "Save current 3D view"
+  - button "Test graphics recovery" [active]
+  - button "Reload campus"
+  - status: A working context with recovery-test support is required.
+  - text: Build 2dd7e477. Device identity is self-reported. Inspect saved images before approving fidelity.d]
+- complementary "Device acceptance checks":
+  - strong: Campus device check
+  - paragraph: Record actual tours, save views and test recovery. Files stay on this device.
+  - text: Device and conditions
+  - textbox "Device and conditions":
+    - /placeholder: Galaxy A15 · Chrome · battery / temperature
+    - text: Hosted cloud browser — graphics disabled; not a physical Galaxy A15
+  - button "Start recording"
+  - button "Download report"
+  - button "Save current 3D view" [active]
+  - button "Test graphics recovery"
+  - button "Reload campus"
+  - status: No active 3D canvas to capture.
+  - text: Build 2dd7e477. Device identity is self-reported. Inspect saved images before approving fidelity.
+
+Verified route: https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/?qa=1

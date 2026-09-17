@@ -1,0 +1,69 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test
+> node --test tests/*.test.js
+
+✔ corrected register preserves 35 facilities and 74 floor programs (0.915584ms)
+✔ every program is reachable through a floor and six positive room envelopes (7.735148ms)
+✔ exterior envelopes remain inside the 220-acre scene (0.185935ms)
+✔ Blender GLB is shipped and contains named node components (0.827083ms)
+✔ fleet population is real, articulated and independent of automation detection (465.996757ms)
+✔ road fleet travels in metres per second and tyres roll (132.99409ms)
+✔ missing road input has honest counts and leaves aerial activity available (59.921752ms)
+✔ all 35 exterior assemblies merge successfully, have finite geometry and retain picking IDs (6499.366144ms)
+✔ finish grain keeps a physical scale across differently sized interior boxes (12.606476ms)
+✔ soft furnishings have sculpted depression, finite normals and bounded indexed topology (171.1789ms)
+✔ workstation includes readable small scale tools and open cup finish (186.512669ms)
+✔ lecture hall uses fixed seats with a clear central aisle inside its room (51.106037ms)
+BJS - [01:25:55]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:15]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:19]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:23]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:31]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:34]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:37]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:38]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:40]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:42]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:44]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:48]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:51]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:55]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:56]: Babylon.js v9.26.2 - Null engine
+BJS - [01:26:58]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:00]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:02]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:04]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:06]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:08]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:08]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:10]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:12]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:13]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:14]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:15]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:16]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:17]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:18]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:19]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:20]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:21]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:22]: Babylon.js v9.26.2 - Null engine
+BJS - [01:27:23]: Babylon.js v9.26.2 - Null engine
+✔ all 74 Babylon floor scenes construct and dispose without missing registrations (89320.814869ms)
+✔ indexed rounded furniture preserves the original curved surface and normals with metre-scale UVs (47.514847ms)
+✔ all cargo and survey rotor arms meet their motors and only rotor blades spin (532.330191ms)
+✔ specialist schedules receive equipment appropriate to their program (0.650932ms)
+✔ shipped Blender furnishings load with finite transforms and cull during aerial views (65.160939ms)
+✔ high-DPR interiors never fall below CSS resolution and obey the selected pixel budget (0.896956ms)
+✔ furniture contains structural supports, five casters, input devices and server units (348.077502ms)
+✔ reference room fixtures stay differentiated by program (1.375954ms)
+✔ Trust Vault guided room arrival paths remain open at visitor eye height (1338.673649ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 91577.973285

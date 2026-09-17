@@ -1,0 +1,26 @@
+[
+  {
+    "level": "error",
+    "message": "THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .",
+    "timestamp": "2026-09-17T06:04:10.795Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-vs_F0iyL.js"
+  },
+  {
+    "level": "error",
+    "message": "THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .",
+    "timestamp": "2026-09-17T06:04:10.795Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-vs_F0iyL.js"
+  },
+  {
+    "level": "error",
+    "message": "THREE.WebGLRenderer: THREE.WebGLRenderer: Error creating WebGL context.",
+    "timestamp": "2026-09-17T06:04:10.795Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-vs_F0iyL.js"
+  },
+  {
+    "level": "error",
+    "message": "Error: THREE.WebGLRenderer: Error creating WebGL context.\n    at new Yd (https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-vs_F0iyL.js:4221:24413)\n    at by (https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-vs_F0iyL.js:4685:37712)\n    at https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-vs_F0iyL.js:4685:43378",
+    "timestamp": "2026-09-17T06:04:10.797Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-vs_F0iyL.js"
+  }
+]

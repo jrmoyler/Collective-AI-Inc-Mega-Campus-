@@ -1,0 +1,21 @@
+BJS - [01:57:45]: Babylon.js v9.26.2 - Null engine
+BJS - [01:57:45]: Babylon.js v9.26.2 - Null engine
+BJS - [01:57:46]: Babylon.js v9.26.2 - Null engine
+BJS - [01:57:46]: Babylon.js v9.26.2 - Null engine
+✔ render failure stops scheduling before recovery disposes a renderer (1.145944ms)
+✔ teardown cancels both queued frames and a frame stopped during its callback (0.176861ms)
+✔ failed atmosphere compilation restores the screen target and renderer settings (0.476885ms)
+✔ fallback and discarded asset cleanup release shared geometry, materials and textures once (1.71053ms)
+✔ one broken disposal listener cannot block other resources or scene removal (0.618334ms)
+✔ a floor construction callback failure releases the engine and installed input handlers (389.709494ms)
+✔ a later frame failure disposes the tour once and reports recovery instead of repeating (428.605908ms)
+✔ losing focus cancels touch movement and residual camera motion (450.811856ms)
+✔ an invalid floor request leaves the existing valid tour usable (414.047525ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2281.900726

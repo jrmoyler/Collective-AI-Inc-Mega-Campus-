@@ -44,8 +44,8 @@ export function furnishSpecialist(k,r,kit){
   const bedRows=kind==='clinical'&&d>10?[back,back-side*3.4]:[back];
   for(const xx of xs)for(const bedZ of bedRows){
    box('adjustable bed chassis','steel',xx,.4,bedZ,.77,.3,1.9,.035);
-   box('clinical mattress','porcelain',xx,.66,bedZ,.88,.2,2,.07);
-   box('pillow','fabric',xx,.81,bedZ+side*.64,.63,.12,.36,.05);
+   k.cushion('clinical mattress','porcelain',xx,.66,bedZ,.88,.2,2);
+   k.cushion('pillow','fabric',xx,.81,bedZ+side*.64,.63,.12,.36);
    for(const dx of [-.43,.43])k.bar('bed safety rail','steel',[xx+dx,.78,bedZ-.45],[xx+dx,.78,bedZ+.5],.025);
    for(const dx of [-.31,.31])for(const dz of [-.7,.7])k.cylinder('bed caster','rubber',xx+dx,.18,bedZ+dz,.075,.05,.075,Math.PI/2);
    box('bedside drawer cabinet','oak',xx+.72,.39,bedZ+side*.56,.4,.7,.5,.025);
@@ -71,7 +71,22 @@ export function furnishSpecialist(k,r,kit){
   box('presentation dais','oak',x,.14,back,Math.min(w*.7,4.5),.28,1.7,.02);
   box('lectern base','graphite',x,.7,back,.58,1.0,.46,.025);
   box('lectern controls','display',x,1.23,back,.49,.055,.34,.01);
-  for(const xx of xs)for(let row=0;row<3;row++)taskChair(k,xx,z+side*(d*.02-row*.105*d),side<0?Math.PI:0);
+  // Fixed upholstered audience seating follows the lecture-hall cutaway;
+  // retain a central aisle and level accessible circulation to the room door.
+  const rows=Math.max(2,Math.min(4,Math.floor((d*.55)/1.12)));
+  const perSide=Math.max(1,Math.min(4,Math.floor((w*.5-1.15)/.68)));
+  for(const bank of [-1,1])for(let col=0;col<perSide;col++)for(let row=0;row<rows;row++){
+   const xx=x+bank*(.93+col*.68),zz=z+side*(d*.03-row*1.12);
+   box('auditorium seat pedestal','graphite',xx,.26,zz,.10,.47,.26,.014);
+   box('auditorium anchor plate','steel',xx,.035,zz,.28,.035,.35,.007);
+   k.cushion('auditorium upholstered seat','leather',xx,.49,zz,.52,.13,.48);
+   const backrest=k.cushion('auditorium upholstered back','leather',xx,.78,zz-side*.23,.52,.59,.12,true);
+   backrest.rotation.x=side*.12;
+   for(const dx of [-.29,.29]){
+    box('auditorium arm support','graphite',xx+dx,.52,zz,.035,.37,.035,.006);
+    box('auditorium timber arm','oak',xx+dx,.70,zz,.065,.035,.36,.012);
+   }
+  }
  }else if(kind==='electrical'){
   for(const xx of xs)for(const dx of [-.44,.44]){
    box('switchgear enclosure','porcelain',xx+dx,1.05,back,.76,2.1,.75,.018);

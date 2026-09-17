@@ -1,0 +1,51 @@
+01:16:57 | INFO: Data are loaded, start creating Blender stuff
+01:16:57 | INFO: Blender create Mesh node 0
+01:16:57 | INFO: Blender create Mesh node 1
+01:16:57 | INFO: Blender create Mesh node 2
+01:16:57 | INFO: Blender create Mesh node 3
+01:16:57 | INFO: Blender create Mesh node 4
+01:16:57 | INFO: Blender create Mesh node 5
+01:16:57 | INFO: Blender create Mesh node 6
+01:16:57 | INFO: Blender create Mesh node 7
+01:16:57 | INFO: Blender create Mesh node 8
+01:16:57 | INFO: Blender create Mesh node 9
+01:16:57 | INFO: Blender create Mesh node 10
+01:16:57 | INFO: Blender create Mesh node 11
+01:16:57 | INFO: Blender create Mesh node 12
+01:16:57 | INFO: Blender create Mesh node 13
+[Intermediate Blender mesh import and sample progress omitted; full log retained in task scratch.]
+Fra:1 Mem:805.79M (Peak 939.94M) | Time:00:01.22 | Mem:85.82M, Peak:85.82M | Scene, ViewLayer | Updating Geometry BVH Mesh_46 2/6 | Building BVH
+Fra:1 Mem:805.79M (Peak 939.94M) | Time:00:01.22 | Mem:85.82M, Peak:85.82M | Scene, ViewLayer | Updating Geometry BVH Mesh_47 3/6 | Building BVH
+Fra:1 Mem:805.79M (Peak 939.94M) | Time:00:01.22 | Mem:85.84M, Peak:85.84M | Scene, ViewLayer | Updating Geometry BVH Mesh_47 3/6 | Building BVH 0%
+Fra:1 Mem:805.79M (Peak 939.94M) | Time:00:01.22 | Mem:85.84M, Peak:85.84M | Scene, ViewLayer | Updating Geometry BVH Mesh_48 4/6 | Building BVH
+Fra:1 Mem:805.79M (Peak 939.94M) | Time:00:01.22 | Mem:85.91M, Peak:85.93M | Scene, ViewLayer | Updating Geometry BVH Mesh_49 5/6 | Building BVH
+Fra:1 Mem:805.79M (Peak 939.94M) | Time:00:01.22 | Mem:85.90M, Peak:85.93M | Scene, ViewLayer | Updating Geometry BVH Mesh_50 6/6 | Building BVH
+Fra:1 Mem:805.79M (Peak 939.94M) | Time:00:01.22 | Mem:85.90M, Peak:85.93M | Scene, ViewLayer | Updating Geometry BVH Mesh_108 7/6 | Building BVH
+Fra:1 Mem:805.79M (Peak 939.94M) | Time:00:01.23 | Mem:85.91M, Peak:85.93M | Scene, ViewLayer | Updating Scene BVH | Building
+Fra:1 Mem:805.88M (Peak 939.94M) | Time:00:01.23 | Mem:85.91M, Peak:85.93M | Scene, ViewLayer | Updating Scene BVH | Building BVH
+Fra:1 Mem:805.88M (Peak 939.94M) | Time:00:01.47 | Mem:237.48M, Peak:237.48M | Scene, ViewLayer | Updating Scene BVH | Building BVH 92%
+Fra:1 Mem:805.88M (Peak 939.94M) | Time:00:01.51 | Mem:194.12M, Peak:245.48M | Scene, ViewLayer | Updating Scene BVH | Copying BVH to device
+Fra:1 Mem:805.88M (Peak 939.94M) | Time:00:01.51 | Mem:194.12M, Peak:245.48M | Scene, ViewLayer | Updating Mesh | Computing normals
+Fra:1 Mem:892.84M (Peak 939.94M) | Time:00:01.69 | Mem:194.12M, Peak:245.48M | Scene, ViewLayer | Updating Mesh | Copying Mesh to device
+Fra:1 Mem:892.84M (Peak 939.94M) | Time:00:01.69 | Mem:281.08M, Peak:281.08M | Scene, ViewLayer | Updating Objects Flags
+Fra:1 Mem:892.84M (Peak 939.94M) | Time:00:01.69 | Mem:281.15M, Peak:281.15M | Scene, ViewLayer | Updating Primitive Offsets
+Fra:1 Mem:892.87M (Peak 939.94M) | Time:00:01.69 | Mem:281.19M, Peak:281.19M | Scene, ViewLayer | Updating Images
+Fra:1 Mem:892.87M (Peak 939.94M) | Time:00:01.69 | Mem:281.19M, Peak:281.19M | Scene, ViewLayer | Updating Camera Volume
+Fra:1 Mem:892.87M (Peak 939.94M) | Time:00:01.69 | Mem:281.19M, Peak:281.19M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:892.87M (Peak 939.94M) | Time:00:01.69 | Mem:281.27M, Peak:281.27M | Scene, ViewLayer | Updating Lights
+Fra:1 Mem:892.87M (Peak 939.94M) | Time:00:01.69 | Mem:281.27M, Peak:281.27M | Scene, ViewLayer | Updating Lights | Computing tree
+Fra:1 Mem:962.53M (Peak 1010.88M) | Time:00:02.65 | Mem:350.92M, Peak:350.92M | Scene, ViewLayer | Updating Integrator
+Fra:1 Mem:962.53M (Peak 1010.88M) | Time:00:02.65 | Mem:350.92M, Peak:350.92M | Scene, ViewLayer | Updating Film
+Fra:1 Mem:962.53M (Peak 1010.88M) | Time:00:02.65 | Mem:350.84M, Peak:350.92M | Scene, ViewLayer | Updating Lookup Tables
+Fra:1 Mem:962.53M (Peak 1010.88M) | Time:00:02.65 | Mem:350.92M, Peak:350.92M | Scene, ViewLayer | Updating Baking
+Fra:1 Mem:962.53M (Peak 1010.88M) | Time:00:02.65 | Mem:350.92M, Peak:350.92M | Scene, ViewLayer | Updating Device | Writing constant memory
+Fra:1 Mem:962.67M (Peak 1010.88M) | Time:00:02.65 | Mem:350.92M, Peak:350.92M | Scene, ViewLayer | Loading denoising kernels (may take a few minutes the first time)
+Fra:1 Mem:962.67M (Peak 1010.88M) | Time:00:02.65 | Mem:350.92M, Peak:350.92M | Scene, ViewLayer | Sample 0/12
+Fra:1 Mem:1041.11M (Peak 1041.11M) | Time:00:04.70 | Remaining:00:22.49 | Mem:429.21M, Peak:429.21M | Scene, ViewLayer | Sample 1/12
+Fra:1 Mem:1074.07M (Peak 1123.51M) | Time:00:24.11 | Mem:429.21M, Peak:429.21M | Scene, ViewLayer | Sample 12/12
+Fra:1 Mem:1074.07M (Peak 1123.51M) | Time:00:24.11 | Mem:429.21M, Peak:429.21M | Scene, ViewLayer | Finished
+Saved: '/workspace/scratch/e4aff718301b/campus/evidence/realism-next/baseline-prism.jpg'
+Time: 00:24.18 (Saving: 00:00.02)
+
+
+Blender quit

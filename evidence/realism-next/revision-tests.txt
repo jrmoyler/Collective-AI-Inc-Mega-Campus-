@@ -1,0 +1,83 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test
+> node --test tests/*.test.js
+
+✔ corrected register preserves 35 facilities and 74 floor programs (0.888103ms)
+✔ every program is reachable through a floor and six positive room envelopes (2.135197ms)
+✔ exterior envelopes remain inside the 220-acre scene (0.179395ms)
+✔ Blender GLB is shipped and contains named node components (0.892259ms)
+✔ individual atlas shells 01–12 are bounded local assemblies with complete picking IDs (896.99857ms)
+✔ fleet population is real, articulated and independent of automation detection (153.495765ms)
+✔ road fleet travels in metres per second and tyres roll (53.832667ms)
+✔ missing road input has honest counts and leaves aerial activity available (31.510338ms)
+✔ all 35 exterior assemblies merge successfully, have finite geometry and retain picking IDs (1690.712987ms)
+✔ finish grain keeps a physical scale across differently sized interior boxes (2.949882ms)
+✔ soft furnishings have sculpted depression, finite normals and bounded indexed topology (43.149587ms)
+✔ workstation includes readable small scale tools and open cup finish (31.191507ms)
+✔ lecture hall uses fixed seats with a clear central aisle inside its room (22.438266ms)
+BJS - [01:58:33]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:38]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:39]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:40]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:42]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:42]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:43]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:44]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:44]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:45]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:45]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:46]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:47]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:48]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:48]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:49]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:50]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:51]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:52]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:52]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:53]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:54]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:54]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:56]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:57]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:58]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:58]: Babylon.js v9.26.2 - Null engine
+BJS - [01:59:00]: Babylon.js v9.26.2 - Null engine
+BJS - [01:59:01]: Babylon.js v9.26.2 - Null engine
+BJS - [01:59:02]: Babylon.js v9.26.2 - Null engine
+BJS - [01:59:03]: Babylon.js v9.26.2 - Null engine
+BJS - [01:59:04]: Babylon.js v9.26.2 - Null engine
+BJS - [01:59:05]: Babylon.js v9.26.2 - Null engine
+BJS - [01:59:06]: Babylon.js v9.26.2 - Null engine
+BJS - [01:59:07]: Babylon.js v9.26.2 - Null engine
+✔ all 74 Babylon floor scenes construct and dispose without missing registrations (35488.431328ms)
+✔ indexed rounded furniture preserves the original curved surface and normals with metre-scale UVs (16.001834ms)
+✔ all cargo and survey rotor arms meet their motors and only rotor blades spin (144.755192ms)
+✔ specialist schedules receive equipment appropriate to their program (1.023543ms)
+BJS - [01:58:33]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:33]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:34]: Babylon.js v9.26.2 - Null engine
+BJS - [01:58:34]: Babylon.js v9.26.2 - Null engine
+✔ render failure stops scheduling before recovery disposes a renderer (1.112985ms)
+✔ teardown cancels both queued frames and a frame stopped during its callback (0.231322ms)
+✔ failed atmosphere compilation restores the screen target and renderer settings (0.4399ms)
+✔ fallback and discarded asset cleanup release shared geometry, materials and textures once (1.921291ms)
+✔ one broken disposal listener cannot block other resources or scene removal (0.747305ms)
+✔ a floor construction callback failure releases the engine and installed input handlers (504.607744ms)
+✔ a later frame failure disposes the tour once and reports recovery instead of repeating (466.315269ms)
+✔ losing focus cancels touch movement and residual camera motion (408.349389ms)
+✔ an invalid floor request leaves the existing valid tour usable (381.609947ms)
+✔ shipped Blender furnishings load with finite transforms and cull during aerial views (35.333861ms)
+✔ high-DPR interiors never fall below CSS resolution and obey the selected pixel budget (1.235857ms)
+✔ furniture contains structural supports, five casters, input devices and server units (97.089408ms)
+✔ reference room fixtures stay differentiated by program (1.130111ms)
+✔ Trust Vault guided room arrival paths remain open at visitor eye height (532.005177ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 36318.728547

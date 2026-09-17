@@ -1,0 +1,135 @@
+- main "Interactive 3D campus":
+  - region "Schematic campus map":
+    - heading "Explore the campus plans." [level=1]
+    - paragraph: 3D graphics are unavailable in this browser. Select a facility to explore its schematic floor plans.
+    - group "35 facilities and their relative landscape positions":
+      - button "CF-01 The Prism":
+        - generic: "01"
+      - button "CF-02 The Neural Block":
+        - generic: "02"
+      - button "CF-03 The Vault":
+        - generic: "03"
+      - button "CF-04 Royal Library & Hybrid Living Academy":
+        - generic: "04"
+      - button "CF-05 Nexus Labs Production Complex":
+        - generic: "05"
+      - button "CF-06 Signal Velocity Growth War Room":
+        - generic: "06"
+      - button "CF-07 Binary Loom Manufacturing Foundry / Glyph Forge Works":
+        - generic: "07"
+      - button "CF-08 Titan Works":
+        - generic: "08"
+      - button "CF-09 Vector Hub":
+        - generic: "09"
+      - button "CF-10 Materials + Inventory Warehouse":
+        - generic: "10"
+      - button "CF-11 Eden Spire":
+        - generic: "11"
+      - button "CF-12 Vitality Center":
+        - generic: "12"
+      - button "CF-13 Eon Core Longevity Research Pavilion":
+        - generic: "13"
+      - button "CF-14 Cognara Mind Behavioral Intelligence Institute":
+        - generic: "14"
+      - button "CF-15 Kinetic Edge Performance Center":
+        - generic: "15"
+      - button "CF-16 Civic Core Public Hub":
+        - generic: "16"
+      - button "CF-17 Terra Axis Living Systems Yard":
+        - generic: "17"
+      - button "CF-18 Nomad Nexus Global Mobility Hub":
+        - generic: "18"
+      - button "CF-19 Juris Guard Regulatory Command Wing":
+        - generic: "19"
+      - button "CF-20 Aether Link Mesh Operations Spire":
+        - generic: "20"
+      - button "CF-21 EnerGenius + Helios Central Utility Plant":
+        - generic: "21"
+      - button "CF-22 Visitor, Security and Campus Operations Center":
+        - generic: "22"
+      - button "CF-23 Employee Commons and Wellness Village":
+        - generic: "23"
+      - button "CF-24 Kinetic Energy Operations Center (KEOC)":
+        - generic: "24"
+      - button "CF-25 Gaia Synthesis Bio-Energy Center":
+        - generic: "25"
+      - button "CF-26 The Orbital Foundry — Astral Forge":
+        - generic: "26"
+      - button "CF-27 The Matter Works — Materia Nova":
+        - generic: "27"
+      - button "CF-28 The Water Observatory — Aqua Meridian":
+        - generic: "28"
+      - button "CF-29 The Living Provision — Nourish Grid":
+        - generic: "29"
+      - button "CF-30 The Trust Vault — Sovereign Key":
+        - generic: "30"
+      - button "CF-31 The Resilience House — Praesidium Mutual":
+        - generic: "31"
+      - button "CF-32 The Exchange Pavilion — Mercantile Circuit":
+        - generic: "32"
+      - button "CF-33 The Human Systems Institute — Human Foundry":
+        - generic: "33"
+      - button "CF-34 The Energy Commons — Volta Grid":
+        - generic: "34"
+      - button "CF-35 The Care Village — Hearth Nexus":
+        - generic: "35"
+    - generic: Schematic overview · exterior locations follow the artwork · north at top
+- banner:
+  - link "△ COLLECTIVE AI THE LIVING CAMPUS":
+    - /url: ./
+    - generic: △
+    - text: COLLECTIVE AI
+    - generic: THE LIVING CAMPUS
+  - generic: 220 acres
+  - generic: 35 facilities
+  - generic: 6 districts
+  - button "Facilities ☰"
+- region "Selected facility":
+  - generic: CF-35
+  - button "Close facility details": ×
+  - heading "The Care Village — Hearth Nexus" [level=2]
+  - paragraph: Living systems
+  - text: 70,000
+  - generic: PROGRAM AREA · SQ FT
+  - text: "2"
+  - generic: FLOORS TO EXPLORE
+  - paragraph: Family arrival · Care support · Accessible-home demo · Caregiver training
+  - button "3D tour unavailable" [disabled]
+  - button "View floor plan ↗":
+    - text: View floor plan
+    - generic: ↗
+  - text: Program and floor count from the supplied schematic design package.
+- status: CF-35 selected · schematic floor plans available
+- dialog "The Care Village — Hearth Nexus":
+  - text: CF-35 · SCHEMATIC FLOOR PLAN
+  - heading "The Care Village — Hearth Nexus" [level=2]
+  - button "Close floor plan" [active]: ×
+  - text: Floor
+  - combobox "Plan floor":
+    - option "L01"
+    - option "L02" [selected]
+  - paragraph: 250.0 × 140.0 ft · 12 ft central circulation
+  - group "The Care Village — Hearth Nexus, floor 2, six proposed program zones":
+    - generic: STAIR / LIFT / MEP
+    - generic: STAIR / LIFT / MEP
+    - 'button "Room 1: Care learning"':
+      - generic: "01"
+    - 'button "Room 2: Accessible-home demo"':
+      - generic: "02"
+    - 'button "Room 3: Support teams"':
+      - generic: "03"
+    - 'button "Room 4: Private consultation"':
+      - generic: "04"
+    - 'button "Room 5: Family rooms"':
+      - generic: "05"
+    - 'button "Room 6: Quiet activities"':
+      - generic: "06"
+  - text: ROOM PROGRAM
+  - button "1. Care learning" [pressed]
+  - button "2. Accessible-home demo"
+  - button "3. Support teams"
+  - button "4. Private consultation"
+  - button "5. Family rooms"
+  - button "6. Quiet activities"
+  - status: Care learning · 72.7 × 64.0 ft · 4,651 sq ft gross zone
+  - paragraph: Schematic design from the supplied package. Room zones are proposed gross blocks, not surveyed interiors. Furniture is omitted from this plan.
