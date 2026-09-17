@@ -44,7 +44,8 @@ export function createLandscape(){
 
  const oval=new T.Shape();oval.absellipse(0,0,SITE.width*.52,SITE.depth*.52,0,Math.PI*2,false,0);
  const ovalGeo=new T.ShapeGeometry(oval,64);ovalGeo.rotateX(-Math.PI/2);
- const campusMat=materials.grass.clone();campusMat.color=new T.Color(0x3f6e32);campusMat.map=textures.grass;campusMat.emissive=new T.Color(0x163010);campusMat.emissiveIntensity=.12;
+ const campusMat=materials.grass.clone();campusMat.map=textures.grass.clone();campusMat.map.repeat.set(1,1);campusMat.emissiveIntensity=0;
+ const lawnUv=ovalGeo.attributes.uv,lawnPos=ovalGeo.attributes.position;for(let i=0;i<lawnUv.count;i++)lawnUv.setXY(i,lawnPos.getX(i)/24,lawnPos.getZ(i)/24);
  const campusPad=new T.Mesh(ovalGeo,campusMat);campusPad.position.y=.04;campusPad.receiveShadow=true;campusPad.name='campus-lawn';root.add(campusPad);
 
  const roads=[];
@@ -149,24 +150,27 @@ export function createLandscape(){
   if(free(x,z))trees.push({x,z,s:5.6+random()*5.8,pink:random()<.12});
  }
  const trunkG=new T.CylinderGeometry(.28,.58,1,7);
- const leafG=mergeGeometries([
-  (()=>{const g=new T.SphereGeometry(1,9,7);g.scale(1.08,.72,1.08);g.translate(0,.12,0);return g;})(),
-  (()=>{const g=new T.SphereGeometry(.58,8,6);g.translate(.42,.2,.16);return g;})(),
-  (()=>{const g=new T.SphereGeometry(.5,8,6);g.translate(-.36,.16,-.22);return g;})(),
-  (()=>{const g=new T.SphereGeometry(.46,8,6);g.translate(.06,.4,-.3);return g;})(),
- ]);
+ // A branched, open crown assembled from small overlapping foliage clusters.
+ // No solid central ellipsoid: the gaps and branch tips define the silhouette.
+ const crownParts=[];
+ for(let i=0;i<14;i++){
+  const a=i*2.39996,y=-.45+i/13*.95,rr=Math.sqrt(Math.max(.1,1-y*y))*.67;
+  const g=new T.SphereGeometry(.29+(i%3)*.025,6,4);
+  g.scale(1,.85,1);g.translate(Math.cos(a)*rr,y,Math.sin(a)*rr);crownParts.push(g);
+ }
+ const leafG=mergeGeometries(crownParts);crownParts.forEach(g=>g.dispose());
  const dummy=new T.Object3D();
  for(const type of ['trunk','leaf','pink']){
   const list=type==='trunk'?trees:trees.filter(t=>t.pink===(type==='pink'));
   if(!list.length)continue;
   const mesh=new T.InstancedMesh(type==='trunk'?trunkG:leafG,materials[type],list.length);
-  mesh.name=type+'-groves';mesh.castShadow=false;mesh.receiveShadow=false;
+  mesh.name=type+'-groves';mesh.castShadow=true;mesh.receiveShadow=true;
   for(let i=0;i<list.length;i++){
    const t=list[i];
    dummy.position.set(t.x,type==='trunk'?t.s*.5:t.s*1.48,t.z);
    dummy.scale.set(type==='trunk'?.5:t.s,type==='trunk'?t.s:t.s*1.18,type==='trunk'?.5:t.s);
    dummy.rotation.set(0,random()*6.28,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
-   if(type!=='trunk')mesh.setColorAt(i,new T.Color().setHSL(type==='pink'?.95:.28+random()*.05,.58+random()*.18,.46+random()*.16));
+   if(type!=='trunk')mesh.setColorAt(i,new T.Color().setScalar(.72+random()*.38));
   }
   root.add(mesh);
  }

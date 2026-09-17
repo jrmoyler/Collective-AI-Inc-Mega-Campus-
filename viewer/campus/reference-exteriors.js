@@ -22,40 +22,24 @@ function curvedWing(b,x,z,w,d,h,levels=2){
 }
 export function referenceExterior(b,f,{block,drum}){const {w,d,h,id}=f;
  if(id===1){
-  // Aerial: crystalline blue HQ. Infographic: oculus crown and occupied cantilevers.
-  block(b,0,0,w*1.12,d*1.06,10,2);
-  const pts=[[-w*.42,-d*.35],[w*.3,-d*.45],[w*.48,d*.2],[0,d*.43],[-w*.43,d*.2]];
-  const vertices=[];
-  for(let i=0;i<5;i++){
-   const a=pts[i],c=pts[(i+1)%5],top=h+(i===0?14:i===2?-6:2);
-   vertices.push(a[0],10,a[1],c[0],10,c[1],c[0]*.55,top,c[1]*.55,a[0],10,a[1],c[0]*.55,top,c[1]*.55,a[0]*.55,h,a[1]*.55);
-   line(b,'gold',[[a[0],10,a[1]],[a[0]*.55,h,a[1]*.55]],.6);
+  // CF-01 infographic: vertical curtain wall, occupied cantilevers and a roof
+  // oculus. The former cone-like taper contradicted this governing reference.
+  block(b,-w*.17,0,w*.67,d*.83,h,12,'dark');
+  b.box('dark',-w*.5,h*.4,d*.24,w*.12,h*.79,d*.34);
+  for(const y of [h*.23,h*.47,h*.71]){
+   block(b,w*.34,d*.13,w*.54,d*.53,8,1,'dark',y);
+   b.box('leaf',w*.34,y+8.5,d*.13,w*.45,.3,d*.44);
+   for(const side of [-1,1])b.box('glazing',w*.34,y+9.2,d*.13+side*d*.25,w*.53,1.2,.025);
   }
-  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(vertices,3));g.computeVertexNormals();
-  b.add(g,'blueGlass');g.dispose();
-  for(let y=16;y<h-4;y+=7){
-   const s=1-(y-10)/(h-10)*.42;
-   for(let i=0;i<5;i++){
-    const a=pts[i],c=pts[(i+1)%5];
-    line(b,y%14<7?'warmWin':'gold',[[a[0]*s,y,a[1]*s],[c[0]*s,y,c[1]*s]],.22);
-   }
+  cylinder(b,'stone',-w*.13,h+.35,0,w*.25,.5);
+  cylinder(b,'glazing',-w*.13,h+2.3,0,w*.25,3.8);
+  ring(b,'gold',-w*.13,h+4.3,0,w*.265,.16);
+  ring(b,'cyan',-w*.13,h+4.5,0,w*.263,.075);
+  for(let a=0;a<Math.PI*2;a+=Math.PI/16){
+   const xx=-w*.13+Math.sin(a)*w*.25,zz=Math.cos(a)*w*.25;
+   b.box('steel',xx,h+2.3,zz,.09,3.8,.09);
   }
-  b.box('warmWin',0,(10+h)*.5,0,w*.16,h-16,d*.16);
-  cylinder(b,'gold',0,h+12,0,.4,26,.12);
-  ring(b,'cyan',0,h+4,0,w*.16,.4);
-  ring(b,'violet',0,4.2,0,w*.78,.5);
-  cylinder(b,'glass',-w*.18,h+1,-d*.06,w*.26,5);
-  ring(b,'gold',-w*.18,h+3.6,-d*.06,w*.28,.32);
-  for(let a=0;a<6.28;a+=Math.PI/8){
-   const x=-w*.18+Math.sin(a)*w*.26,z=-d*.06+Math.cos(a)*w*.26;
-   b.box('gold',x,h+2,z,.12,4,.12);
-  }
-  for(const side of [-1,1]){
-   b.box('blueGlass',side*w*.36,h*.42,d*.16,w*.26,7,d*.4);
-   b.box('gold',side*w*.36,h*.42+3.7,d*.16,w*.28,.22,d*.42);
-   b.box('warmWin',side*w*.36,h*.42,d*.16+d*.2,w*.2,5,.12);
-  }
-  for(let i=0;i<7;i++)cylinder(b,'steel',-w*.32+i*2,h+5+i%3,-d*.15,.16,8+i%3*3);
+  for(let i=0;i<7;i++)cylinder(b,'steel',-w*.37+i*1.9,h+3+i%3,-d*.28,.16,6+i%3*3);
   return true;
  }
  if([6,18,19,23,29,31,32,33,34,35].includes(id)){

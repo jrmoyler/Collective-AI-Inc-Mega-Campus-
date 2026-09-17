@@ -14,3 +14,23 @@ export function paintSurface(c,name){
   else {for(let i=0;i<26000;i++){const v=150+rand()*85;c.fillStyle=`rgba(${v},${v},${v},.22)`;c.fillRect(rand()*size,rand()*size,.5+rand()*2,.5+rand()*2);}if(name==='stone'){c.strokeStyle='#a5a6a3';c.lineWidth=.4;for(let i=0;i<16;i++){c.beginPath();const y=rand()*size;c.moveTo(0,y);c.bezierCurveTo(140,y+22,340,y-12,512,y+10);c.stroke();}}}
  }
 }
+
+function rng(seed){return()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};}
+export function paintFinish(ctx,name,base,size=name==='display'?1024:384){
+ const r=rng(name.split('').reduce((a,c)=>a+c.charCodeAt(0),17));
+ const R=(base>>16)&255,G=(base>>8)&255,B=base&255;ctx.fillStyle=`rgb(${R},${G},${B})`;ctx.fillRect(0,0,size,size);
+ if(name==='stone'||name==='plaster'||name==='porcelain'){
+  ctx.globalAlpha=.18;for(let i=0;i<180;i++){const x=r()*size,y=r()*size,l=20+r()*120;ctx.strokeStyle=i%4?'#ffffff':'#908b82';ctx.lineWidth=.4+r()*1.2;ctx.beginPath();ctx.moveTo(x,y);ctx.bezierCurveTo(x+l*.25,y+(r()-.5)*14,x+l*.65,y+(r()-.5)*12,x+l,y+(r()-.5)*10);ctx.stroke();}
+  ctx.globalAlpha=1;
+ }else if(name==='oak'||name==='book'){
+  for(let y=0;y<size;y+=5){const n=Math.sin(y*.17)*9;ctx.strokeStyle=`rgba(50,24,10,${.08+r()*.08})`;ctx.lineWidth=1+r()*1.4;ctx.beginPath();ctx.moveTo(0,y);for(let x=0;x<size;x+=20)ctx.lineTo(x,y+n*Math.sin(x*.035+r()));ctx.stroke();}
+ }else if(['graphite','steel','brass','rubber'].includes(name)){
+  for(let y=0;y<size;y+=2){const a=.025+r()*.05;ctx.strokeStyle=`rgba(255,255,255,${a})`;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(size,y+(r()-.5)*.8);ctx.stroke();}
+ }else if(name==='fabric'||name==='leather'){
+  for(let i=0;i<size*6;i++){const x=r()*size,y=r()*size,v=r()>.5?255:20;ctx.fillStyle=`rgba(${v},${v},${v},${.025+r()*.045})`;ctx.fillRect(x,y,1+r()*1.5,1+r()*1.5);}
+ }else if(name==='leaf'||name==='soil'){
+  for(let i=0;i<size*3;i++){ctx.fillStyle=`rgba(0,0,0,${.02+r()*.05})`;ctx.fillRect(r()*size,r()*size,1+r()*3,1+r()*3);}
+ }else if(name==='display'){
+  paintSurface(ctx,'display');
+ }
+}

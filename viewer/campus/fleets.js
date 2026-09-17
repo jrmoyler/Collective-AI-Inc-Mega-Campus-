@@ -44,17 +44,17 @@ function android(){
  root.scale.setScalar(1.65);return {root,limbs};
 }
 function rotor(root,x,z,r){
- const arm=new T.Mesh(new T.CapsuleGeometry(.055,Math.hypot(x,z)-.12,4,8),materials.dark);arm.position.set(x*.5,0,z*.5);arm.rotation.z=Math.PI/2;arm.rotation.y=Math.atan2(z,x);root.add(arm);
- const motor=new T.Mesh(new T.CylinderGeometry(.18,.22,.18,18),materials.steel);motor.position.set(x,0,z);root.add(motor);
+ const arm=new T.Mesh(new T.CapsuleGeometry(.055,Math.hypot(x,z)-.12,4,8),materials.dark);arm.position.set(x*.5,0,z*.5);arm.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),new T.Vector3(x,0,z).normalize());arm.name="rotor arm";root.add(arm);
+ const motor=new T.Mesh(new T.CylinderGeometry(.18,.22,.18,18),materials.steel);motor.name="rotor motor";motor.position.set(x,0,z);root.add(motor);
  const guard=new T.Mesh(new T.TorusGeometry(r,.035,6,36),materials.dark);guard.rotation.x=Math.PI/2;guard.position.set(x,.08,z);root.add(guard);
- const blade=new T.Mesh(new T.BoxGeometry(r*1.65,.025,.08),materials.cyan);blade.position.set(x,.1,z);root.add(blade);
+ const blade=new T.Mesh(new T.BoxGeometry(r*1.65,.025,.08),materials.cyan);blade.name="rotor blade";blade.position.set(x,.1,z);root.add(blade);return blade;
 }
 function drone(cargo=false){
  const root=new T.Group();root.name=cargo?'cargo-drone':'survey-drone';
  const shell=new T.Mesh(new T.SphereGeometry(1,24,14),materials.white);shell.scale.set(cargo?1.2:.68,.22,cargo?.9:.52);shell.castShadow=true;root.add(shell);
  const belly=new T.Mesh(new T.SphereGeometry(.55,18,10),materials.dark);belly.scale.set(1,.38,.8);belly.position.y=-.18;root.add(belly);
  const lens=new T.Mesh(new T.SphereGeometry(.18,18,12),materials.glass);lens.position.set(0,-.26,.46);root.add(lens);const aperture=new T.Mesh(new T.SphereGeometry(.07,14,10),materials.cyan);aperture.position.set(0,-.26,.61);root.add(aperture);
- const span=cargo?1.7:1.25,rr=cargo?.48:.38;for(const x of [-1,1])for(const z of [-1,1])rotor(root,x*span,z*span,rr);
+ const blades=[];const span=cargo?1.7:1.25,rr=cargo?.48:.38;for(const x of [-1,1])for(const z of [-1,1])blades.push(rotor(root,x*span,z*span,rr));root.rotorBlades=blades;
  if(cargo){const pod=new T.Mesh(new T.BoxGeometry(1.5,.85,1.2),materials.copper);pod.position.y=-.75;pod.castShadow=true;root.add(pod);for(const x of [-.56,.56]){const rail=new T.Mesh(new T.CapsuleGeometry(.04,.92,4,8),materials.gold);rail.rotation.z=Math.PI/2;rail.position.set(x,-1.18,0);root.add(rail);}}
  return root;
 }
@@ -62,4 +62,4 @@ export function createFleets(roads){const root=new T.Group();root.name='autonomo
  for(let i=0;i<shuttleN;i++){const road=roads[i%roads.length];const object=vehicle(i%5===0);root.add(object);agents.push({object,curve:road.curve,offset:i/shuttleN,speed:(i%5===0?7:11)/road.curve.getLength(),lane:i%2===0?3:-3});}
  for(let i=0;i<androidN;i++){const a=android(),road=roads[i%roads.length];root.add(a.root);agents.push({object:a.root,limbs:a.limbs,curve:road.curve,offset:i/androidN,speed:2.2/road.curve.getLength(),lane:road.width/2+3});}
  for(let i=0;i<droneN;i++){const points=SPIRES.filter((_,j)=>j%2===i%2).map(([x,z])=>new T.Vector3(x,52+(i%3)*7,z));const curve=new T.CatmullRomCurve3(points,true);const object=drone(i%4===0);object.scale.setScalar(1.45);root.add(object);agents.push({object,curve,offset:i/droneN,speed:14/curve.getLength(),lane:0});}
- return {root,counts:{shuttles:30,freight:8,androids:24,drones:16},update(t){for(const a of agents){try{if(!a.curve||!a.object)continue;const span=a.curve.closed?1:2;let phase=(a.offset+t*a.speed)%span;if(!Number.isFinite(phase))continue;if(phase<0)phase+=span;const reverse=phase>1;const u=Math.min(.999,Math.max(.001,reverse?2-phase:phase));const p=a.curve.getPoint(u);const d=a.curve.getTangent(u);if(!p||!d||!Number.isFinite(p.x)||!Number.isFinite(d.x))continue;if(reverse)d.negate();a.object.position.copy(p);a.object.position.x-=d.z*a.lane;a.object.position.z+=d.x*a.lane;a.object.rotation.y=Math.atan2(d.x,d.z);if(a.limbs)a.limbs.forEach((l,j)=>l.rotation.x=Math.sin(t*4+j%2*Math.PI)*(j<4?.32:.5));const blade=a.object.children?.find?.(c=>c.material===materials.cyan);if(blade)blade.rotation.y=t*18;}catch{}}}};}
+ return {root,counts:{shuttles:30,freight:8,androids:24,drones:16},update(t){for(const a of agents){try{if(!a.curve||!a.object)continue;const span=a.curve.closed?1:2;let phase=(a.offset+t*a.speed)%span;if(!Number.isFinite(phase))continue;if(phase<0)phase+=span;const reverse=phase>1;const u=Math.min(.999,Math.max(.001,reverse?2-phase:phase));const p=a.curve.getPoint(u);const d=a.curve.getTangent(u);if(!p||!d||!Number.isFinite(p.x)||!Number.isFinite(d.x))continue;if(reverse)d.negate();a.object.position.copy(p);a.object.position.x-=d.z*a.lane;a.object.position.z+=d.x*a.lane;a.object.rotation.y=Math.atan2(d.x,d.z);if(a.limbs)a.limbs.forEach((l,j)=>l.rotation.x=Math.sin(t*4+j%2*Math.PI)*(j<4?.32:.5));a.object.rotorBlades?.forEach((blade,i)=>{blade.rotation.y=t*18*(i%3===0?1:-1);});}catch{}}}};}

@@ -12,39 +12,47 @@ function skinFor(form){
  if(form==='water')return 'copper';
  return 'stone';
 }
-function occ(q,k,salt){
- return ((Math.imul((Math.round(q*4)+k*19+salt*7)|0,2654435761)>>>0)%10)>3;
-}
-function block(b,x,z,w,d,h,levels=3,skin='stone'){
- const body=['dark','copper','civic','white'].includes(skin)?skin:'stone';
- const floors=Math.max(1,levels);
- const fh=h/floors;
- const cap=floors>=3?.92:1;
- b.box(body,x,h*cap/2,z,w,h*cap,d);
- if(cap<1)b.box(body,x,h*cap+(h*(1-cap))/2,z,w*.86,h*(1-cap),d*.86);
- for(const sx of [-1,1])for(const sz of [-1,1])b.box(body,x+sx*(w/2-.32),h*.48,z+sz*(d/2-.32),.64,h*.96,.64);
+// Occupied curtain-wall bays: actual glazing, slabs and furnishings, not
+// emissive rectangles attached to a solid block. All parts share material batches.
+function block(b,x,z,w,d,h,levels=3,skin='stone',base=0){
+ const target=b;b={box:(mat,xx,yy,zz,...rest)=>target.box(mat,xx,yy+base,zz,...rest)};
+ const body=['dark','copper','civic','white'].includes(skin)?skin:'dark';
+ const floors=Math.max(1,levels),fh=h/floors;
+ b.box(body,x+w*.1,h/2,z-d*.2,w*.3,h,d*.4);
  for(let k=0;k<floors;k++){
-  if(k===0&&fh<4.5)continue;
-  const y=(k+.55)*fh;
-  const ww=Math.min(2.3,Math.max(1.35,fh*.36));
-  const wh=fh*.4;
+  const bottom=k*fh,clear=fh-.5;
+  b.box('stone',x,bottom+.16,z,w,.32,d);
   for(const side of [-1,1]){
-   for(let q=-w/2+3.2;q<w/2-2.4;q+=6.6){
-    if(!occ(q,k,side+2))continue;
-    b.box('warmWin',x+q,y,z+side*(d/2+.06),ww,wh,.07);
+   b.box('glazing',x,bottom+fh*.5,z+side*d/2,w-.5,clear,.035);
+   b.box('glazing',x+side*w/2,bottom+fh*.5,z,.035,clear,d-.5);
+   b.box('dark',x,bottom+fh-.18,z+side*d/2,w,.36,.30);
+   b.box('gold',x,bottom+fh-.39,z+side*(d/2+.02),w,.035,.045);
+   for(let q=-w/2+.25;q<w/2;q+=2.6){
+    b.box('dark',x+q,bottom+fh*.5,z+side*d/2,.11,fh,.2);
+    if(q>-w/2+1&&q<w/2-1&&d>8){
+     const zz=z+side*(d/2-1.5);
+     b.box('stone',x+q,bottom+.9,zz,1.5,.08,.72);
+     for(const dx of [-.58,.58])b.box('steel',x+q+dx,bottom+.5,zz,.055,.8,.5);
+     b.box('dark',x+q,bottom+1.2,zz+side*.18,.58,.35,.04);
+     b.box('cyan',x+q,bottom+1.2,zz+side*.153,.5,.27,.012);
+     b.box('dark',x+q,bottom+.53,zz-side*.7,.47,.12,.45);
+     b.box('dark',x+q,bottom+.82,zz-side*.87,.47,.55,.055);
+    }
    }
-   for(let q=-d/2+3.5;q<d/2-2.6;q+=7.1){
-    if(!occ(q,k,side+8)||k%2)continue;
-    b.box('warmWin',x+side*(w/2+.06),y,z+q,.07,wh*.88,ww*.82);
-   }
+   for(let q=-d/2+.25;q<d/2;q+=2.6)b.box('dark',x+side*w/2,bottom+fh*.5,z+q,.2,fh,.11);
+   b.box('warm',x,bottom+fh-.52,z+side*(d/2-1.2),w-.7,.035,.075);
   }
  }
- b.box('stone',x,h+.24,z,w+1,.34,d+1);
- if(w>18)b.box('solar',x-w*.14,h+.5,z-d*.16,w*.36,.12,d*.26);
+ b.box('stone',x,h+.12,z,w+.4,.24,d+.4);
+ for(const side of [-1,1]){
+  b.box('dark',x,h+.55,z+side*d/2,w,.86,.18);
+  b.box('dark',x+side*w/2,h+.55,z,.18,.86,d);
+ }
+ if(w>18){b.box('solar',x-w*.14,h+.5,z-d*.16,w*.36,.12,d*.26);for(let q=-w*.31;q<w*.04;q+=1.5)b.box('steel',x+q,h+.57,z-d*.16,.025,.02,d*.26);}
  b.box('leaf',x+w*.08,h+.44,z+d*.18,w*.32,.2,d*.18);
- if(w>22)b.box('dark',x+w*.28,h+.68,z-d*.2,3.1,1.05,2.4);
- b.box('gold',x,2.7,z+d/2+2,Math.min(w*.28,11),.26,3.2);
- for(const s of [-1,1])b.box(body,x+s*w*.14,1.35,z+d/2+2.9,.3,2.7,.3);
+ if(w>22){b.box('steel',x+w*.28,h+.8,z-d*.2,3.1,1.35,2.4);for(let q=-1.2;q<1.3;q+=.3)b.box('dark',x+w*.28+q,h+1.49,z-d*.2,.14,.02,2.1);}
+ b.box('gold',x,2.7,z+d/2+2,Math.min(w*.28,11),.16,3.2);
+ for(const side of [-1,1])b.box(body,x+side*Math.min(w*.14,5),1.35,z+d/2+2.9,.2,2.7,.2);
 }
 
 function drum(b,x,z,r,h){

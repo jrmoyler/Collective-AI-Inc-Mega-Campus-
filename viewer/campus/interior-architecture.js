@@ -43,6 +43,20 @@ export function createInteriorGeometry(f,level=0){
   for(const offset of [-.27,.27]){k.box('room ceiling baffle','graphite',r.x+offset*r.w,3.77,r.z,.13,.18,r.d*.74,.015);k.box('room light diffuser','warm',r.x+offset*r.w,3.665,r.z,.08,.025,r.d*.73,.006);}
   for(const zOff of [-.31,.31])k.box('room ceiling rail','brass',r.x,3.73,r.z+zOff*r.d,r.w*.72,.022,.04,.003);
   const panelW=Math.max(.7,Math.min(1.4,r.w/6));for(let px=left+panelW*.75;px<right-panelW*.5;px+=panelW*1.45){if(Math.abs(px-r.doorX)<door)continue;k.box('feature wall panel','oak',px,1.85,r.z+side*(r.d/2-.075),panelW,2.05,.035,.01);k.box('panel brass reveal','brass',px,1.85,r.z+side*(r.d/2-.10),panelW*.82,.012,.018,.003);}
+  // Flush building services preserve the programmed room and arrival clearances.
+  const wall=r.z+side*(r.d/2-.14);
+  for(const dx of [-.25,.25]){
+   const xx=r.x+dx*r.w;
+   k.box('duplex outlet plate','porcelain',xx,.35,wall,.09,.13,.014,.004);
+   for(const dy of [-.025,.025])k.box('socket aperture','graphite',xx,.35+dy,wall-side*.009,.025,.014,.006,.001);
+   k.box('supply diffuser frame','porcelain',xx,3.835,r.z,.58,.055,.58,.008);
+   for(let q=0;q<5;q++)k.box('supply diffuser louver','graphite',xx-.2+q*.10,3.802,r.z,.015,.012,.42,.002);
+  }
+  k.cylinder('smoke detector','porcelain',r.x,3.80,r.z,.065,.045);
+  k.cylinder('sprinkler escutcheon','steel',r.x+.75,3.815,r.z,.042,.025);
+  k.cylinder('sprinkler head','brass',r.x+.75,3.775,r.z,.014,.07);
+  k.box('room thermostat','porcelain',dr+.28,1.42,edge+side*.12,.085,.11,.026,.008);
+  k.box('thermostat display','display',dr+.28,1.44,edge+side*.139,.057,.035,.004,.001);
   const furniture=new InteriorKit(`room-${i+1}: ${r.name}`);const kind=furnishRoom(furniture,r);if(r.w>7&&r.d>6){planter(furniture,r.x-r.w*.34,r.z-side*r.d*.31,.36);planter(furniture,r.x+r.w*.34,r.z-side*r.d*.31,.36);}const room=furniture.finish(true);room.userData.kind=kind;root.add(room);
  }
  for(const side of [-1,1]){const x=side*(w/2-core*.4);planter(k,x,-corridor*.31,.35);k.box('elevator surround','graphite',side*(w/2-.13),1.65,0,.14,3.3,2,.015);k.box('elevator door','steel',side*(w/2-.23),1.5,0,.04,2.8,1.48,.008);k.box('elevator door seam','graphite',side*(w/2-.257),1.5,0,.012,2.8,.012,.001);k.box('elevator brass header','brass',side*(w/2-.24),3.0,0,.05,.08,1.58,.004);}

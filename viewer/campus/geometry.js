@@ -13,7 +13,7 @@ function paint(size, fn){
 function setRGB(data,i,r,g,b,a=255){const o=i*4;data[o]=Math.max(0,Math.min(255,r));data[o+1]=Math.max(0,Math.min(255,g));data[o+2]=Math.max(0,Math.min(255,b));data[o+3]=a;}
 
 export const textures={
- grass:paint(256,(data,size,rand)=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){const n=Math.sin(x*.17)*Math.cos(y*.13)+rand()*.55;setRGB(data,y*size+x,48+n*22+rand()*10,102+n*32+rand()*16,36+n*12);}}),
+ grass:paint(256,(data,size,rand)=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){const n=(rand()-.5)*.8;setRGB(data,y*size+x,48+n*22+rand()*10,102+n*32+rand()*16,36+n*12);}}),
  bark:paint(128,(data,size,rand)=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){const v=58+Math.sin(x*.9)*10+rand()*28;setRGB(data,y*size+x,v,v*.78,v*.52);}}),
  canopy:paint(128,(data,size,rand)=>{for(let i=0;i<size*size;i++){const v=rand();setRGB(data,i,28+v*50,78+v*100,22+v*30);}}),
  blossom:paint(128,(data,size,rand)=>{for(let i=0;i<size*size;i++){const v=rand();setRGB(data,i,190+v*60,90+v*50,128+v*50);}}),
@@ -57,6 +57,15 @@ export const materials={
  water:std({color:0x1ec4d8,metalness:.84,roughness:.055,envMapIntensity:2.6,emissive:0x0a5870,emissiveIntensity:.62}),
  kinetic:std({color:0x00e8d4,emissive:0x00fff0,emissiveIntensity:5.2,roughness:.14}),
 };
+
+// Albedo maps contain the material color; do not multiply it a second time.
+for(const name of ['steel','stone','dark','grass','road','path','white','leaf','pink','trunk','civic','copper','night']){
+ materials[name].color.set(0xffffff);
+}
+materials.concrete.map=textures.porcelain;
+for(const [name,scale] of [['stone',.012],['path',.012],['road',.006],['civic',.012],['copper',.002]]){
+ materials[name].bumpMap=materials[name].map;materials[name].bumpScale=scale;
+}
 
 const boxGeo=new T.BoxGeometry(1,1,1,1,1,1);const temp=new T.Object3D();
 export class Batch{

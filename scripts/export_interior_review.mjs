@@ -1,6 +1,7 @@
 import {createCanvas} from '@napi-rs/canvas';
-import {paintSurface} from '../viewer/campus/surface-textures.js';
+import {paintFinish} from '../viewer/campus/surface-textures.js';
 import fs from 'node:fs';
+import {FINISHES} from '../viewer/campus/interior-kit.js';
 import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
 import {FACILITIES} from '../viewer/campus/data.js';
 import {createInteriorGeometry} from '../viewer/campus/interior-architecture.js';
@@ -10,4 +11,4 @@ let vertices=0;root.traverse(o=>{if(o.isMesh){vertices+=o.geometry.attributes.po
 fs.writeFileSync(`/tmp/interior-${f.id}.json`,JSON.stringify({facility:f.key,layout,vertices}));
 const glb=await new GLTFExporter().parseAsync(root,{binary:true});fs.writeFileSync(`/tmp/interior-${f.id}.glb`,Buffer.from(glb));console.log(f.key,vertices);
 
-fs.mkdirSync('/tmp/campus-textures',{recursive:true});for(const name of ['stone','oak','fabric','display']){const size=name==='display'?1024:512;const c=createCanvas(size,size);paintSurface(c.getContext('2d'),name);fs.writeFileSync('/tmp/campus-textures/'+name+'.png',c.toBuffer('image/png'));}
+fs.mkdirSync('/tmp/campus-textures',{recursive:true});for(const [name,p] of Object.entries(FINISHES)){const size=name==='display'?1024:384;const c=createCanvas(size,size);paintFinish(c.getContext('2d'),name,p.color,size);fs.writeFileSync('/tmp/campus-textures/'+name+'.png',c.toBuffer('image/png'));}
