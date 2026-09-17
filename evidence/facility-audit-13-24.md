@@ -37,3 +37,38 @@ The first rendered comparison was inspected and rejected as insufficient: CF-15 
 - **All twelve:** removed broad green roof carpets in favor of stone terrace surfaces and narrow planted edge beds. Introduced local neutral architectural glazing (alpha 0.20, metalness 0.03, depthWrite false) so actual slabs and furniture remain legible instead of becoming hidden by stacked dark reflective walls. Other modules' materials are unchanged.
 
 All twelve revised groups pass finite-geometry checks. CF-15 and CF-17 expose `userData.envelopeHeight` for label/camera integration. Updated reference comparison renders are requested; these changes are not an exact-match acceptance claim.
+
+## Occupied-facade and equipment refinement
+
+Each invocation of the actual `wing()` builder records its local footprint, floor elevations and floor count. The new equipment pass uses those exact records, including raised and offset research wings. It does not place furniture relative to the entire facility bounding rectangle. Small booths receive only compact workstations. Equipment stays behind the front glazing; ceiling task lights have suspension rods reaching the actual ceiling.
+
+The following modeled equipment is added to a separate named `CF-xx-program-equipment` group carrying `userData.nearDetail = true` for distance culling:
+
+| Facilities | Fine visible equipment |
+|---|---|
+|13|Clinical couches on wheeled frames, drawer cabinets, compact analyzer enclosures, sample vials and task workstations|
+|14|Paired interview chairs, privacy panels, tabletop recorder fixtures and consent/research screens|
+|15|Treadmills with actual rails/consoles, recovery couches and instrument cabinets|
+|16–17|Maker/materials benches, glazed small fabrication enclosures, material sample trays and drawers|
+|18|Deployment workstations and stacked field cases with straps and handles|
+|19|Legal workstations, bound file volumes and evidence drawer cabinets|
+|20,24|Triple-screen operations consoles, equipment cabinets and status indicators|
+|21|SCADA cabinets with control displays, small process pipes and handwheel valves|
+|22|Visitor/dispatch workstations, paired displays, badge-reader fixtures and visitor chairs|
+|23|Dining settings, upholstered lounge furniture and occasional tables|
+
+Always-visible structural refinements include bronze floor sills, head reveals, steel frame detail, four-sided terrace glazing, bronze handrails and anchored balustrade posts. No shared/global material was modified.
+
+CPU generation checks passed for all twelve variants with finite bounds. Combined architecture plus fine detail ranges from approximately 43,000 to 100,000 triangles per facility, below the specified 180,000 limit. Matched representative CF-13 and CF-21 before/after renders have been requested for visual inspection; this entry does not presume that their appearance has passed before those images are reviewed.
+
+### Representative image inspection completed
+
+Inspected `evidence/facility-detail-review/CF-13-comparison.jpg` and `CF-21-comparison.jpg` after the render agent asserted matched camera transforms. CF-13 now visibly contains work displays in the upper research wing and equipment along the lower frontage; CF-21 shows the added control cabinets/process fixtures within the glazed service wings. Terrace railings and bronze floor reveals are also visible. No obvious new detached furniture or out-of-footprint equipment was observed in these two views.
+
+The gain is modest at whole-building scale: the architectural envelopes remain visually sparse compared with the densely furnished, illuminated original cutaways. These images validate added geometry placement and visibility, not exact source fidelity, photorealism, browser rendering, or physical-device performance. Small equipment is deliberately human scale rather than oversized to dominate an aerial view.
+
+### Lazy fine-detail construction
+
+`createFacility13to24(f, {deferDetails:false})` preserves eager construction by default for existing export/tests. With `deferDetails:true`, the root stores `userData.createNearDetail` and contains no fine-equipment geometry until that factory is called. The factory returns the same tagged detail group; callers own adding/caching/disposal. A separate factory scope captures only the numeric facility ID and copied lightweight wing records, not the original envelope Batch, root, or constructed geometries.
+
+Verified all twelve variants: deferred roots initially contain no fine-detail child; factories return tagged groups; after adding factory results, eager/deferred triangle totals are identical. No intended visual change.

@@ -1,4 +1,39 @@
 {
+  "framebuffers": {
+    "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+    "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "stages": [],
+    "maxSamples": 4,
+    "rgba16fSampleCounts": [
+      4
+    ],
+    "depth24SampleCounts": [
+      4
+    ],
+    "framebuffers": [
+      {
+        "name": "rgba16f-texture-depth24",
+        "status": "0x8cd5",
+        "errors": []
+      },
+      {
+        "name": "rgba16f-msaa-depth24",
+        "samples": 4,
+        "status": "0x8cd5",
+        "errors": []
+      }
+    ],
+    "chosenSamples": 4,
+    "incompleteNegativeControl": "0x8cd7",
+    "readback": [
+      0.25,
+      0.5,
+      0.75,
+      1
+    ],
+    "errors": [],
+    "passed": true
+  },
   "negativeControl": {
     "passed": true,
     "native": {
@@ -28,10 +63,11 @@
     "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
     "stages": []
   },
-  "scope": "Offline GLSL ES 3.00 vertex/fragment compilation and interface linking only. No browser, WebGL context, rendered-frame, device, visual-fidelity or performance validation.",
+  "scope": "Offline native GLSL ES compilation/interface linking and RGBA16F framebuffer clear/resolve/readback. No browser, WebGL context, rendered-frame, device, visual-fidelity or performance validation.",
   "cases": [
     {
       "name": "water-daylight",
+      "language": "GLSL ES 3.00",
       "passed": true,
       "vertexSHA256": "903fa2350c75781bfa9bf2c07c74a60a0f09833fb8d86ddf6925d08d2c73f9e8",
       "fragmentSHA256": "c4ad3bd59a6a638b8e1339e4f632abbb160865bbd693a7bf39a9a8b71d7e0c14",
@@ -59,6 +95,7 @@
     },
     {
       "name": "water-shadowed",
+      "language": "GLSL ES 3.00",
       "passed": true,
       "vertexSHA256": "7740b5cd5274ffeca2deb647db7c8d8a9e842e8c906d4e2eb67aefa9f77bcec9",
       "fragmentSHA256": "f291742a86756cb26fdd835577a6dfb5449245ebe234d80357b1b2d8defd510c",
@@ -86,6 +123,7 @@
     },
     {
       "name": "foliage-instanced",
+      "language": "GLSL ES 3.00",
       "passed": true,
       "vertexSHA256": "df3e8f34488264ce05c97b3181e970abaebec100bf83a4250b13c669fc9eb85a",
       "fragmentSHA256": "7ac832dfa635c3a9e3b45f54694f6ef6afcafbe34ce9b38295ae2ccb8d19d6e1",
@@ -113,6 +151,7 @@
     },
     {
       "name": "blossom-instanced-shadowed",
+      "language": "GLSL ES 3.00",
       "passed": true,
       "vertexSHA256": "981ef851bea78ab866423b0fbeaf2e1c61c49a219735ba13af873571237f947d",
       "fragmentSHA256": "7e4632cfb6bc41999a87f830412f557a0d144efa34f8752ea424e82cd79e3ba1",
@@ -140,6 +179,7 @@
     },
     {
       "name": "foliage-uninstanced",
+      "language": "GLSL ES 3.00",
       "passed": true,
       "vertexSHA256": "c1e4cd68f177cb394015d6b64326280707e14d56fff08d228edc65f487eb6983",
       "fragmentSHA256": "19e0901d2f0ed6dcfa197c52f3377169505385aa35ccfbd46a5ba6e0f3297698",
@@ -167,6 +207,7 @@
     },
     {
       "name": "kinetic-road-cyan",
+      "language": "GLSL ES 3.00",
       "passed": true,
       "vertexSHA256": "81bfe8b33c6e0272406dd8fabd1af0dd1878097bb8f17a3353ab4d0533e09a30",
       "fragmentSHA256": "9bff218817ce1de0423ab7333ff42b6625ecf74b7b262141cbcd49941d928df0",
@@ -194,6 +235,7 @@
     },
     {
       "name": "kinetic-road-gold",
+      "language": "GLSL ES 3.00",
       "passed": true,
       "vertexSHA256": "c7a974b4abdb6ddeac74feb5cc5f186128ae154392c54d36fc3d95a0f6ad0d6c",
       "fragmentSHA256": "f1791c904eca4a2ab05b8c16ef028ee6d116402a21d68389635edeed265f09fc",
@@ -221,9 +263,262 @@
     },
     {
       "name": "atmospheric-sky",
+      "language": "GLSL ES 3.00",
       "passed": true,
       "vertexSHA256": "6f73b2756187b685ed3dc95c9ee238fcc9b97d285f3dbeeb7657845a44d772af",
       "fragmentSHA256": "06ab4885cdb84720422b26abd796c2a0753fcd6d0551d1c2c5113c307243da83",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "bloom-luminosity-highpass",
+      "language": "GLSL ES 3.00",
+      "passed": true,
+      "vertexSHA256": "f3bfc496f6e6b6debac1e9a560fbd15f0fca64e37b3d2d47afae6619a7c9ba67",
+      "fragmentSHA256": "08193f5a62a15001ac50d391704a30b759412c4d9fc4cf128c3547b35c8dafbb",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "bloom-blur-mip-0",
+      "language": "GLSL ES 3.00",
+      "passed": true,
+      "vertexSHA256": "efffddeac1a37e947fdd95b316b884592d45db5ef91c9021e51a5a94c2dbc1ea",
+      "fragmentSHA256": "b2b15a74def928e4ea31602371a9013fd492de5711d507b3d8daad8508143ca1",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "bloom-blur-mip-1",
+      "language": "GLSL ES 3.00",
+      "passed": true,
+      "vertexSHA256": "a38c7a886d34ccde8d1d35dc6c7dcb9991ffdc1fab06d146df39affd0c54b466",
+      "fragmentSHA256": "075a1e31b53546342c82e8dcc379f81eb957dc2e8c1122bc0291fe26fbe072ad",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "bloom-blur-mip-2",
+      "language": "GLSL ES 3.00",
+      "passed": true,
+      "vertexSHA256": "e62d876490d86a04771abbf4c57ee02174160c83723eac3c0fb9f358640717ff",
+      "fragmentSHA256": "8a4f0ddd658797e1b39433e9178d74cea0ba5e86648d75d74d319b2f32d5e385",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "bloom-blur-mip-3",
+      "language": "GLSL ES 3.00",
+      "passed": true,
+      "vertexSHA256": "6234481c3abe19e18bbab5264ae5ca066e98816b199d181eb9a240df2c252bc5",
+      "fragmentSHA256": "076d3a266f488017b30d0cae153f04b54fbbcf2fca7536a933b347ef53e1ab68",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "bloom-blur-mip-4",
+      "language": "GLSL ES 3.00",
+      "passed": true,
+      "vertexSHA256": "97ef008651a23ec591154365ff415733f9c44f8782ffae2fa8770e1106617ae3",
+      "fragmentSHA256": "37932e62d769eeae1fbcc1e8a6ed04899d62dff69f31fec40a6f4324f8dade2b",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "bloom-composite",
+      "language": "GLSL ES 3.00",
+      "passed": true,
+      "vertexSHA256": "f2b7e0e21c2c991f69b7b07933ec79485b49457fa9e5f060c6b0c173eecd70d9",
+      "fragmentSHA256": "3f52be6fe33a395183126c7e8faa66b0792bceafbd3fd6ffd1c43301ff086e13",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "bloom-additive-copy",
+      "language": "GLSL ES 3.00",
+      "passed": true,
+      "vertexSHA256": "afcf197292bfe5e4e3567394cba30addef1641bb972ab4b510465d0016609fb0",
+      "fragmentSHA256": "4a03a23a65e16e06ed99f34667777b248b8aa992c62b51b5ba02920c1b101b3f",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "output-aces-srgb",
+      "language": "GLSL ES 1.00 (raw OutputPass)",
+      "passed": true,
+      "vertexSHA256": "80b5436fc32a28d9342f158a69085438aa79c436ec4e8a043a2f3107b2ef5d94",
+      "fragmentSHA256": "a355ea2e06bca037d3757f7206fd477c15839fa04a9c2d1a01200cd7632a85d0",
       "native": {
         "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
         "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",

@@ -26,3 +26,28 @@ The dedicated test verifies all twelve finite merged assemblies, nonzero geometr
 ## Render-review correction
 
 After inspecting `comparison-01-12.jpg` and re-opening both originals, CF-03 was split into curved side wings with a higher central secure entrance and recessed circular core collar. The prominent cylindrical vault shown below the cutaway ground line remains subterranean; it is not falsely raised to the surface. CF-07 received six shallow roof monitors, vertical glazed clerestories, pitched solar panels and louvered HVAC housings. These address the generic roofline in the first render; they do not constitute pixel-match acceptance.
+
+## Occupied facade pass
+
+All twelve shells now contain a separately merged `nearDetail` group. The campus controller can hide those fine parts at aerial distances without removing facade structures or distinctive rooflines. Added details follow individual source programs rather than repeating an office kit across every building:
+
+- CF-01: six-seat cantilever conference tables, wall displays, alternating-level tower workstations; continuous projecting mullion reveals.
+- CF-02: rack manifolds and cooling pipe runs, rooftop control displays and meeting table; buttress construction joints.
+- CF-03: biometric lane gates, reception workstations and security displays inside the actual surface wings.
+- CF-04: multilevel bookshelves with separate books/shelves and lecture seating; exposed amber-core vertical ribs.
+- CF-05: physical camera tripods, camera bodies, podcast microphones and acoustic wall baffles; soundstage structural frames.
+- CF-06: campaign review tables and multi-panel analytics walls on each distinct occupied tier.
+- CF-07: enclosed 3D printers with build plates, gantries, heads and objects; ground-level prototype stations; deep bronze front facade fins.
+- CF-08: six articulated industrial robot cells, grippers and safety cages positioned near visible perimeter bays, outside existing machine footprints; crane-hall roof bracing.
+- CF-09: battery-swap cabinets in front docking bays and a staffed-scale tower workstation.
+- CF-10: receiving roller conveyors, supported legs and pallet platforms behind dock openings.
+- CF-11: irrigation manifolds, individual hydroponic pots and crop-analytics desks; living-wall attachment bands.
+- CF-12: examination beds, service rails, bedside displays and clinical desks inside the three occupied levels; pale facade band reveals.
+
+A locally cloned neutral architectural glazing material uses opacity .20, metalness .02 and roughness .11. Global campus materials remain unchanged. This avoids tinted, reflection-heavy glazing obscuring the actual floor and equipment geometry. Each facility remains below the dedicated CPU test's 160,000-triangle bound, including near details; combined shells and details remain below 400,000 triangles.
+
+Matched CF-01 and CF-08 close-oblique renders are required for this pass. Blender evidence remains a geometry/material review, not browser-render or mobile-performance validation.
+
+### Matched render inspection
+
+Inspected the saved CF-01 and CF-08 before/after close-oblique pairs in `evidence/facility-detail-review/`. CF-01 now visibly exposes occupied tower desks, suite tables/chairs and display surfaces; warm projecting mullion lines improve facade depth. CF-08 now visibly exposes robotic cells and safety cages, with continuous crane-hall bracing. No obvious placement collision appeared in these views. The industrial machinery remains small against the canonical tall building envelope, and both results remain substantially less visually rich than the atlas. The pass improves occupied geometry but does **not** close exact-reference or photorealism gates.

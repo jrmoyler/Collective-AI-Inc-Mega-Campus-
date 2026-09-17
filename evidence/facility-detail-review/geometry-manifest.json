@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "key": "CF-01",
+    "name": "The Prism",
+    "meshes": 17,
+    "vertices": 49258,
+    "min": [
+      -30,
+      -1.469576117223083e-15,
+      -28
+    ],
+    "max": [
+      30,
+      115,
+      28
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 8,
+    "key": "CF-08",
+    "name": "Titan Works",
+    "meshes": 13,
+    "vertices": 11186,
+    "min": [
+      -46.5,
+      -3.086110121454182e-15,
+      -60
+    ],
+    "max": [
+      46.5,
+      31,
+      60
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 13,
+    "key": "CF-13",
+    "name": "Eon Core Longevity Research Pavilion",
+    "meshes": 19,
+    "vertices": 72726,
+    "min": [
+      -35.200477600097656,
+      -1.4466140069350846e-15,
+      -25.79547882080078
+    ],
+    "max": [
+      35.63999938964844,
+      30.485000610351562,
+      32.2
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 21,
+    "key": "CF-21",
+    "name": "EnerGenius + Helios Central Utility Plant",
+    "meshes": 19,
+    "vertices": 49822,
+    "min": [
+      -34.084999084472656,
+      -8.597020719859421e-16,
+      -22.81999969482422
+    ],
+    "max": [
+      34.814998626708984,
+      30.3799991607666,
+      27.7
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 27,
+    "key": "CF-27",
+    "name": "The Matter Works \u2014 Materia Nova",
+    "meshes": 18,
+    "vertices": 143872,
+    "min": [
+      -34,
+      -2.5013410210429155e-15,
+      -47.5
+    ],
+    "max": [
+      34,
+      27.209999084472656,
+      47.5
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 34,
+    "key": "CF-34",
+    "name": "The Energy Commons \u2014 Volta Grid",
+    "meshes": 18,
+    "vertices": 236190,
+    "min": [
+      -42.5,
+      -1.9857647715434317e-15,
+      -39
+    ],
+    "max": [
+      42.5,
+      31.6299991607666,
+      39
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  }
+]

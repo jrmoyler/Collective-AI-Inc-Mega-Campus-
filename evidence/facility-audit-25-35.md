@@ -31,3 +31,19 @@ Inspected `evidence/facility-review/comparison-25-35.jpg` and reopened the origi
 CF26 review exposed an opaque roof plate beneath the nominal clerestory. Replaced the solid roof with four surrounding roof sections and an actual glazed central opening. Re-render requested for CF26. Other comparisons still show material/transparency and detailed facade-equipment differences; no acceptance score or exact match is claimed.
 
 CF25 comparison also exposed a dark cap on the supposed living atrium. The revised drum now uses annular floor rims and an open oculus with a tall branched tree canopy, preserving a continuous multi-storey planted void. Re-render requested for CF25.
+
+## Occupied-frontage detail pass
+
+Added `nearDetail` groups containing program-specific equipment and furniture, placed from each actual wing's floor elevation and glazing setback. Labs (25–28) have workbenches and instruments; food research (29) has stainless preparation fixtures; security (30) has equipment consoles; consultation/teaching (31/33) have tables and chairs; marketplace (32) has display cases; energy research (34) has controls and equipment cabinets; care (35) has beds, cabinets and training tables. Each group has 5–7 material meshes and can be distance-culled independently. Existing major architectural elements and distinguishing equipment stay visible outside these groups.
+
+A local cloned glazing material uses neutral tint, opacity .20, metalness .025 and low reflection intensity to reveal the occupied floors. Global campus materials are unchanged. This does not imply the separate interior tours have the same floor layout.
+
+CF27 gained external pipe distribution racks, upright service supports, pilot-terrace balustrades, rooftop process housings and vertical facade ribs. Corrected older vessel locations that fell between the actual slabs. CF29 gained roller-door slats, loading seals/bollards, curved copper fins and growing-house roof frames. CF34 gained an exterior transformer demonstration bank with cooling fins and bushings, a continuous service gantry, stronger structural ribs and terrace rails. CF27/29/34 also gained source-observed opaque graphite wall sections in their facades.
+
+Final geometry audit of this pass: CF25 60,944; CF26 21,572; CF27 78,088; CF28 47,196; CF29 76,148; CF30 40,888; CF31 73,944; CF32 81,640; CF33 76,504; CF34 95,668; CF35 112,584 triangles including near details. All remain below 180,000 triangles per facility. Finite position buffers verified.
+
+Inspected matched-camera `evidence/facility-detail-review/CF-27-comparison.jpg` and `CF-34-comparison.jpg`. CF27 now visibly contains workstation rows and a stronger process/pipe/roof identity; CF34 has visible console rows and structural cladding. The first CF34 after view revealed the transformer row was hidden inside the lower wing; moved it onto the actual frontage apron and requested a final same-camera CF34 update. Isolated offline lighting is not browser/device evidence. Sparse-looking high-volume spaces and differences from the source’s selective cutaway presentation remain; these images do not establish exact-reference acceptance.
+
+Final CF34 matched render inspected: the three transformer cabinets and service gantry now stand visibly on the entrance apron outside the curtain wall; no floating placement observed. Geometry held stable after this correction.
+
+Performance integration: `createFacility25to35(f, {deferDetails:true})` builds the architecture only and installs `root.userData.createNearDetail()`. The factory captures scalar wing placement records and facility data, not a Batch or prebuilt detail geometry. Default eager construction preserves export/test appearance. Checked all eleven IDs: lazy factory output matches eager detail vertex counts, while deferred shells contain no preconstructed near-detail group.

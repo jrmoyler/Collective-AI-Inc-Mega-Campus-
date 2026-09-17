@@ -50,6 +50,89 @@ if '--version' in sys.argv:
     print(json.dumps(result))
     sys.exit(0)
 
+if '--framebuffers' in sys.argv:
+    get_integer = function('glGetIntegerv', None, [UINT, c.POINTER(INT)])
+    get_internal = function('glGetInternalformativ', None, [UINT, UINT, UINT, INT, c.POINTER(INT)])
+    get_error = function('glGetError', UINT, [])
+    maximum = INT()
+    get_integer(0x8D57, c.byref(maximum))  # GL_MAX_SAMPLES
+
+    def sample_counts(internal_format):
+        count = INT()
+        get_internal(0x8D41, internal_format, 0x9380, 1, c.byref(count))
+        values = (INT * count.value)()
+        get_internal(0x8D41, internal_format, 0x80A9, count.value, values)
+        return list(values)
+
+    def allocate(kind):
+        value = UINT()
+        function('glGen' + kind, None, [INT, c.POINTER(UINT)])(1, c.byref(value))
+        return value.value
+
+    def errors():
+        found = []
+        for _ in range(16):
+            error = get_error()
+            if not error:
+                break
+            found.append(hex(error))
+        return found
+
+    bind_fbo = function('glBindFramebuffer', None, [UINT, UINT])
+    check_fbo = function('glCheckFramebufferStatus', UINT, [UINT])
+    bind_rbo = function('glBindRenderbuffer', None, [UINT, UINT])
+    storage_ms = function('glRenderbufferStorageMultisample', None, [UINT, INT, UINT, INT, INT])
+    storage = function('glRenderbufferStorage', None, [UINT, UINT, INT, INT])
+    attach_rbo = function('glFramebufferRenderbuffer', None, [UINT, UINT, UINT, UINT])
+    result.update({'maxSamples': maximum.value, 'rgba16fSampleCounts': sample_counts(0x881A), 'depth24SampleCounts': sample_counts(0x81A6), 'framebuffers': []})
+    common = set(result['rgba16fSampleCounts']) & set(result['depth24SampleCounts'])
+    chosen = max([value for value in common if value <= min(4, maximum.value)] or [0])
+    result['chosenSamples'] = chosen
+    # No attachments is a known-incomplete negative control.
+    missing = allocate('Framebuffers')
+    bind_fbo(0x8D40, missing)
+    result['incompleteNegativeControl'] = hex(check_fbo(0x8D40))
+    failed = result['incompleteNegativeControl'] == hex(0x8CD5)
+    resolved = allocate('Framebuffers')
+    bind_fbo(0x8D40, resolved)
+    texture = allocate('Textures')
+    function('glBindTexture', None, [UINT, UINT])(0x0DE1, texture)
+    function('glTexImage2D', None, [UINT, INT, INT, INT, INT, INT, UINT, UINT, PTR])(0x0DE1, 0, 0x881A, 128, 128, 0, 0x1908, 0x140B, None)
+    function('glFramebufferTexture2D', None, [UINT, UINT, UINT, UINT, INT])(0x8D40, 0x8CE0, 0x0DE1, texture, 0)
+    depth = allocate('Renderbuffers')
+    bind_rbo(0x8D41, depth)
+    storage(0x8D41, 0x81A6, 128, 128)
+    attach_rbo(0x8D40, 0x8D00, 0x8D41, depth)
+    status = check_fbo(0x8D40)
+    result['framebuffers'].append({'name': 'rgba16f-texture-depth24', 'status': hex(status), 'errors': errors()})
+    failed |= status != 0x8CD5
+    draw = resolved
+    if chosen:
+        draw = allocate('Framebuffers')
+        bind_fbo(0x8D40, draw)
+        for attachment, internal_format in [(0x8CE0, 0x881A), (0x8D00, 0x81A6)]:
+            buffer = allocate('Renderbuffers')
+            bind_rbo(0x8D41, buffer)
+            storage_ms(0x8D41, chosen, internal_format, 128, 128)
+            attach_rbo(0x8D40, attachment, 0x8D41, buffer)
+        status = check_fbo(0x8D40)
+        result['framebuffers'].append({'name': 'rgba16f-msaa-depth24', 'samples': chosen, 'status': hex(status), 'errors': errors()})
+        failed |= status != 0x8CD5
+    function('glClearColor', None, [c.c_float] * 4)(.25, .5, .75, 1)
+    function('glClear', None, [UINT])(0x4000 | 0x0100)
+    if chosen:
+        bind_fbo(0x8CA8, draw)  # READ_FRAMEBUFFER
+        bind_fbo(0x8CA9, resolved)  # DRAW_FRAMEBUFFER
+        function('glBlitFramebuffer', None, [INT] * 8 + [UINT, UINT])(0, 0, 128, 128, 0, 0, 128, 128, 0x4000, 0x2600)
+    bind_fbo(0x8D40, resolved)
+    pixel = (c.c_float * 4)()
+    function('glReadPixels', None, [INT, INT, INT, INT, UINT, UINT, PTR])(64, 64, 1, 1, 0x1908, 0x1406, pixel)
+    result['readback'] = list(pixel)
+    result['errors'] = errors()
+    result['passed'] = not failed and not result['errors'] and all(not target['errors'] for target in result['framebuffers']) and all(abs(actual - expected) < .005 for actual, expected in zip(pixel, [.25, .5, .75, 1]))
+    print(json.dumps(result))
+    sys.exit(0 if result['passed'] else 1)
+
 create_shader = function('glCreateShader', UINT, [UINT])
 set_source = function('glShaderSource', None, [UINT, INT, c.POINTER(c.c_char_p), c.POINTER(INT)])
 compile_shader = function('glCompileShader', None, [UINT])

@@ -1,6 +1,6 @@
 // Individual atlas reconstructions. Dimensions are schematic envelope fits, not surveys.
 import * as T from 'three';
-import {Batch,cylinder,ring} from './geometry.js';
+import {Batch,cylinder,ring,materials} from './geometry.js';
 
 const rect=(x,z,w,d)=>[[x-w/2,z-d/2],[x+w/2,z-d/2],[x+w/2,z+d/2],[x-w/2,z+d/2]];
 function plate(b,points,y,depth,mat='stone'){
@@ -176,13 +176,114 @@ entry(b,w*.25,d*.46,w*.24);
 }
 };
 
-export function createFacility01to12(f){
+// Near-camera furnishings use actual visible room positions and program-specific
+// equipment. Each group is independent of the structural shell for distance LOD.
+function chair(b,x,y,z,ry=0){
+ b.box('dark',x,y+.47,z,.55,.12,.52,ry);b.box('dark',x-Math.sin(ry)*.23,y+.80,z-Math.cos(ry)*.23,.55,.58,.085,ry);
+ cylinder(b,'steel',x,y+.23,z,.035,.4,.035,8);
+ for(let j=0;j<4;j++){const a=j*Math.PI/2;beam(b,[x,y+.13,z],[x+Math.cos(a)*.32,y+.07,z+Math.sin(a)*.32],.022);}
+}
+function meeting(b,x,y,z,w=5){
+ const p=rounded(x,z,w,1.7,.5);plate(b,p,y+.8,.10,'copper');
+ for(const side of [-1,1]){b.box('dark',x+side*w*.28,y+.4,z,.12,.8,1.05);for(let j=-1;j<=1;j++)chair(b,x+j*w*.28,y,z+side*1.25,side<0?Math.PI:0);}
+}
+function display(b,x,y,z,w,h){b.box('dark',x,y,z,w+.12,h+.12,.14);b.box('blueGlass',x,y,z+.085,w,h,.025);for(let i=0;i<3;i++)b.box('cyan',x-w*.35+i*w*.24,y-h*.2+i*h*.12,z+.105,w*.18,.025,.009);}
+function pipe(b,points,r=.05){for(let i=0;i<points.length-1;i++)beam(b,points[i],points[i+1],r,'steel');}
+function printedMachine(b,x,y,z){
+ b.box('dark',x,y+.2,z,1.1,.4,1);for(const side of [-1,1])for(const back of [-1,1])b.box('steel',x+side*.49,y+1,z+back*.44,.055,1.6,.055);
+ b.box('glazing',x,y+1,z+.47,.95,1.45,.035);b.box('white',x,y+1.83,z,1.12,.12,1.02);b.box('steel',x,y+.75,z,.85,.05,.82);
+ beam(b,[x-.44,y+1.4,z],[x+.44,y+1.4,z],.035);b.box('dark',x+.12,y+1.32,z,.18,.20,.18);cylinder(b,'white',x,y+.95,z,.16,.35,.12,10);display(b,x+.35,y+.3,z+.515,.20,.13);
+}
+function robotCell(b,x,y,z){
+ cylinder(b,'steel',x,y+.20,z,.6,.4,.6,12);
+ const joints=[[x,y+.5,z],[x,y+1.6,z],[x+.9,y+2.5,z],[x+1.7,y+1.65,z]];
+ for(let i=0;i<joints.length-1;i++)beam(b,joints[i],joints[i+1],i===0?.18:.13,'white');
+ for(const [xx,yy,zz] of joints)cylinder(b,'dark',xx,yy,zz,.20,.22,.20,10);
+ for(const side of [-1,1])beam(b,[x+1.7,y+1.65,z],[x+1.8,y+1.40,z+side*.13],.045,'steel');
+ for(const side of [-1,1]){b.box('gold',x+side*2.3,y+.85,z,.045,1.7,3.5);for(let q=-1.5;q<1.7;q+=.4)b.box('steel',x+side*2.3,y+.85,z+q,.025,1.7,.025);}
+}
+function occupiedDetails(b,f){const {id,w,d,h}=f;const tags=[];
+ switch(id){
+ case 1:
+  for(const frac of [.20,.43,.66]){const y=h*frac+.28;meeting(b,w*.31,y,d*.14,7);display(b,w*.30,y+2.7,-d*.12+1,6.5,2.6);tags.push('cantilever meeting suite');}
+  for(let level=1;level<11;level+=2)office(b,-w*.20,level*h*.88/12+.28,d*.28,5);
+  break;
+ case 2:
+  for(let row=0;row<2;row++){const z=d*.17-row*5;racks(b,-w*.20,h*.83/3+.28,z,5);pipe(b,[[-w*.23,h*.83/3+3.5,z],[w*.02,h*.83/3+3.5,z],[w*.02,h*.83/3+.5,z]]);}
+  meeting(b,-w*.15,h*.83+.28,-d*.03,6);for(let i=-1;i<=1;i++)display(b,-w*.15+i*2.6,h*.83+2.7,-d*.23+1,2.3,1.3);tags.push('liquid-cooled rack manifolds','mission-control consoles');break;
+ case 3:
+  for(const side of [-1,1]){office(b,side*w*.265,.28,0,2);display(b,side*w*.265,2.7,-d*.17,3.5,1.4);}
+  for(const side of [-1,1]){b.box('steel',side*1.45,.65,d*.13,.22,1.3,.7);display(b,side*1.45,1.28,d*.13+.38,.15,.20);b.box('glazing',side*.9,.65,d*.13,1,1.05,.035);}tags.push('biometric entry lanes','secure reception');break;
+ case 4:
+  for(let level=0;level<4;level++){
+   const y=level*h/4+.28;for(const x of [-w*.40,-w*.24]){for(const z of [-d*.19,d*.08]){b.box('copper',x,y+1.2,z,1.7,2.4,.48);for(let row=0;row<5;row++){b.box('stone',x,y+.25+row*.44,z+.26,1.6,.05,.5);for(let j=-2;j<=2;j++)b.box(j%2?'dark':'white',x+j*.27,y+.43+row*.44,z+.24,.19,.31,.25);}}}
+   for(let j=-2;j<=2;j++)chair(b,w*.3+j*1.6,y+.20,d*.10,Math.PI);
+  }tags.push('library stacks','lecture seating');break;
+ case 5:
+  for(let i=-1;i<=1;i++){const x=-w*.25+i*3,y=h*.40+.28,z=d*.02;for(let j=0;j<3;j++){const a=j*Math.PI*2/3;beam(b,[x,y+1.35,z],[x+Math.cos(a)*.6,y+.05,z+Math.sin(a)*.6],.025);}b.box('dark',x,y+1.48,z,.5,.35,.65);cylinder(b,'dark',x,y+1.48,z+.37,.16,.22,.13,10);}
+  meeting(b,w*.24,.28,d*.18,4);for(let j=-1;j<=1;j++)pipe(b,[[w*.24+j*1.15,1.15,d*.18],[w*.24+j*1.15,1.55,d*.18+.25]],.025);
+  for(let j=0;j<8;j++)b.box('dark',w*.42,h*.59,-d*.32+j*1.5,.25,h*.25,.8);tags.push('production cameras and tripods','podcast microphones','acoustic wall baffles');break;
+ case 6:
+  for(const [y,z] of [[.28,d*.2],[h*.34+.28,0],[h*.65+.28,-d*.20]]){meeting(b,0,y,z,6);for(let j=-1;j<=1;j++)display(b,j*2.4,y+2.4,z-3,2.1,1.25);}
+  tags.push('campaign review tables','analytics display walls');break;
+ case 7:
+  for(let row=0;row<2;row++)for(let col=0;col<4;col++)printedMachine(b,-w*.33+col*3.2,h*.70+.28,-d*.28+row*5);
+  for(let i=-1;i<=1;i++){const x=w*.24+i*2.8;office(b,x,.28,d*.32,1);cylinder(b,'steel',x,1.5,d*.32,.18,.35,.12,10);}
+  tags.push('enclosed print farm','prototype gallery benches');break;
+ case 8:
+  for(const x of [-w*.30,w*.30])for(const z of [-d*.29,0,d*.33])robotCell(b,x,.28,z);
+  tags.push('articulated assembly robots','machine safety cages');break;
+ case 9:
+  for(let i=-2;i<=2;i++){const x=i*w*.16;for(let j=0;j<3;j++){b.box('dark',x+(j-1)*.8,.85,d*.30,.65,1.5,.7);display(b,x+(j-1)*.8,1.4,d*.30+.37,.35,.25);b.box('gold',x+(j-1)*.8,.3,d*.30+.4,.50,.055,.04);}}
+  office(b,0,h*.84+.28,-d*.13,2);tags.push('battery-swap cabinets','air traffic console');break;
+ case 10:
+  for(let i=-1;i<=1;i++){const x=i*w*.22,z=d*.32;b.box('steel',x,.7,z,3,.12,4);for(let j=0;j<10;j++){const geo=new T.CylinderGeometry(.07,.07,2.9,8);geo.rotateZ(Math.PI/2);b.add(geo,'steel',x,.80,z-1.8+j*.4);geo.dispose();}for(const side of [-1,1])b.box('steel',x+side*1.3,.35,z,.07,.7,3.4);b.box('copper',x,.98,z,1.3,.25,1.1);}
+  tags.push('receiving roller conveyors','staging pallets');break;
+ case 11:
+  for(let i=0;i<4;i++){const x=-w*.15+i*3.3,y=h*.25+.5,z=d*.14;pipe(b,[[x,y,z],[x,y+2.7,z],[x+1.6,y+2.7,z],[x+1.6,y+.8,z]]);for(let j=0;j<3;j++)cylinder(b,'white',x+.8,y+.6+j*.7,z,.35,.45,.30,10);}
+  office(b,w*.20,.28,d*.28,3);tags.push('irrigation manifolds','crop analytics station');break;
+ case 12:
+  for(const side of [-1,1])for(let level=0;level<3;level++){
+   const x=side*w*.30,y=level*(side<0?h:h*.96)/3+.28,z=d*.21;
+   b.box('white',x,y+.72,z,1.8,.22,3);b.box('white',x,y+.38,z,1.05,.65,1.9);b.box('white',x,y+.98,z-1.1,1.65,.32,.7);
+   pipe(b,[[x+1.5,y+.2,z-.3],[x+1.5,y+2.5,z-.3],[x+.5,y+2.5,z-.3]]);display(b,x-1.5,y+1.5,z,.75,.55);office(b,x,y,-d*.15,2);
+  }tags.push('clinical examination pods','overhead service rails','research workstations');break;
+ }
+ return tags;
+}
+function facadeIdentity(b,f){const {id,w,d,h}=f;
+ if(id===1){for(let i=0;i<6;i++){const x=-w*.43+i*w*.105;b.box('steel',x,h*.44,d*.398,.09,h*.88,.30);if(i%2===0)b.box('warm',x+.06,h*.44,d*.40,.025,h*.84,.035);}}
+ if(id===2){for(const x of [-w*.45,w*.34])for(let y=2;y<h*.83;y+=2.5)b.box('steel',x+3,y,d*.40,4,.045,.13);}
+ if(id===4){for(let i=0;i<16;i++){const a=i*Math.PI/8;beam(b,[Math.cos(a)*w*.064,1,-d*.08+Math.sin(a)*w*.064],[Math.cos(a)*w*.064,h*.87,-d*.08+Math.sin(a)*w*.064],.055,'gold');}}
+ if(id===5){for(let i=-2;i<=2;i++){const x=-w*.22+i*w*.09;beam(b,[x,h*.40,-d*.10],[x,h*.97,-d*.10],.085);}}
+ if(id===7){for(let i=0;i<20;i++){const x=-w*.44+i*w*.043;b.box('copper',x,h*.38,d*.466,.09,h*.69,.5);}}
+ if(id===8){for(let x=-w*.40;x<w*.42;x+=w*.20)beam(b,[x,h*.84,-d*.43],[x,h*.84,d*.43],.10);}
+ if(id===11){for(let y=5;y<h*.7;y+=8)b.box('stone',-w*.32,y,d*.401,w*.25,.14,.12);}
+ if(id===12){for(const x of [-w*.30,w*.30])for(let level=1;level<3;level++){const y=level*(x<0?h:h*.96)/3;b.box('white',x,y,d*.449,w*.14,.5,.20);b.box('warm',x,y-.28,d*.451,w*.14,.025,.025);}}
+}
+const atlasGlazing=materials.glazing.clone();
+atlasGlazing.name='Atlas neutral clear architectural glazing';atlasGlazing.color.set(0xc1d0d0);atlasGlazing.opacity=.20;atlasGlazing.metalness=.02;atlasGlazing.roughness=.11;atlasGlazing.envMapIntensity=.6;atlasGlazing.depthWrite=false;
+
+function nearDetailFactory(f){
+ // This closure retains only the facility description, never a built Batch or
+ // merged geometry. Fine equipment is allocated on the first close approach.
+ return function createNearDetail(){
+  const batch=new Batch(),tags=occupiedDetails(batch,f),detail=batch.finish(`${f.key}-occupied-detail`);
+  detail.userData.nearDetail=true;detail.userData.programDetails=tags;
+  detail.traverse(o=>{o.userData.facility=f.id;if(o.isMesh&&o.material===materials.glazing)o.material=atlasGlazing;});
+  return detail;
+ };
+}
+
+export function createFacility01to12(f,{deferDetails=false}={}){
  const build=builders[f.id];if(!build)return null;
- const b=new Batch();b.box('path',0,.10,0,f.w+8,.2,f.d+8);build(b,f);
+ const b=new Batch();b.box('path',0,.10,0,f.w+8,.2,f.d+8);build(b,f);facadeIdentity(b,f);
  const root=b.finish(`${f.key}-atlas-shell`);
+ const createNearDetail=nearDetailFactory(f);
+ if(deferDetails)root.userData.createNearDetail=createNearDetail;else root.add(createNearDetail());
  root.userData.facility=f.id;root.userData.referenceSource=`CF-${String(f.id).padStart(2,'0')}_Facility_Infographic.png`;
  root.userData.referenceInterpretation='Observed facade reconstruction; hidden elevations and dimensions inferred';
- root.traverse(o=>{o.userData.facility=f.id;});
+ root.traverse(o=>{o.userData.facility=f.id;if(o.isMesh&&o.material===materials.glazing)o.material=atlasGlazing;});
 
  root.userData.sculptRuntime={parts:root.children.map(c=>c.name),clickable:true};return root;
 }

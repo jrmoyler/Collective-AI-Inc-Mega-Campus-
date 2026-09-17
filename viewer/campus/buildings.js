@@ -6,8 +6,8 @@ import {sign} from './geometry.js';
 
 // Every record has an individually reconstructed envelope. Unknown IDs fail
 // explicitly instead of quietly receiving a generic family building.
-export function createFacility(f){
- const root=createFacility01to12(f)||createFacility13to24(f)||createFacility25to35(f);
+export function createFacility(f,options={}){
+ const root=createFacility01to12(f,options)||createFacility13to24(f,options)||createFacility25to35(f,options);
  if(!root)throw new Error(`Missing reference architecture for ${f.key}`);
  const height=new Box3().setFromObject(root).max.y;
  root.userData.envelopeHeight=height;

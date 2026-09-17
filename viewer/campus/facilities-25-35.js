@@ -1,7 +1,8 @@
 // Governing references: individual CF-25–35 facility infographics, inspected 2026-09-17.
 // Geometry represents visible architecture; source floor programs remain authoritative.
 import * as T from 'three';
-import {Batch,cylinder,ring,line} from './geometry.js';
+import {Batch,cylinder,ring,line,materials} from './geometry.js';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 function footprint(w,d,r=1.4){
  const s=new T.Shape(),x=w/2,z=d/2;r=Math.min(r,x*.8,z*.8);
@@ -13,6 +14,7 @@ function planter(b,x,y,z,w=3,d=2){plate(b,'stone',x,y,z,w,d,.5,.45);plate(b,'lea
 function solar(b,x,y,z,w,d){b.box('dark',x,y,z,w,.22,d);for(let xx=-w/2+.5;xx<w/2;xx+=2.2)for(let zz=-d/2+.5;zz<d/2;zz+=3.2){b.box('solar',x+xx,y+.17,z+zz,2,.10,3);b.box('steel',x+xx,y+.23,z+zz,1.95,.02,.04);}}
 function rail(b,x,y,z,w,d){for(const s of [-1,1]){b.box('glazing',x,y+.6,z+s*d/2,w,1.2,.035);b.box('steel',x,y+1.2,z+s*d/2,w,.06,.06);b.box('glazing',x+s*w/2,y+.6,z,.035,1.2,d);b.box('steel',x+s*w/2,y+1.2,z,.06,.06,d);}}
 function wing(b,x,z,w,d,h,levels=2,{skin='dark',base=0,r=1.6,roof=true,planted=false}={}){
+ b.occupiedWings??=[];b.occupiedWings.push({x,z,w,d,h,levels,base});
  const perimeter=footprint(w,d,r).getSpacedPoints(Math.max(20,Math.ceil((w+d)*.65))),fh=h/levels;
  for(let k=0;k<levels;k++){
   const y=base+k*fh;plate(b,'stone',x,y,z,w,d,.3,r);
@@ -32,7 +34,77 @@ function entrance(b,x,z,w=9,h=5){plate(b,'stone',x,.08,z+1,w+3,4,.18,.4);b.box('
 function stair(b,x,z,w,height,depth){const n=20;for(let i=0;i<n;i++)b.box('stone',x,height*(i+.5)/n,z-depth/2+depth*(i+.5)/n,w,height/n,depth/n+.02);line(b,'steel',[[x-w/2,height/n,z-depth/2],[x-w/2,height+1,z+depth/2]],.05);}
 function drum(b,x,z,r,h,levels=2,atrium=false){cylinder(b,'glazing',x,h/2,z,r,h,r,48);for(let i=0;i<=levels;i++){if(atrium)ring(b,'dark',x,i*h/levels+.1,z,r,.20);else cylinder(b,'dark',x,i*h/levels+.1,z,r+.15,.25,r+.15,48);}for(let i=0;i<40;i++){const a=i*Math.PI/20;b.box('steel',x+Math.sin(a)*r,h/2,z+Math.cos(a)*r,.1,h,.1);}}
 
-export function createFacility25to35(f){
+// Occupied frontage uses local, low-tint glazing: no global scene material mutation.
+const clearFacade=materials.glazing.clone();clearFacade.name='CF25-35 clear occupied facade';clearFacade.color.set(0xdce9e9);clearFacade.opacity=.20;clearFacade.metalness=.025;clearFacade.roughness=.16;clearFacade.envMapIntensity=.6;
+function soft(b,mat,x,y,z,w,h,d,r=.08){const g=new RoundedBoxGeometry(w,h,d,2,Math.min(r,w*.3,h*.3,d*.3));b.add(g,mat,x,y,z);g.dispose();}
+function chair(b,x,y,z){soft(b,'dark',x,y+.46,z,.52,.11,.52);soft(b,'dark',x,y+.77,z+.22,.52,.57,.10);for(const s of [-1,1])b.box('steel',x+s*.20,y+.22,z,.045,.44,.40);}
+function workbench(b,x,y,z,type){soft(b,'white',x,y+.87,z,3.6,.16,1.25);for(const xx of [-1.5,1.5])b.box('steel',x+xx,y+.44,z,.1,.88,1.1);
+ if(type==='lab'){soft(b,'steel',x-.8,y+1.20,z,.8,.5,.6);cylinder(b,'glazing',x+.8,y+1.17,z,.16,.45,.16,10);b.box('dark',x,y+1.27,z+.40,.65,.52,.08);}
+ else if(type==='food'){soft(b,'steel',x,y+1.15,z,2,.45,.7);for(const xx of [-.7,0,.7])soft(b,'copper',x+xx,y+1.42,z,.5,.10,.45);}
+ else {soft(b,'dark',x,y+1.29,z+.32,.9,.62,.08);b.box('cyan',x,y+1.29,z+.37,.78,.50,.015);chair(b,x,y,z-1);}
+}
+function meeting(b,x,y,z){soft(b,'copper',x,y+.8,z,3.6,.14,1.6,.16);for(const xx of [-1.2,1.2])b.box('dark',x+xx,y+.4,z,.10,.8,1.1);for(const xx of [-1,1])for(const zz of [-1.2,1.2])chair(b,x+xx,y,z+zz);}
+function instrument(b,x,y,z,kind='lab'){
+ soft(b,'white',x,y+1.12,z,1.8,2.2,1.1,.12);soft(b,'dark',x,y+1.42,z+.57,1.38,.80,.065,.05);b.box('cyan',x,y+1.42,z+.61,1.16,.58,.016);
+ for(let i=0;i<5;i++)b.box('steel',x,y+.35+i*.09,z+.57,1.36,.035,.03);
+ if(kind==='energy'){for(const xx of [-.4,.4])cylinder(b,'copper',x+xx,y+2.45,z,.12,.55,.12,8);}else b.box('gold',x+.58,y+.88,z+.6,.10,.10,.03);
+}
+function partition(b,x,y,z,w){b.box('glazing',x,y+1.65,z,w,3.3,.035);b.box('steel',x,y+3.3,z,w,.07,.10);for(const s of [-1,1])b.box('steel',x+s*w/2,y+1.65,z,.07,3.3,.10);}
+function nearOccupancy(f,wings){
+ const b=new Batch();
+ for(const [index,q] of wings.entries()){
+  if(q.w<6||q.d<6||q.base>f.h*.8)continue;
+  for(let floor=0;floor<q.levels;floor++){
+   const y=q.base+floor*q.h/q.levels+.34,front=q.z+q.d/2-2.4,back=q.z-q.d/2+2.5;
+   const count=Math.min(6,Math.max(1,Math.floor((q.w-4)/5.5)));
+   for(let i=0;i<count;i++){
+    const x=q.x+(i-(count-1)/2)*5.5;
+    if([25,26,27,28].includes(f.id)){workbench(b,x,y,front,'lab');if(i%2===0)instrument(b,x,y,back);}
+    else if(f.id===29){workbench(b,x,y,front,'food');if(i%2===0)soft(b,'steel',x,y+1.3,back,2.2,2.6,1.2);}
+    else if(f.id===30){instrument(b,x,y,front);if(i%2===0)workbench(b,x,y,back,'office');}
+    else if([31,33].includes(f.id)){if(i%2===0)meeting(b,x,y,front);else workbench(b,x,y,front,'office');}
+    else if(f.id===32){soft(b,'stone',x,y+.6,front,2.8,1.2,1.1);soft(b,'glazing',x,y+1.6,front,2.5,.8,.9);soft(b,'gold',x,y+1.4,front,.5,.5,.4);}
+    else if(f.id===34){instrument(b,x,y,front,'energy');workbench(b,x,y,back,'office');}
+    else if(f.id===35){if(index%2===0){soft(b,'white',x,y+.57,front,1.8,.5,2.9);soft(b,'stone',x,y+.92,front,1.75,.22,2.7);soft(b,'white',x,y+1.1,front-.9,1.3,.20,.5);soft(b,'copper',x+1.5,y+.65,front-.8,.65,1.3,.65);}else meeting(b,x,y,front);}
+   }
+   if(q.d>13){partition(b,q.x,y,q.z,q.w*.72);soft(b,'white',q.x-q.w*.32,y+1.1,q.z,1.8,2.2,.4);}
+   // Recessed ceiling coves and workstation pendant rails, attached to each floor.
+   for(const z of [front,back])b.box('warm',q.x,y+Math.min(q.h/q.levels-1,3.4),z,q.w*.7,.05,.09);
+  }
+ }
+ const result=b.finish(`CF-${f.id}-occupied-floor-details`);result.userData.nearDetail=true;result.userData.detailPurpose='facility-specific equipment, cabinetry and furniture';return result;
+}
+function identityDetails(b,f){const {id,w,d,h}=f;
+ if(id===27){
+  // Visible pilot-plant skid, guarded process gantry and external distribution rack.
+  b.box('dark',-w*.32,h*.36,d*.479,w*.22,h*.70,.6);for(const x of [-w*.46,-w*.19])b.box('stone',x,h*.5,d*.478,.7,h,.85);
+  for(const x of [-w*.475,w*.495])for(let z=-d*.40;z<d*.46;z+=6){b.box('dark',x,h*.5,z,.42,h,.7);b.box('steel',x+.04,h*.5,z+.37,.12,h,.08);}
+  for(const y of [3.5,4.1,4.7])line(b,'steel',[[w*.49,y,-d*.35],[w*.49,y,d*.27],[w*.40,y,d*.32]],.14);
+  for(const z of [-d*.3,-d*.1,d*.12]){b.box('steel',w*.51,2.8,z,.18,5.6,.25);b.box('steel',w*.49,5.6,z,1.2,.16,.25);}
+  for(const z of [d*.10,d*.38])rail(b,w*.18,h*(z>d*.2?.36:.68)+.45,z,w*.61,d*(z>d*.2?.21:.29));
+  for(const x of [w*.08,w*.28]){cylinder(b,'steel',x,h+1.6,-d*.30,1.7,3.0,1.7,24);ring(b,'dark',x,h+3.1,-d*.30,1.7,.11);b.box('steel',x,h+.9,-d*.20,2.2,1.7,2.2);}
+  for(let i=0;i<5;i++){const z=d*.29+i*2.8;b.box('gold',w*.46,.45,z,.12,.07,1.4);}
+ }else if(id===29){
+  // Distinct food/logistics frontage: articulated loading doors, seals and bollards.
+  b.box('dark',-w*.31,h*.68,d*.232,w*.18,h*.55,.5);b.box('copper',-w*.415,h*.5,d*.231,.20,h,.7);
+  for(let i=0;i<3;i++){const x=w*.06+i*w*.17;for(let k=0;k<13;k++)b.box('steel',x,1+k*.62,d*.457,w*.115,.045,.07);for(const s of [-1,1]){soft(b,'dark',x+s*w*.066,h*.19,d*.475,.55,h*.36,.55);cylinder(b,'gold',x+s*w*.073,.65,d*.54,.16,1.3,.16,10);}b.box('warm',x,h*.395,d*.495,w*.10,.06,.06);}
+  // Wraparound vertical shade fins highlight the cylindrical growing/research corner.
+  for(let i=-7;i<=7;i++){const a=i/14*Math.PI;const x=-w*.06+Math.sin(a)*w*.097,z=d*.15+Math.cos(a)*w*.097;b.box('copper',x,h*.5,z,.12,h,.24,-a);}
+  for(let i=0;i<6;i++)b.box('steel',w*.075+i*w*.058,h*.88+2.2,-d*.26,.055,3.55,d*.28);
+  for(const z of [-d*.36,-d*.17])line(b,'steel',[[w*.075,h*.88+3.8,z],[w*.37,h*.88+3.8,z]],.06);
+  rail(b,w*.23,h*.43+.45,d*.24,w*.48,d*.39);
+ }else if(id===34){
+  // Grid demonstration yard: transformer bank, bushings and the visible cable gantry.
+  b.box('dark',-w*.34,h*.51,d*.477,w*.23,h*.97,.6);for(const x of [-w*.475,-w*.205])b.box('stone',x,h*.5,d*.476,.65,h,.85);
+  for(let i=0;i<3;i++){const x=-w*.12+i*4.7,z=d*.52;soft(b,'steel',x,2,z,3.2,3.6,2.5,.2);for(let k=0;k<9;k++)b.box('dark',x-1.6+k*.4,1.8,z+1.38,.13,2.8,.4);for(const xx of [-.8,.8]){cylinder(b,'copper',x+xx,4.2,z,.17,1.15,.17,12);for(let k=0;k<5;k++)cylinder(b,'stone',x+xx,3.9+k*.15,z,.32,.07,.32,12);}}
+  line(b,'steel',[[-w*.15,5.2,d*.52],[w*.14,5.2,d*.52],[w*.14,5.2,d*.10],[w*.39,5.2,d*.10]],.16);
+  for(const x of [-w*.49,-w*.15,w*.49])b.box('stone',x,h*.5,-d*.18,.8,h,.9);
+  for(let z=-d*.42;z<d*.4;z+=5)b.box('steel',-w*.495,h*.5,z,.25,h,.16);
+  rail(b,-w*.04,h*.42+.4,d*.25,w*.33,d*.41);
+ }
+}
+
+export function createFacility25to35(f,{deferDetails=false}={}){
  if(f.id<25||f.id>35)return null;
  const b=new Batch(),{w,d,h,id}=f;
  plate(b,'path',0,.05,0,w+9,d+9,.18,3);
@@ -63,7 +135,7 @@ export function createFacility25to35(f){
   // Matter Works: successive pilot-process terraces, not sawtooth warehouse bays.
   wing(b,-w*.32,0,w*.30,d*.95,h,2,{r:.9});wing(b,w*.18,-d*.28,w*.65,d*.39,h,2,{r:.9});
   wing(b,w*.18,d*.10,w*.65,d*.32,h*.68,1,{r:.9});wing(b,w*.18,d*.38,w*.65,d*.24,h*.36,1,{r:.9});
-  for(const [y,z] of [[.4,d*.37],[h*.36+.45,d*.12],[h*.68+.45,-d*.28]]){tanks(b,0,y,z,4);desks(b,w*.13,y,z+5,3);}
+  for(const [y,z] of [[.34,d*.37],[.34,d*.12],[h*.5+.34,-d*.28]]){tanks(b,0,y,z,4);desks(b,w*.13,y,z+5,3);}
   for(const z of [-d*.27,d*.07])line(b,'steel',[[-w*.1,4,z],[w*.39,4,z],[w*.39,h*.8,z]],.18);
   solar(b,-w*.32,h+.6,0,w*.2,d*.72);entrance(b,-w*.25,d*.48,10,5);
  }else if(id===28){
@@ -168,5 +240,11 @@ export function createFacility25to35(f){
   }
 
  }
- const root=b.finish(`CF-${id}-reference-architecture`);root.userData.referenceSource=`CF-${id}_Facility_Infographic.png`;root.userData.referenceReconstruction=true;root.userData.floorProgramUnchanged=true;return root;
+ identityDetails(b,f);
+ // Capture only scalar placement records. No Batch or buffer geometry is retained.
+ const occupiedRecords=(b.occupiedWings||[]).map(q=>({...q}));
+ const createNearDetail=()=>{const detail=nearOccupancy(f,occupiedRecords);detail.traverse(o=>{if(o.material===materials.glazing){o.material=clearFacade;o.castShadow=false;}});return detail;};
+ const root=b.finish(`CF-${id}-reference-architecture`);
+ if(deferDetails)root.userData.createNearDetail=createNearDetail;else root.add(createNearDetail());
+ root.traverse(o=>{if(o.material===materials.glazing){o.material=clearFacade;o.castShadow=false;}});root.userData.referenceSource=`CF-${id}_Facility_Infographic.png`;root.userData.referenceReconstruction=true;root.userData.floorProgramUnchanged=true;return root;
 }

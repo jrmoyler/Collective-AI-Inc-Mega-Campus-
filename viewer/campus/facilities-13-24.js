@@ -22,6 +22,7 @@ function slab(b,mat,x,y,z,w,d,depth=.35,r=2){
 }
 function wing(b,x,z,w,d,h,levels=2,{base=0,r=2,skin='dark',roof=true,fins=false}={}){
  const p=outline(w,d,r),fh=h/levels;
+ (b.occupiedWings ||= []).push({x,z,w,d,h,levels,base,r});
  // Occupied central support core and floorplates behind transparent facades.
  b.box(skin,x,base+h*.5,z-d*.16,w*.18,h,d*.35);
  for(let floor=0;floor<levels;floor++){
@@ -30,6 +31,9 @@ function wing(b,x,z,w,d,h,levels=2,{base=0,r=2,skin='dark',roof=true,fins=false}
    const a=p[j],c=p[(j+1)%p.length],dx=c[0]-a[0],dz=c[1]-a[1],len=Math.hypot(dx,dz),rot=-Math.atan2(dz,dx),n=Math.max(1,Math.ceil(len/3));
    b.box(referenceGlazing,x+(a[0]+c[0])*.5,y+fh*.5,z+(a[1]+c[1])*.5,len,fh-.42,.065,rot);
    b.box(skin,x+(a[0]+c[0])*.5,y+fh-.25,z+(a[1]+c[1])*.5,len,.5,.24,rot);
+   // Recessed bronze sill and head reveal articulate every occupied storey.
+   b.box('copper',x+(a[0]+c[0])*.5,y+.40,z+(a[1]+c[1])*.5,len,.08,.28,rot);
+   b.box('steel',x+(a[0]+c[0])*.5,y+fh-.54,z+(a[1]+c[1])*.5,len,.08,.18,rot);
    for(let k=0;k<n;k++)b.box(fins?'copper':'steel',x+a[0]+dx*k/n,y+fh*.5,z+a[1]+dz*k/n,.12,fh,fins?.55:.14,rot);
   }
   for(const side of [-1,1]){
@@ -75,9 +79,116 @@ function auditorium(b,x,y,z,w,d){
  screen(b,x,y+3,z-1,w*.8,4);
 }
 function verticalFins(b,x,z,w,h,depth=.7){for(let q=-w*.5;q<=w*.5;q+=1.1)b.box('copper',x+q,h*.5,z,.12,h,depth);}
-function terrace(b,x,y,z,w,d){slab(b,'stone',x,y,z,w,d,.32,2);for(const side of [-1,1])b.box(referenceGlazing,x,y+.95,z+side*d*.5,w,1.25,.05);for(let q=-w*.35;q<=w*.35;q+=6)planter(b,x+q,y+.33,z+d*.28,3,1.4);}
+function terrace(b,x,y,z,w,d){
+ slab(b,'stone',x,y,z,w,d,.32,2);
+ for(const side of [-1,1]){
+  b.box(referenceGlazing,x,y+.95,z+side*d*.5,w,1.25,.05);
+  b.box('copper',x,y+1.61,z+side*d*.5,w,.07,.075);
+  b.box(referenceGlazing,x+side*w*.5,y+.95,z,.05,1.25,d);
+  b.box('copper',x+side*w*.5,y+1.61,z,.075,.07,d);
+  for(let q=-w*.45;q<w*.46;q+=3)b.box('steel',x+q,y+.97,z+side*d*.5,.055,1.3,.07);
+ }
+ for(let q=-w*.35;q<=w*.35;q+=6)planter(b,x+q,y+.33,z+d*.28,3,1.4);
+}
 
-export function createFacility13to24(f){
+// Fine equipment is generated from each actual wing footprint/floor elevation,
+// never scattered on a campus-wide grid or beyond a building's own room envelope.
+function taskChair(b,x,y,z){
+ slab(b,'dark',x,y+.44,z,.60,.58,.13,.16);
+ b.box('dark',x,y+.82,z+.24,.61,.63,.09);
+ cylinder(b,'steel',x,y+.23,z,.045,.44,.045,8);
+ for(let i=0;i<5;i++){const a=i*Math.PI*2/5,dx=Math.cos(a)*.28,dz=Math.sin(a)*.28;line(b,'steel',[[x,y+.10,z],[x+dx,y+.06,z+dz]],.025);cylinder(b,'dark',x+dx,y+.04,z+dz,.055,.055,.055,6);}
+ for(const dx of [-.33,.33])b.box('steel',x+dx,y+.67,z,.035,.035,.34);
+}
+function desk(b,x,y,z,width=2){
+ slab(b,'stone',x,y+.76,z,width,.94,.075,.10);
+ for(const dx of [-width*.4,width*.4]){b.box('steel',x+dx,y+.38,z,.06,.75,.65);}
+ taskChair(b,x,y,z+.95);
+}
+function monitor(b,x,y,z,width=.75){
+ b.box('dark',x,y+.12,z,.34,.035,.22);b.box('steel',x,y+.29,z,.035,.30,.035);
+ screen(b,x,y+.52,z,width,.45);
+ b.box('dark',x,y+.05,z+.40,width*.85,.025,.20);
+}
+function cabinet(b,x,y,z,w=1.2,h=1.6){
+ b.box('steel',x,y+h*.5,z,w,h,.6);
+ for(let j=0;j<4;j++){b.box('white',x,y+.17+j*(h-.2)/4,z+.315,w-.07,(h-.2)/4-.04,.045);b.box('dark',x,y+.17+j*(h-.2)/4,z+.35,w*.32,.025,.025);}
+ for(const dx of [-w*.35,w*.35])cylinder(b,'dark',x+dx,y+.07,z,.065,.13,.065,6);
+}
+function clinicalBed(b,x,y,z){
+ slab(b,'white',x,y+.65,z,1.0,2.2,.18,.20);slab(b,'civic',x,y+.84,z,1.0,2.0,.12,.17);
+ slab(b,'white',x,y+.97,z-.65,.75,.46,.10,.13);
+ for(const dx of [-.4,.4])for(const dz of [-.78,.78]){b.box('steel',x+dx,y+.33,z+dz,.06,.65,.06);cylinder(b,'dark',x+dx,y+.07,z+dz,.085,.12,.085,8);}
+}
+function occupiedDetails(b,wing,id,floor,index){
+ const {x,z,w,d,base,h,levels}=wing,y=base+floor*h/levels+.32;
+ // Small rooftop booths deliberately receive one compact work setting only.
+ if(w<8||d<10){if(w>3.5&&d>3.5){const zz=z+d*.26;desk(b,x,y,zz,.95);monitor(b,x,y+.8,zz-.2,.50);}return;}
+ const n=Math.min(4,Math.max(1,Math.floor((w-8)/8)));
+ for(let k=0;k<n;k++){
+  const px=x+(k-(n-1)/2)*Math.min(7.4,(w-8)/n),pz=z+d*.5-4.0;
+  // Front glazing is the clearest source cutaway correspondence. These items
+  // stay a full four metres behind it, inside rounded facade corner transitions.
+  const mode=(floor+k+index)%3;
+  if(id===13){
+   if(mode===0){clinicalBed(b,px,y,pz);cabinet(b,px+1.6,y,pz,1.1,1.1);monitor(b,px+1.6,y+1.12,pz-.15);}
+   else {desk(b,px,y,pz,2.5);b.box('white',px-.6,y+1.12,pz-.10,.75,.55,.65);screen(b,px-.6,y+1.16,pz+.24,.44,.28);for(let i=0;i<4;i++)cylinder(b,'blueGlass',px+.2+i*.18,y+.94,pz,.045,.26,.045,8);monitor(b,px+.65,y+.8,pz-.18);}
+  }else if(id===14){
+   slab(b,'copper',px,y+.7,pz,1.6,.85,.09,.28);taskChair(b,px-.95,y,pz);taskChair(b,px+.95,y,pz);
+   b.box('dark',px,y+.92,pz,.13,.18,.12);cylinder(b,'steel',px,y+.82,pz,.025,.2,.025,8);
+   b.box('civic',px-1.65,y+1.10,pz-.5,.10,2.1,2.2);b.box('civic',px,y+1.1,pz-1.6,3.4,2.1,.10);
+   screen(b,px,y+1.4,pz-1.53,1.0,.6);
+  }else if(id===15){
+   if(mode===1)clinicalBed(b,px,y,pz);
+   else {b.box('dark',px,y+.24,pz,1.05,.20,2.0);for(const dx of [-.45,.45])line(b,'steel',[[px+dx,y+.3,pz-.7],[px+dx,y+1.25,pz-.7],[px+dx,y+1.15,pz+.15]],.04);screen(b,px,y+1.25,pz-.67,.68,.4);}
+   cabinet(b,px+1.45,y,pz-.65,.8,1.3);
+  }else if(id===16||id===17){
+   desk(b,px,y,pz,2.6);
+   b.box('dark',px-.65,y+1.13,pz,.8,.66,.65);b.box(referenceGlazing,px-.65,y+1.14,pz+.335,.65,.50,.035);
+   b.box('steel',px-.65,y+1.43,pz,.62,.07,.52);cylinder(b,'copper',px-.65,y+1.12,pz,.13,.25,.13,10);
+   monitor(b,px+.66,y+.8,pz-.2);cabinet(b,px+1.85,y,pz,1,1.1);
+   if(id===17)for(let i=0;i<3;i++)b.box(i%2?'copper':'stone',px+.35+i*.23,y+.86,pz+.25,.18,.09,.20);
+  }else if(id===18){
+   desk(b,px,y,pz,2.2);monitor(b,px,y+.8,pz-.2);
+   for(let row=0;row<2;row++)for(let col=0;col<2;col++){const xx=px+1.45+col*.65,yy=y+.26+row*.53;b.box('dark',xx,yy,pz,.60,.49,.74);b.box('steel',xx,yy,pz+.38,.23,.04,.025);for(const dx of [-.25,.25])b.box('steel',xx+dx,yy,pz+.38,.04,.42,.035);}
+  }else if(id===19){
+   desk(b,px,y,pz,2.4);monitor(b,px-.55,y+.8,pz-.2);cabinet(b,px+1.8,y,pz,1.1,2.1);
+   for(let i=0;i<5;i++)b.box(i%2?'copper':'dark',px+.12+i*.15,y+.99,pz-.15,.11,.40,.27);
+   b.box('stone',px+.55,y+.87,pz+.25,.57,.025,.38);
+  }else if(id===20||id===24){
+   desk(b,px,y,pz,2.65);for(const dx of [-.8,0,.8])monitor(b,px+dx,y+.8,pz-.2,.68);
+   cabinet(b,px+1.9,y,pz-1,.72,2.0);for(let j=0;j<5;j++)b.box('cyan',px+1.9,y+.35+j*.31,pz-.675,.04,.04,.01);
+  }else if(id===21){
+   cabinet(b,px,y,pz,1.1,2.0);screen(b,px,y+1.45,pz+.35,.72,.5);
+   for(let i=0;i<3;i++)cylinder(b,'steel',px+1.2+i*.42,y+.65,pz,.13,1.3,.13,12);
+   line(b,'copper',[[px+1.2,y+1.3,pz],[px+1.2,y+1.7,pz],[px+2.05,y+1.7,pz],[px+2.05,y+1.3,pz]],.065);
+   ring(b,'gold',px+1.65,y+1.72,pz,.16,.025,0);
+  }else if(id===22){
+   desk(b,px,y,pz,2.6);monitor(b,px-.6,y+.8,pz-.2);monitor(b,px+.3,y+.8,pz-.2);
+   b.box('dark',px+1,y+.94,pz,.18,.22,.20);b.box('white',px+.65,y+.84,pz+.25,.28,.025,.42);
+   taskChair(b,px,y,pz-1.3);
+  }else if(id===23){
+   if(mode===0){slab(b,'copper',px,y+.73,pz,2.1,1.1,.08,.22);for(const dx of [-.65,.65])for(const dz of [-.85,.85])taskChair(b,px+dx,y,pz+dz);}
+   else {slab(b,'civic',px,y+.38,pz,2.0,.90,.24,.20);b.box('civic',px,y+.79,pz-.4,2, .75,.20);for(const dx of [-1,1])b.box('civic',px+dx,y+.62,pz,.17,.49,.90);slab(b,'copper',px,y+.45,pz+1.3,1.2,.7,.09,.20);}
+  }
+  // Suspended task lighting is connected to the ceiling by two real stems.
+  const cy=base+(floor+1)*h/levels-.78;
+  b.box('warm',px,cy,pz,2.2,.04,.14);
+  for(const dx of [-.8,.8])cylinder(b,'steel',px+dx,cy+.39,pz,.012,.78,.012,6);
+ }
+}
+
+function nearDetailFactory(id,wingRecords){
+ return function createNearDetail(){
+  const near=new Batch();
+  for(const [i,room] of wingRecords.entries())for(let floor=0;floor<room.levels;floor++)occupiedDetails(near,room,id,floor,i);
+  const detail=near.finish(`CF-${id}-program-equipment`);
+  detail.userData.nearDetail=true;
+  return detail;
+ };
+}
+
+export function createFacility13to24(f,{deferDetails=false}={}){
  if(f.id<13||f.id>24)return null;
  const {w,d,h,id}=f,b=new Batch(),root=new T.Group();root.name=`CF-${id}-individual-reference-architecture`;
  if(id===13){ // Eon Core: low garden shoulder and flowing high-to-low research frontage.
@@ -225,6 +336,12 @@ export function createFacility13to24(f){
   entry(b,-w*.14,d*.43,w*.22);
 
  }
- root.add(b.finish(`CF-${id}-reference-envelope`));root.userData.referenceFacility=id;
+ // Copy only numeric wing records into the deferred factory. The factory is
+ // created outside this scope so it cannot retain the envelope Batch or root.
+ const createNearDetail=nearDetailFactory(id,(b.occupiedWings||[]).map(room=>({...room})));
+ root.add(b.finish(`CF-${id}-reference-envelope`));
+ if(deferDetails)root.userData.createNearDetail=createNearDetail;
+ else root.add(createNearDetail());
+ root.userData.referenceFacility=id;
  return root;
 }
