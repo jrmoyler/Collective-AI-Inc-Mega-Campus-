@@ -65,3 +65,10 @@ other facility families also retain interpretation. Do not call this an exact or
 100% photorealistic reconstruction.
 
 Final geometry report: CF-01 floor 1 = 280,053 vertices / 10,779,816 bytes; largest of 74 floors = 27,227,744 bytes / 679,231 maximum vertices. Final specialist component counts differ from the pure optimization baseline because inappropriate default office layouts were replaced.
+
+Specialist render review: patient intake was initially furnished as treatment;
+it now uses a reception counter and waiting seats. Large specialist rooms use
+station counts derived from room width, and clinical pods add a second bed row
+where depth permits, with privacy screens. Process headers connect every vessel.
+The additional CF-12 intake and CF-23 kitchen images remain offline geometry
+reviews; they do not certify complete equipment inventories or as-built realism.

@@ -3,7 +3,8 @@
 export function specialistKind(name){
  const n=name.toLowerCase();
  if(/kitchen|food processing/.test(n))return 'kitchen';
- if(/clinic pods|patient intake|recovery rooms|care support/.test(n))return 'clinical';
+ if(/patient intake/.test(n))return 'reception';
+ if(/clinic pods|recovery rooms|care support/.test(n))return 'clinical';
  if(/accessible.home/.test(n))return 'accessible-home';
  if(/soundstage|audio booths|podcast|recording class|motion capture|led volume/.test(n))return 'studio';
  if(/theater|theatre|auditorium|lecture hall|all.hands/.test(n))return 'auditorium';
@@ -21,7 +22,9 @@ export function specialistKind(name){
 export function furnishSpecialist(k,r,kit){
  const kind=specialistKind(r.name);if(!kind)return false;
  const {taskChair,desk,sofa,shelving}=kit,{x,z,w,d}=r,side=Math.sign(z);
- const xs=[x-w*.28,x+w*.28],back=z+side*d*.22;
+ const dense=['kitchen','clinical','electrical','process','fabrication','maintenance','storage','retail','support','reception'].includes(kind);
+ const columns=dense?Math.max(2,Math.min(6,Math.floor((w-2)/3.2))):2;
+ const xs=Array.from({length:columns},(_,i)=>x+(dense?(i-(columns-1)/2)*(w-3)/Math.max(1,columns-1):(i?1:-1)*w*.28)),back=z+side*d*.22;
  const box=(name,mat,xx,y,zz,ww,hh,dd,rad=.01)=>k.box(name,mat,xx,y,zz,ww,hh,dd,rad);
  if(kind==='kitchen'){
   for(const xx of xs){
@@ -38,14 +41,16 @@ export function furnishSpecialist(k,r,kit){
   for(const dx of [-.3,.3])for(const dz of [-.16,.16])k.ring('induction hob','graphite',xs[1]+dx,.94,back+dz,.12,.012);
   box('oven cabinet','steel',xs[1],.48,back,1.35,.78,.65);box('oven glazing','glass',xs[1],.46,back-side*.335,1.13,.43,.016);
  }else if(kind==='clinical'||kind==='accessible-home'){
-  for(const xx of xs){
-   box('adjustable bed chassis','steel',xx,.4,back,.77,.3,1.9,.035);
-   box('clinical mattress','porcelain',xx,.66,back,.88,.2,2,.07);
-   box('pillow','fabric',xx,.81,back+side*.64,.63,.12,.36,.05);
-   for(const dx of [-.43,.43])k.bar('bed safety rail','steel',[xx+dx,.78,back-.45],[xx+dx,.78,back+.5],.025);
-   for(const dx of [-.31,.31])for(const dz of [-.7,.7])k.cylinder('bed caster','rubber',xx+dx,.18,back+dz,.075,.05,.075,Math.PI/2);
-   box('bedside drawer cabinet','oak',xx+.72,.39,back+side*.56,.4,.7,.5,.025);
-   if(kind==='clinical'){box('patient monitor','graphite',xx+.72,1.18,back+side*.56,.45,.31,.07);box('vital signs display','display',xx+.72,1.18,back+side*.51,.4,.26,.01);}
+  const bedRows=kind==='clinical'&&d>10?[back,back-side*3.4]:[back];
+  for(const xx of xs)for(const bedZ of bedRows){
+   box('adjustable bed chassis','steel',xx,.4,bedZ,.77,.3,1.9,.035);
+   box('clinical mattress','porcelain',xx,.66,bedZ,.88,.2,2,.07);
+   box('pillow','fabric',xx,.81,bedZ+side*.64,.63,.12,.36,.05);
+   for(const dx of [-.43,.43])k.bar('bed safety rail','steel',[xx+dx,.78,bedZ-.45],[xx+dx,.78,bedZ+.5],.025);
+   for(const dx of [-.31,.31])for(const dz of [-.7,.7])k.cylinder('bed caster','rubber',xx+dx,.18,bedZ+dz,.075,.05,.075,Math.PI/2);
+   box('bedside drawer cabinet','oak',xx+.72,.39,bedZ+side*.56,.4,.7,.5,.025);
+   if(kind==='clinical'){box('patient monitor','graphite',xx+.72,1.18,bedZ+side*.56,.45,.31,.07);box('vital signs display','display',xx+.72,1.18,bedZ+side*.51,.4,.26,.01);}
+   if(kind==='clinical')box('privacy screen','fabric',xx+1.15,1.1,bedZ,.04,1.7,2.25,.008);
   }
   if(kind==='accessible-home'){sofa(k,x,back-side*2.1);k.bar('accessible grab rail','steel',[x-w/2+.16,.85,z],[x-w/2+.16,.85,z+side*1.4],.025);}
  }else if(kind==='studio'){
@@ -82,7 +87,7 @@ export function furnishSpecialist(k,r,kit){
    k.sphere('vessel domed head','steel',xx,2.02,back,.46,.20,.46);
    for(const dx of [-.32,.32])box('vessel support','steel',xx+dx,.15,back,.08,.3,.4);
    k.bar('process supply pipe','steel',[xx,2.18,back],[xx,3.15,back],.05);
-   k.bar('pipe header','steel',[xs[0],3.15,back],[xs[1],3.15,back],.05);
+   if(xx===xs[0])k.bar('pipe header','steel',[xs[0],3.15,back],[xs.at(-1),3.15,back],.05);
    k.ring('valve handwheel','brass',xx,1.1,back-side*.52,.12,.014,0);
    box('process pump','graphite',xx,.22,back-side*.75,.32,.28,.42,.035);
   }
@@ -94,6 +99,11 @@ export function furnishSpecialist(k,r,kit){
   for(const xx of xs)for(const dx of [-.45,0,.45]){box('individual locker','graphite',xx+dx,.95,back,.42,1.9,.55,.015);box('locker door','steel',xx+dx,.97,back-side*.29,.38,1.8,.025);box('locker pull','brass',xx+dx+.12,1,back-side*.31,.025,.15,.025);}
  }else if(kind==='performance'){
   for(const xx of xs){box('sprint training surface','leaf',xx,.05,z,Math.min(w*.24,1.5),.025,d*.72,0);for(const dx of [-.55,.55])box('sprint lane line','porcelain',xx+dx,.068,z,.035,.005,d*.72,0);}
+ }else if(kind==='reception'){
+  desk(k,x,back);
+  for(const xx of xs)for(let row=0;row<3;row++)taskChair(k,xx,z+side*(.2-row*1.15),side<0?Math.PI:0);
+  box('reception counter','oak',x,1.0,back-side*.65,Math.min(3,w*.5),.12,.55,.025);
+  for(const dx of [-.8,.8])box('reception counter support','graphite',x+dx,.48,back-side*.65,.08,.96,.46);
  }else if(kind==='security'){
   desk(k,xs[0],back);box('screening portal left','graphite',xs[1]-.5,1.12,back,.15,2.24,.3);box('screening portal right','graphite',xs[1]+.5,1.12,back,.15,2.24,.3);box('screening portal header','graphite',xs[1],2.25,back,1.15,.17,.3);box('screening indicator','blue',xs[1],2.26,back-side*.16,.34,.06,.02);
  }else if(kind==='retail'){
