@@ -1,0 +1,26 @@
+[
+  {
+    level: 'error',
+    message: 'THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .',
+    timestamp: '2026-09-17T20:12:53.596Z',
+    url: 'https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-Cqtt1pnt.js'
+  },
+  {
+    level: 'error',
+    message: 'THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .',
+    timestamp: '2026-09-17T20:12:53.596Z',
+    url: 'https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-Cqtt1pnt.js'
+  },
+  {
+    level: 'error',
+    message: 'THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .',
+    timestamp: '2026-09-17T20:32:01.264Z',
+    url: 'https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-Bu66qT_s.js'
+  },
+  {
+    level: 'error',
+    message: 'THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .',
+    timestamp: '2026-09-17T20:32:01.265Z',
+    url: 'https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-Bu66qT_s.js'
+  }
+]

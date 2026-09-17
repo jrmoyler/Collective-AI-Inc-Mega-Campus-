@@ -39,6 +39,11 @@
       "action": "refine-code",
       "evidence": "evidence/facility-detail-review/README.md",
       "reason": "User continued PR12 revision: program-specific visible equipment and structural facade detail for all35, neutral glazing, matched six-facility before/after reviews and all35 final reference sheets. Deferred fine geometry constructs near camera and evicts far away. Explicit HDR/MSAA/PMREM allocation probes close silent blank-frame paths; native17programs and MSAA resolve pass. Focused street shadows and correct multi-pass device counters added. BrowserGPU still disabled; exact-reference/photoreal acceptance remains unmet."
+    },
+    {
+      "action": "refine-code",
+      "evidence": "evidence/finishing-pass/README.md",
+      "reason": "Integrated/visual-first finishing pass: single-surface glazing, construction-depth profiles, deferred front-room divisions, bounded planted roof beds and solar clearances. All35 actual-geometry renders and six matched pairs reviewed. 44 tests pass; native17 shaders pass. Device recorder now retains long stalls, records actual floor/render/recovery events and captures real frames via opt-in QA controls. Hosted browser still reports Disabled graphics; physical Galaxy A15 and exact/photoreal acceptance remain open."
     }
   ],
   "blocker": "Browser-control execution available; hosted browser explicitly disables WebGL before scene creation. Native EGL compile/link validates syntax/interfaces only. Browser GPU appearance/tours, exact-reference fidelity and physical Galaxy A15 validation remain unverified. Tripo through fal previously returned 403 balance_exhausted."

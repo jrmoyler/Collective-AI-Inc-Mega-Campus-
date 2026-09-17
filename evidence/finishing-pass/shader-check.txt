@@ -1,0 +1,20 @@
+PASS water-daylight
+PASS water-shadowed
+PASS foliage-instanced
+PASS blossom-instanced-shadowed
+PASS foliage-uninstanced
+PASS kinetic-road-cyan
+PASS kinetic-road-gold
+PASS atmospheric-sky
+PASS bloom-luminosity-highpass
+PASS bloom-blur-mip-0
+PASS bloom-blur-mip-1
+PASS bloom-blur-mip-2
+PASS bloom-blur-mip-3
+PASS bloom-blur-mip-4
+PASS bloom-composite
+PASS bloom-additive-copy
+PASS output-aces-srgb
+PASS negative-control: stage interface mismatch rejected
+PASS native RGBA16F framebuffer clear/resolve/readback
+Evidence: /tmp/campus-final-shaders

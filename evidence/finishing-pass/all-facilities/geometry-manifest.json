@@ -1,0 +1,632 @@
+[
+  {
+    "id": 1,
+    "key": "CF-01",
+    "name": "The Prism",
+    "meshes": 21,
+    "vertices": 63180,
+    "min": [
+      -30,
+      -1.469576117223083e-15,
+      -28
+    ],
+    "max": [
+      30,
+      115,
+      28
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 2,
+    "key": "CF-02",
+    "name": "The Neural Block",
+    "meshes": 23,
+    "vertices": 36098,
+    "min": [
+      -38,
+      -1.3887494805389991e-15,
+      -31
+    ],
+    "max": [
+      38,
+      27.7810001373291,
+      31
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 3,
+    "key": "CF-03",
+    "name": "The Vault",
+    "meshes": 18,
+    "vertices": 27242,
+    "min": [
+      -28.5,
+      -6.062001457075438e-16,
+      -26
+    ],
+    "max": [
+      28.5,
+      13.020999908447266,
+      26
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 4,
+    "key": "CF-04",
+    "name": "Royal Library & Hybrid Living Academy",
+    "meshes": 20,
+    "vertices": 76519,
+    "min": [
+      -54,
+      -1.44814480722901e-15,
+      -31.5
+    ],
+    "max": [
+      54,
+      31.041677474975586,
+      31.5
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 5,
+    "key": "CF-05",
+    "name": "Nexus Labs Production Complex",
+    "meshes": 20,
+    "vertices": 18762,
+    "min": [
+      -56,
+      -1.2932270339782899e-15,
+      -28
+    ],
+    "max": [
+      56,
+      27.041677474975586,
+      28
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 6,
+    "key": "CF-06",
+    "name": "Signal Velocity Growth War Room",
+    "meshes": 22,
+    "vertices": 28706,
+    "min": [
+      -30.5,
+      -1.4441647052889804e-15,
+      -30.5
+    ],
+    "max": [
+      30.5,
+      28.041677474975586,
+      30.5
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 7,
+    "key": "CF-07",
+    "name": "Binary Loom Manufacturing Foundry / Glyph Forge Works",
+    "meshes": 19,
+    "vertices": 18882,
+    "min": [
+      -34,
+      -2.5913526712487882e-15,
+      -50
+    ],
+    "max": [
+      34,
+      24.5,
+      50
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 8,
+    "key": "CF-08",
+    "name": "Titan Works",
+    "meshes": 15,
+    "vertices": 11586,
+    "min": [
+      -46.5,
+      -3.086110121454182e-15,
+      -60
+    ],
+    "max": [
+      46.5,
+      31,
+      60
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 9,
+    "key": "CF-09",
+    "name": "Vector Hub",
+    "meshes": 18,
+    "vertices": 73267,
+    "min": [
+      -52.5,
+      -2.4799098169279608e-15,
+      -49
+    ],
+    "max": [
+      52.5,
+      21.77750015258789,
+      49
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 10,
+    "key": "CF-10",
+    "name": "Materials + Inventory Warehouse",
+    "meshes": 14,
+    "vertices": 70906,
+    "min": [
+      -42.5,
+      -1.543055060727091e-15,
+      -32
+    ],
+    "max": [
+      42.5,
+      21.010000228881836,
+      32
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 11,
+    "key": "CF-11",
+    "name": "Eden Spire",
+    "meshes": 18,
+    "vertices": 203700,
+    "min": [
+      -39,
+      -1.743897054553808e-15,
+      -36
+    ],
+    "max": [
+      39,
+      65.77749633789062,
+      36
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 12,
+    "key": "CF-12",
+    "name": "Vitality Center",
+    "meshes": 23,
+    "vertices": 68310,
+    "min": [
+      -42.5,
+      -1.928818746499525e-15,
+      -39
+    ],
+    "max": [
+      42.5,
+      35.04167556762695,
+      39
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 13,
+    "key": "CF-13",
+    "name": "Eon Core Longevity Research Pavilion",
+    "meshes": 22,
+    "vertices": 90842,
+    "min": [
+      -35.279998779296875,
+      -1.4466140069350846e-15,
+      -25.875
+    ],
+    "max": [
+      35.63999938964844,
+      30.485000610351562,
+      32.2
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 14,
+    "key": "CF-14",
+    "name": "Cognara Mind Behavioral Intelligence Institute",
+    "meshes": 20,
+    "vertices": 148734,
+    "min": [
+      -32.36000061035156,
+      -1.5531582579637036e-15,
+      -25.725000381469727
+    ],
+    "max": [
+      32.36000061035156,
+      27.410999298095703,
+      29.2
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 15,
+    "key": "CF-15",
+    "name": "Kinetic Edge Performance Center",
+    "meshes": 24,
+    "vertices": 104594,
+    "min": [
+      -54.86000061035156,
+      -2.0785318199267227e-15,
+      -36.86000061035156
+    ],
+    "max": [
+      54.86000061035156,
+      36.32074737548828,
+      37.2
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 16,
+    "key": "CF-16",
+    "name": "Civic Core Public Hub",
+    "meshes": 22,
+    "vertices": 78514,
+    "min": [
+      -36.81824493408203,
+      -1.1940305820088652e-15,
+      -28.260000228881836
+    ],
+    "max": [
+      36.775001525878906,
+      24.320749282836914,
+      30.7
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 17,
+    "key": "CF-17",
+    "name": "Terra Axis Living Systems Yard",
+    "meshes": 24,
+    "vertices": 187695,
+    "min": [
+      -60.38999938964844,
+      -1.3128214471471236e-15,
+      -30.1200008392334
+    ],
+    "max": [
+      58.31999969482422,
+      29.684999465942383,
+      32.7
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 18,
+    "key": "CF-18",
+    "name": "Nomad Nexus Global Mobility Hub",
+    "meshes": 20,
+    "vertices": 138306,
+    "min": [
+      -67.5199966430664,
+      -1.859013914283351e-15,
+      -30.719999313354492
+    ],
+    "max": [
+      70.44000244140625,
+      32.32074737548828,
+      35.2
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 19,
+    "key": "CF-19",
+    "name": "Juris Guard Regulatory Command Wing",
+    "meshes": 22,
+    "vertices": 85568,
+    "min": [
+      -28.979999542236328,
+      -1.226177599939534e-15,
+      -22.184999465942383
+    ],
+    "max": [
+      24.65999984741211,
+      39.32074737548828,
+      23.2
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 20,
+    "key": "CF-20",
+    "name": "Aether Link Mesh Operations Spire",
+    "meshes": 20,
+    "vertices": 83835,
+    "min": [
+      -18.600000381469727,
+      -0.07210735976696014,
+      -17.649999618530273
+    ],
+    "max": [
+      18.600000381469727,
+      90.98280334472656,
+      19.7
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 21,
+    "key": "CF-21",
+    "name": "EnerGenius + Helios Central Utility Plant",
+    "meshes": 23,
+    "vertices": 58610,
+    "min": [
+      -34.30500030517578,
+      -8.597020719859421e-16,
+      -23.040000915527344
+    ],
+    "max": [
+      35.03499984741211,
+      30.3799991607666,
+      27.7
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 22,
+    "key": "CF-22",
+    "name": "Visitor, Security and Campus Operations Center",
+    "meshes": 21,
+    "vertices": 103682,
+    "min": [
+      -39.15999984741211,
+      -1.2965947310974546e-15,
+      -27.03499984741211
+    ],
+    "max": [
+      39.15999984741211,
+      26.320749282836914,
+      28.2
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 23,
+    "key": "CF-23",
+    "name": "Employee Commons and Wellness Village",
+    "meshes": 20,
+    "vertices": 126106,
+    "min": [
+      -37.599998474121094,
+      -1.5944901835370428e-15,
+      -26.399999618530273
+    ],
+    "max": [
+      37.599998474121094,
+      26.610000610351562,
+      28.7
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 24,
+    "key": "CF-24",
+    "name": "Kinetic Energy Operations Center (KEOC)",
+    "meshes": 21,
+    "vertices": 97470,
+    "min": [
+      -52.86000061035156,
+      -1.658784113519262e-15,
+      -28.709999084472656
+    ],
+    "max": [
+      52.86000061035156,
+      25.320749282836914,
+      32.2
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 25,
+    "key": "CF-25",
+    "name": "Gaia Synthesis Bio-Energy Center",
+    "meshes": 22,
+    "vertices": 167863,
+    "min": [
+      -50.5,
+      -0.10000000149011612,
+      -35
+    ],
+    "max": [
+      50.5,
+      28.469999313354492,
+      35
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 26,
+    "key": "CF-26",
+    "name": "The Orbital Foundry \u2014 Astral Forge",
+    "meshes": 19,
+    "vertices": 48628,
+    "min": [
+      -30,
+      -2.58859727307137e-15,
+      -49
+    ],
+    "max": [
+      30,
+      25.6299991607666,
+      49
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 27,
+    "key": "CF-27",
+    "name": "The Matter Works \u2014 Materia Nova",
+    "meshes": 20,
+    "vertices": 160712,
+    "min": [
+      -34,
+      -2.5013410210429155e-15,
+      -47.5
+    ],
+    "max": [
+      34,
+      27.209999084472656,
+      47.5
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 28,
+    "key": "CF-28",
+    "name": "The Water Observatory \u2014 Aqua Meridian",
+    "meshes": 18,
+    "vertices": 102676,
+    "min": [
+      -32.5,
+      -0.5400000214576721,
+      -32
+    ],
+    "max": [
+      32.5,
+      27.6299991607666,
+      32
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 29,
+    "key": "CF-29",
+    "name": "The Living Provision \u2014 Nourish Grid",
+    "meshes": 18,
+    "vertices": 209536,
+    "min": [
+      -46,
+      -0.02500000037252903,
+      -29
+    ],
+    "max": [
+      46,
+      27.6299991607666,
+      32.095001220703125
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 30,
+    "key": "CF-30",
+    "name": "The Trust Vault \u2014 Sovereign Key",
+    "meshes": 20,
+    "vertices": 109919,
+    "min": [
+      -36.5,
+      -1.1223887470883332e-15,
+      -28
+    ],
+    "max": [
+      36.5,
+      35.52000045776367,
+      28
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 31,
+    "key": "CF-31",
+    "name": "The Resilience House \u2014 Praesidium Mutual",
+    "meshes": 22,
+    "vertices": 221519,
+    "min": [
+      -37,
+      -1.532339246911377e-15,
+      -32
+    ],
+    "max": [
+      37,
+      26.04083824157715,
+      32
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 32,
+    "key": "CF-32",
+    "name": "The Exchange Pavilion \u2014 Mercantile Circuit",
+    "meshes": 15,
+    "vertices": 105868,
+    "min": [
+      -33,
+      -1.3201692462063179e-15,
+      -29
+    ],
+    "max": [
+      33,
+      25.236740112304688,
+      29
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 33,
+    "key": "CF-33",
+    "name": "The Human Systems Institute \u2014 Human Foundry",
+    "meshes": 21,
+    "vertices": 234482,
+    "min": [
+      -50.5,
+      -1.3391513604334051e-15,
+      -31.5
+    ],
+    "max": [
+      50.5,
+      28.04083824157715,
+      31.5
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 34,
+    "key": "CF-34",
+    "name": "The Energy Commons \u2014 Volta Grid",
+    "meshes": 19,
+    "vertices": 253622,
+    "min": [
+      -42.5,
+      -1.9857647715434317e-15,
+      -39
+    ],
+    "max": [
+      42.5,
+      31.6299991607666,
+      39
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  },
+  {
+    "id": 35,
+    "key": "CF-35",
+    "name": "The Care Village \u2014 Hearth Nexus",
+    "meshes": 21,
+    "vertices": 324858,
+    "min": [
+      -56.5,
+      -0.4107750952243805,
+      -34.5
+    ],
+    "max": [
+      56.5,
+      16.660839080810547,
+      38.400001525878906
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  }
+]
