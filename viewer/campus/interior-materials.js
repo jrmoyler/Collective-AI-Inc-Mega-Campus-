@@ -3,6 +3,7 @@ import {Color3} from '@babylonjs/core/Maths/math.color.js';
 import {DynamicTexture} from '@babylonjs/core/Materials/Textures/dynamicTexture.js';
 import {Texture} from '@babylonjs/core/Materials/Textures/texture.js';
 import {paintFinish} from './surface-textures.js';
+import {OCCUPANT_MATERIALS} from './occupant-assets.js';
 import {FINISHES} from './interior-kit.js';
 
 function surface(scene,name,base){
@@ -30,7 +31,7 @@ function finishNormal(scene,name,albedo){
  tex.anisotropicFilteringLevel=8;return tex;
 }
 export function finishTexture(scene,name){const p=FINISHES[name]||FINISHES.stone;return surface(scene,name,p.color||0xffffff);}
-export function createInteriorMaterials(scene){const result={};for(const [name,p] of Object.entries(FINISHES)){
+export function createInteriorMaterials(scene,usedOccupantNames=null){const result={};for(const [name,p] of Object.entries(FINISHES)){
  const m=new PBRMaterial(name,scene);m.albedoColor=Color3.White();
  // Surface pixels already contain the finish color.
  m.metallic=p.metalness||0;m.roughness=Math.max(.08,p.roughness??.5);m.environmentIntensity=name==='glass'?1.65:1.05;m.specularIntensity=name==='fabric'||name==='soil'?0.25:1;
@@ -42,4 +43,16 @@ export function createInteriorMaterials(scene){const result={};for(const [name,p
  if(name==='display'||name==='stageScreen'||name==='instrumentDisplay'){m.emissiveTexture=tex;m.emissiveColor=new Color3(.5,.58,.62);m.roughness=.23;}
  if(name==='brass'){m.metallic=.9;m.roughness=.2;}if(name==='steel'){m.metallic=.92;m.roughness=.22;}if(name==='graphite'){m.metallic=.58;m.roughness=.3;}
  result[name]=m;
- }return result;}
+ }
+ // glTF UVs and texture pixels are shared verbatim with the offline review.
+ const textures=new Map();
+ const assetTexture=(url,gamma)=>{const key=url+':'+gamma;if(!textures.has(key)){const t=new Texture(url,scene,false,false);t.gammaSpace=gamma;t.anisotropicFilteringLevel=4;textures.set(key,t);}return textures.get(key);};
+ for(const [name,p] of Object.entries(OCCUPANT_MATERIALS)){
+  if(usedOccupantNames&&!usedOccupantNames.has(name))continue;
+  const m=new PBRMaterial(name,scene);m.albedoColor=new Color3(...p.color.slice(0,3));m.metallic=0;m.roughness=p.roughness;m.backFaceCulling=!p.doubleSided;
+  if(p.albedo)m.albedoTexture=assetTexture(p.albedo,true);
+  if(p.normal){m.bumpTexture=assetTexture(p.normal,false);m.invertNormalMapX=false;m.invertNormalMapY=true;}
+  if(p.cutout){m.albedoTexture.hasAlpha=true;m.useAlphaFromAlbedoTexture=true;m.transparencyMode=PBRMaterial.PBRMATERIAL_ALPHATEST;m.alphaCutOff=.45;}
+  result[name]=m;
+ }
+ return result;}

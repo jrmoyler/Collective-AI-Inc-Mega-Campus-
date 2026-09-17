@@ -1,0 +1,671 @@
+{
+  "renderer": "Node geometry and ray checks; not browser or phone",
+  "floors": [
+    {
+      "facility": "CF-01",
+      "floor": 1,
+      "vertices": 216640,
+      "bytes": 8581952,
+      "parts": 1536,
+      "constructionAndCheckMs": 605,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-01",
+      "floor": 2,
+      "vertices": 291754,
+      "bytes": 11700956,
+      "parts": 1712,
+      "constructionAndCheckMs": 447,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-01",
+      "floor": 3,
+      "vertices": 261073,
+      "bytes": 10394504,
+      "parts": 1752,
+      "constructionAndCheckMs": 264,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-01",
+      "floor": 4,
+      "vertices": 380227,
+      "bytes": 15306896,
+      "parts": 2113,
+      "constructionAndCheckMs": 328,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-01",
+      "floor": 5,
+      "vertices": 239388,
+      "bytes": 9392208,
+      "parts": 1917,
+      "constructionAndCheckMs": 226,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-01",
+      "floor": 6,
+      "vertices": 335350,
+      "bytes": 13559252,
+      "parts": 1903,
+      "constructionAndCheckMs": 836,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-01",
+      "floor": 7,
+      "vertices": 308781,
+      "bytes": 12371172,
+      "parts": 1875,
+      "constructionAndCheckMs": 389,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-01",
+      "floor": 8,
+      "vertices": 308755,
+      "bytes": 12312320,
+      "parts": 2050,
+      "constructionAndCheckMs": 353,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-01",
+      "floor": 9,
+      "vertices": 337023,
+      "bytes": 13573800,
+      "parts": 1959,
+      "constructionAndCheckMs": 229,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-01",
+      "floor": 10,
+      "vertices": 394816,
+      "bytes": 15669584,
+      "parts": 2689,
+      "constructionAndCheckMs": 268,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-01",
+      "floor": 11,
+      "vertices": 361962,
+      "bytes": 14494176,
+      "parts": 2246,
+      "constructionAndCheckMs": 379,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-01",
+      "floor": 12,
+      "vertices": 270653,
+      "bytes": 10801672,
+      "parts": 1848,
+      "constructionAndCheckMs": 205,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-02",
+      "floor": 1,
+      "vertices": 392160,
+      "bytes": 16487028,
+      "parts": 3689,
+      "constructionAndCheckMs": 284,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-02",
+      "floor": 2,
+      "vertices": 663083,
+      "bytes": 26583580,
+      "parts": 3880,
+      "constructionAndCheckMs": 292,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-03",
+      "floor": 1,
+      "vertices": 723741,
+      "bytes": 29095704,
+      "parts": 4204,
+      "constructionAndCheckMs": 462,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-03",
+      "floor": 2,
+      "vertices": 411394,
+      "bytes": 16832528,
+      "parts": 3246,
+      "constructionAndCheckMs": 172,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-04",
+      "floor": 1,
+      "vertices": 665659,
+      "bytes": 26819948,
+      "parts": 3767,
+      "constructionAndCheckMs": 318,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-04",
+      "floor": 2,
+      "vertices": 473824,
+      "bytes": 18896780,
+      "parts": 3101,
+      "constructionAndCheckMs": 223,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-04",
+      "floor": 3,
+      "vertices": 575532,
+      "bytes": 23186436,
+      "parts": 3300,
+      "constructionAndCheckMs": 393,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-04",
+      "floor": 4,
+      "vertices": 580029,
+      "bytes": 23091564,
+      "parts": 3976,
+      "constructionAndCheckMs": 274,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-05",
+      "floor": 1,
+      "vertices": 172725,
+      "bytes": 6652332,
+      "parts": 1689,
+      "constructionAndCheckMs": 127,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-05",
+      "floor": 2,
+      "vertices": 631400,
+      "bytes": 25224508,
+      "parts": 4000,
+      "constructionAndCheckMs": 417,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-06",
+      "floor": 1,
+      "vertices": 397871,
+      "bytes": 16288372,
+      "parts": 1766,
+      "constructionAndCheckMs": 252,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-06",
+      "floor": 2,
+      "vertices": 347951,
+      "bytes": 14016064,
+      "parts": 1979,
+      "constructionAndCheckMs": 189,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-07",
+      "floor": 1,
+      "vertices": 417643,
+      "bytes": 16732712,
+      "parts": 2434,
+      "constructionAndCheckMs": 202,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-08",
+      "floor": 1,
+      "vertices": 217636,
+      "bytes": 8405192,
+      "parts": 2311,
+      "constructionAndCheckMs": 194,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-09",
+      "floor": 1,
+      "vertices": 428925,
+      "bytes": 16860684,
+      "parts": 3717,
+      "constructionAndCheckMs": 362,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-10",
+      "floor": 1,
+      "vertices": 510094,
+      "bytes": 20268560,
+      "parts": 3733,
+      "constructionAndCheckMs": 381,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-11",
+      "floor": 1,
+      "vertices": 375834,
+      "bytes": 14958552,
+      "parts": 2480,
+      "constructionAndCheckMs": 217,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-11",
+      "floor": 2,
+      "vertices": 381309,
+      "bytes": 15352392,
+      "parts": 2300,
+      "constructionAndCheckMs": 309,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-12",
+      "floor": 1,
+      "vertices": 408168,
+      "bytes": 16334916,
+      "parts": 2617,
+      "constructionAndCheckMs": 322,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-12",
+      "floor": 2,
+      "vertices": 489419,
+      "bytes": 19728484,
+      "parts": 2649,
+      "constructionAndCheckMs": 519,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-13",
+      "floor": 1,
+      "vertices": 302751,
+      "bytes": 12211872,
+      "parts": 1649,
+      "constructionAndCheckMs": 182,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-13",
+      "floor": 2,
+      "vertices": 251096,
+      "bytes": 9985936,
+      "parts": 1714,
+      "constructionAndCheckMs": 126,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-14",
+      "floor": 1,
+      "vertices": 379502,
+      "bytes": 15241696,
+      "parts": 2204,
+      "constructionAndCheckMs": 154,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-15",
+      "floor": 1,
+      "vertices": 334520,
+      "bytes": 13367512,
+      "parts": 2115,
+      "constructionAndCheckMs": 175,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-16",
+      "floor": 1,
+      "vertices": 510101,
+      "bytes": 20741968,
+      "parts": 3904,
+      "constructionAndCheckMs": 352,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-16",
+      "floor": 2,
+      "vertices": 444291,
+      "bytes": 17929476,
+      "parts": 2465,
+      "constructionAndCheckMs": 401,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-17",
+      "floor": 1,
+      "vertices": 634098,
+      "bytes": 25270116,
+      "parts": 4177,
+      "constructionAndCheckMs": 349,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-18",
+      "floor": 1,
+      "vertices": 289671,
+      "bytes": 11577768,
+      "parts": 1970,
+      "constructionAndCheckMs": 190,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-18",
+      "floor": 2,
+      "vertices": 367972,
+      "bytes": 14933216,
+      "parts": 1787,
+      "constructionAndCheckMs": 167,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-19",
+      "floor": 1,
+      "vertices": 283933,
+      "bytes": 11421836,
+      "parts": 1668,
+      "constructionAndCheckMs": 199,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-19",
+      "floor": 2,
+      "vertices": 353259,
+      "bytes": 14187300,
+      "parts": 2097,
+      "constructionAndCheckMs": 256,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-20",
+      "floor": 1,
+      "vertices": 324764,
+      "bytes": 12777328,
+      "parts": 2445,
+      "constructionAndCheckMs": 262,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-20",
+      "floor": 2,
+      "vertices": 519141,
+      "bytes": 21359592,
+      "parts": 3421,
+      "constructionAndCheckMs": 268,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-21",
+      "floor": 1,
+      "vertices": 337933,
+      "bytes": 13434260,
+      "parts": 2417,
+      "constructionAndCheckMs": 202,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-22",
+      "floor": 1,
+      "vertices": 453660,
+      "bytes": 18357180,
+      "parts": 2387,
+      "constructionAndCheckMs": 171,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-22",
+      "floor": 2,
+      "vertices": 538660,
+      "bytes": 21539768,
+      "parts": 3377,
+      "constructionAndCheckMs": 634,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-23",
+      "floor": 1,
+      "vertices": 322873,
+      "bytes": 12723932,
+      "parts": 2517,
+      "constructionAndCheckMs": 213,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-23",
+      "floor": 2,
+      "vertices": 478928,
+      "bytes": 19071340,
+      "parts": 3300,
+      "constructionAndCheckMs": 277,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-23",
+      "floor": 3,
+      "vertices": 576922,
+      "bytes": 23128052,
+      "parts": 3514,
+      "constructionAndCheckMs": 392,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-24",
+      "floor": 1,
+      "vertices": 446875,
+      "bytes": 17874392,
+      "parts": 2842,
+      "constructionAndCheckMs": 284,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-24",
+      "floor": 2,
+      "vertices": 619959,
+      "bytes": 25061100,
+      "parts": 3095,
+      "constructionAndCheckMs": 412,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-25",
+      "floor": 1,
+      "vertices": 407273,
+      "bytes": 16074076,
+      "parts": 3020,
+      "constructionAndCheckMs": 198,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-25",
+      "floor": 2,
+      "vertices": 598933,
+      "bytes": 24046424,
+      "parts": 3120,
+      "constructionAndCheckMs": 457,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-26",
+      "floor": 1,
+      "vertices": 502097,
+      "bytes": 20021536,
+      "parts": 3468,
+      "constructionAndCheckMs": 329,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-27",
+      "floor": 1,
+      "vertices": 480720,
+      "bytes": 19329456,
+      "parts": 2731,
+      "constructionAndCheckMs": 194,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-27",
+      "floor": 2,
+      "vertices": 488804,
+      "bytes": 19776568,
+      "parts": 2364,
+      "constructionAndCheckMs": 181,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-28",
+      "floor": 1,
+      "vertices": 470044,
+      "bytes": 18777080,
+      "parts": 2917,
+      "constructionAndCheckMs": 257,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-28",
+      "floor": 2,
+      "vertices": 477258,
+      "bytes": 19265280,
+      "parts": 2325,
+      "constructionAndCheckMs": 175,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-29",
+      "floor": 1,
+      "vertices": 187936,
+      "bytes": 7380836,
+      "parts": 1508,
+      "constructionAndCheckMs": 99,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-29",
+      "floor": 2,
+      "vertices": 585146,
+      "bytes": 23602744,
+      "parts": 2927,
+      "constructionAndCheckMs": 260,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-30",
+      "floor": 1,
+      "vertices": 497798,
+      "bytes": 20092780,
+      "parts": 2753,
+      "constructionAndCheckMs": 184,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-30",
+      "floor": 2,
+      "vertices": 425260,
+      "bytes": 17113760,
+      "parts": 2369,
+      "constructionAndCheckMs": 166,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-31",
+      "floor": 1,
+      "vertices": 395231,
+      "bytes": 15858256,
+      "parts": 2316,
+      "constructionAndCheckMs": 329,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-31",
+      "floor": 2,
+      "vertices": 475290,
+      "bytes": 19135236,
+      "parts": 2605,
+      "constructionAndCheckMs": 200,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-32",
+      "floor": 1,
+      "vertices": 291926,
+      "bytes": 11432404,
+      "parts": 2578,
+      "constructionAndCheckMs": 138,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-32",
+      "floor": 2,
+      "vertices": 469736,
+      "bytes": 18855544,
+      "parts": 2860,
+      "constructionAndCheckMs": 265,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-33",
+      "floor": 1,
+      "vertices": 540980,
+      "bytes": 21709528,
+      "parts": 3268,
+      "constructionAndCheckMs": 216,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-33",
+      "floor": 2,
+      "vertices": 542063,
+      "bytes": 21796204,
+      "parts": 3012,
+      "constructionAndCheckMs": 202,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-34",
+      "floor": 1,
+      "vertices": 472742,
+      "bytes": 18911824,
+      "parts": 2970,
+      "constructionAndCheckMs": 264,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-34",
+      "floor": 2,
+      "vertices": 487038,
+      "bytes": 19646784,
+      "parts": 2496,
+      "constructionAndCheckMs": 171,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-35",
+      "floor": 1,
+      "vertices": 242108,
+      "bytes": 9534940,
+      "parts": 1841,
+      "constructionAndCheckMs": 120,
+      "blockedArrivals": []
+    },
+    {
+      "facility": "CF-35",
+      "floor": 2,
+      "vertices": 338840,
+      "bytes": 13347280,
+      "parts": 2582,
+      "constructionAndCheckMs": 199,
+      "blockedArrivals": []
+    }
+  ]
+}

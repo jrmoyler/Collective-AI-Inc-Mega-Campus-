@@ -22,7 +22,7 @@ export function researchInstrumentGeometry(k,type,x,z,y=.83){
  if(['wearable','biometric','care','biomedical','behavior'].includes(type)){
   box('physiology acquisition base','porcelain',0,.04,0,.92,.08,.56,.025);
   box('acquisition interface','graphite',.3,.18,.08,.28,.22,.24);screen(.3,.22,-.052,.21,.13);
-  for(const xx of [-.30,-.06]){k.ring('wearable sensor band','rubber',x+xx,y+.14,z-.03,.095,.018,Math.PI/2);box('wearable optical sensor','glass',xx,.16,-.12,.075,.035,.045,.009);tube('sensor lead',[xx,.10,.04],[.2,.10,.08],.006);}
+  for(const xx of [-.30,-.06]){k.ring('wearable sensor band','rubber',x+xx,y+.14,z-.03,.038,.006,Math.PI/2);box('wearable optical sensor','glass',xx,.145,-.068,.031,.012,.027,.003);tube('sensor lead',[xx,.10,.008],[.2,.10,.08],.006);}
   if(type==='behavior'){box('gaze tracker mast','steel',-.34,.32,.19,.035,.57,.035);box('binocular gaze tracker','graphite',-.34,.61,.18,.30,.10,.07);for(const dx of [-.42,-.26])box('gaze camera lens','glass',dx,.61,.137,.035,.035,.006,.001);}
  }else if(['materials','aerospace','electronics','robotics','kinetic'].includes(type)){
   box('metrology granite base','graphite',0,.04,0,.98,.08,.58);
@@ -38,8 +38,8 @@ export function researchInstrumentGeometry(k,type,x,z,y=.83){
   screen(-.32,.27,-.20,.22,.15);
  }else if(['water','bioenergy','nutrition','botany'].includes(type)){
   box('sample carousel base','porcelain',0,.05,0,.96,.10,.60,.025);
-  k.cylinder('sample carousel','steel',x-.15,y+.14,z,.22,.09);
-  for(let i=0;i<6;i++){const a=i*Math.PI/3,xx=x-.15+Math.cos(a)*.16,zz=z+Math.sin(a)*.16;k.cylinder('sample cuvette','glass',xx,y+.28,zz,.034,.23);k.cylinder('cuvette cap','blue',xx,y+.40,zz,.038,.025);}
+  k.cylinder('sample carousel','steel',x-.15,y+.14,z,.15,.09);
+  for(let i=0;i<12;i++){const a=i*Math.PI/6,xx=x-.15+Math.cos(a)*.105,zz=z+Math.sin(a)*.105;k.cylinder('sample tube','glass',xx,y+.245,zz,.0085,.12);k.cylinder('sample tube cap','blue',xx,y+.31,zz,.010,.010);}
   box('spectrometry optical head','porcelain',.29,.30,.10,.24,.50,.31,.02);screen(.29,.37,-.062,.18,.13);
   tube('sampling arm',[.29,.56,.10],[-.12,.56,.10]);tube('sampling needle',[-.12,.56,.10],[-.12,.40,.10],.005);
   if(type==='botany')for(const dx of [-.25,-.12,0])k.leaf('botanical sample',x+dx,y+.19,z-.18,.12,dx*4);

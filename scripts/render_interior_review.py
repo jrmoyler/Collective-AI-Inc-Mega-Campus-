@@ -17,6 +17,21 @@ for mat in bpy.data.materials:
   nodes=mat.node_tree.nodes; shader=next(n for n in nodes if n.type=='BSDF_PRINCIPLED');tex=nodes.new('ShaderNodeTexImage');tex.image=bpy.data.images.load(str(p))
   uv=nodes.new('ShaderNodeTexCoord');mapping=nodes.new('ShaderNodeMapping');mapping.inputs['Scale'].default_value[0]=3 if name in ('fabric','leather') else 1;mapping.inputs['Scale'].default_value[1]=-3 if name in ('fabric','leather') else -1;mapping.inputs['Location'].default_value[1]=1;mat.node_tree.links.new(uv.outputs['UV'],mapping.inputs['Vector']);mat.node_tree.links.new(mapping.outputs['Vector'],tex.inputs['Vector']);mat.node_tree.links.new(tex.outputs['Color'],shader.inputs['Base Color'])
   if name in ('display','stageScreen','instrumentDisplay'):mat.node_tree.links.new(tex.outputs['Color'],shader.inputs['Emission Color'])
+# Imported character UVs retain glTF's orientation; no procedural finish mapping.
+repo=Path(__file__).resolve().parents[1]
+character_materials=json.loads((repo/'viewer/campus/occupant-meshes.json').read_text())['materials']
+for mat in bpy.data.materials:
+ p=character_materials.get(mat.name.split('.')[0])
+ if not p or not mat.use_nodes:continue
+ shader=next(n for n in mat.node_tree.nodes if n.type=='BSDF_PRINCIPLED')
+ for key in ['albedo','normal']:
+  if not p.get(key):continue
+  tex=mat.node_tree.nodes.new('ShaderNodeTexImage');tex.image=bpy.data.images.load(str(repo/'public'/p[key].lstrip('/')),check_existing=True)
+  if key=='albedo':
+   mat.node_tree.links.new(tex.outputs['Color'],shader.inputs['Base Color'])
+   if p['cutout']:mat.node_tree.links.new(tex.outputs['Alpha'],shader.inputs['Alpha'])
+  else:
+   tex.image.colorspace_settings.name='Non-Color';normal=mat.node_tree.nodes.new('ShaderNodeNormalMap');mat.node_tree.links.new(tex.outputs['Color'],normal.inputs['Color']);mat.node_tree.links.new(normal.outputs['Normal'],shader.inputs['Normal'])
 s=bpy.context.scene;s.render.engine='CYCLES';s.cycles.samples=int(os.environ.get('CAMPUS_REVIEW_SAMPLES','20'));s.cycles.use_denoising=True;s.render.resolution_x=1440;s.render.resolution_y=960;s.render.resolution_percentage=100
 s.world.use_nodes=True;s.world.node_tree.nodes['Background'].inputs[0].default_value=(.38,.49,.60,1);s.world.node_tree.nodes['Background'].inputs[1].default_value=.45
 s.view_settings.view_transform='AgX';s.view_settings.look='AgX - Medium High Contrast'

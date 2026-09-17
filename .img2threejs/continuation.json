@@ -44,6 +44,11 @@
       "action": "refine-code",
       "evidence": "evidence/finishing-pass/README.md",
       "reason": "Integrated/visual-first finishing pass: single-surface glazing, construction-depth profiles, deferred front-room divisions, bounded planted roof beds and solar clearances. All35 actual-geometry renders and six matched pairs reviewed. 44 tests pass; native17 shaders pass. Device recorder now retains long stalls, records actual floor/render/recovery events and captures real frames via opt-in QA controls. Hosted browser still reports Disabled graphics; physical Galaxy A15 and exact/photoreal acceptance remain open."
+    },
+    {
+      "action": "refine-code",
+      "evidence": "evidence/occupied-mesh-pass/README.md",
+      "reason": "Replace primitive sitters with textured CC0 MakeHuman body/clothing meshes; correct room-light membership and research object scale. Rebuild Neural Block upper hall, rear roof plant, portal and cooling forecourt. Render-driven corrections remove orphaned console, obscured lettering and oversized sample tubes. Retain all three global acceptance gates as not-met."
     }
   ],
   "blocker": "Browser-control execution available; hosted browser explicitly disables WebGL before scene creation. Native EGL compile/link validates syntax/interfaces only. Browser GPU appearance/tours, exact-reference fidelity and physical Galaxy A15 validation remain unverified. Tripo through fal previously returned 403 balance_exhausted."

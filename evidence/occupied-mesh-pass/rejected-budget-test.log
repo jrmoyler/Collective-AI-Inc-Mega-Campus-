@@ -1,0 +1,126 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test
+> node --test tests/*.test.js
+
+✔ corrected register preserves 35 facilities and 74 floor programs (1.129943ms)
+✔ every program is reachable through a floor and six positive room envelopes (36.587884ms)
+✔ exterior envelopes remain inside the 220-acre scene (0.25567ms)
+✔ Blender GLB is shipped and contains named node components (1.928972ms)
+✔ thin facade glazing preserves horizontal and vertical panel extents without doubled tint surfaces (28.484957ms)
+✖ individual atlas shells 01–12 are bounded local assemblies with complete picking IDs (4079.736815ms)
+✔ fine detail culling measures from the placed facility envelope and preserves its shell (27.894131ms)
+✔ deferred equipment is constructed only upon approaching a facility (0.87377ms)
+✔ distant eviction disposes private buffers once and preserves shared facade materials (0.963848ms)
+✔ fleet population is real, articulated and independent of automation detection (392.936864ms)
+✔ road fleet travels in metres per second and tyres roll (181.416512ms)
+✔ missing road input has honest counts and leaves aerial activity available (59.57487ms)
+✔ all 74 floor envelopes differ before materials or furniture are created (49.393659ms)
+✔ LED source stage dimensions and production clearances are not clamped to an office bay (0.276679ms)
+✔ free-walking branch routes never travel diagonally through a room envelope (1815.426965ms)
+✔ all 35 exterior assemblies merge successfully, have finite geometry and retain picking IDs (13919.323364ms)
+✔ finish grain keeps a physical scale across differently sized interior boxes (7.792641ms)
+✔ soft furnishings have sculpted depression, finite normals and bounded indexed topology (83.538164ms)
+✔ workstation includes readable small scale tools and open cup finish (75.92123ms)
+✔ lecture hall uses fixed seats with a clear central aisle inside its room (54.288013ms)
+✔ all 74 floors have distinct geometry and all 444 guided entries remain open (70230.181705ms)
+✔ canonical programs retain order and activity controls room allocation (27.517654ms)
+✔ specialist programs produce their actual equipment instead of repeated office clusters (14.539733ms)
+BJS - [01:33:43]: Babylon.js v9.26.2 - Null engine
+BJS - [01:34:21]: Babylon.js v9.26.2 - Null engine
+BJS - [01:34:27]: Babylon.js v9.26.2 - Null engine
+BJS - [01:34:33]: Babylon.js v9.26.2 - Null engine
+BJS - [01:34:43]: Babylon.js v9.26.2 - Null engine
+BJS - [01:34:46]: Babylon.js v9.26.2 - Null engine
+BJS - [01:34:48]: Babylon.js v9.26.2 - Null engine
+BJS - [01:34:50]: Babylon.js v9.26.2 - Null engine
+BJS - [01:34:51]: Babylon.js v9.26.2 - Null engine
+BJS - [01:34:52]: Babylon.js v9.26.2 - Null engine
+BJS - [01:34:54]: Babylon.js v9.26.2 - Null engine
+BJS - [01:34:57]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:03]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:07]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:09]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:11]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:16]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:18]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:20]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:22]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:23]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:24]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:26]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:30]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:32]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:34]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:36]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:38]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:40]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:42]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:44]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:47]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:49]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:52]: Babylon.js v9.26.2 - Null engine
+BJS - [01:35:54]: Babylon.js v9.26.2 - Null engine
+✔ all 74 Babylon floor scenes construct and dispose without missing registrations (133690.971621ms)
+✔ individual shorelines close and stay inside canonical planting clearance envelopes (10.972692ms)
+✔ expanded terrain preserves level campus foundations (4.15972ms)
+✔ device report keeps foreground stalls over two seconds and reports tail latency (2.143407ms)
+✔ hidden time, tour loads and quality changes cannot pollute another view timing (8.656479ms)
+✔ startup events survive opt-in recording, while new recordings reset coverage (0.217179ms)
+✔ HDR samples use color/depth format intersection rather than global maximum (1.788155ms)
+✔ silent incomplete bloom framebuffer becomes an error and restores renderer binding (19.049063ms)
+✔ MSAA validation checks both draw and resolve framebuffer attachments (0.33426ms)
+✔ unsupported real MSAA allocation can downgrade once to complete HDR buffers (0.361107ms)
+✔ indexed rounded furniture preserves the original curved surface and normals with metre-scale UVs (57.151405ms)
+✔ all cargo and survey rotor arms meet their motors and only rotor blades spin (549.296239ms)
+✔ specialist schedules receive equipment appropriate to their program (1.548916ms)
+BJS - [01:33:43]: Babylon.js v9.26.2 - Null engine
+BJS - [01:33:46]: Babylon.js v9.26.2 - Null engine
+BJS - [01:33:48]: Babylon.js v9.26.2 - Null engine
+BJS - [01:33:50]: Babylon.js v9.26.2 - Null engine
+BJS - [01:33:51]: Babylon.js v9.26.2 - Null engine
+✔ render failure stops scheduling before recovery disposes a renderer (5.947081ms)
+✔ teardown cancels both queued frames and a frame stopped during its callback (0.459096ms)
+✔ failed atmosphere compilation restores the screen target and renderer settings (0.936585ms)
+✔ fallback and discarded asset cleanup release shared geometry, materials and textures once (6.913378ms)
+✔ one broken disposal listener cannot block other resources or scene removal (0.945647ms)
+✔ a floor construction callback failure releases the engine and installed input handlers (2758.159167ms)
+✔ a later frame failure disposes the tour once and reports recovery instead of repeating (1879.78525ms)
+✔ losing focus cancels touch movement and residual camera motion (1619.944876ms)
+✔ an invalid floor request leaves the existing valid tour usable (1942.866526ms)
+✔ interior context loss stops frame evidence and movement until a restored frame renders (1859.903096ms)
+✔ research function selects distinct apparatus and excludes unrelated generic analyzers (261.45592ms)
+✔ textured occupants follow actual seats at every chair yaw (472.726678ms)
+✔ separate floor assemblies do not mutate shared character buffers (58.876437ms)
+✔ shipped Blender furnishings load with finite transforms and cull during aerial views (96.987183ms)
+✔ street shadow detail improves without allocating another map or changing sun direction (6.551502ms)
+✔ high-DPR interiors never fall below CSS resolution and obey the selected pixel budget (6.158264ms)
+✔ furniture contains structural supports, five casters, input devices and server units (334.265063ms)
+✔ reference room fixtures stay differentiated by program (1.793153ms)
+✔ Trust Vault guided room arrival paths remain open at visitor eye height (3487.305982ms)
+ℹ tests 55
+ℹ suites 0
+ℹ pass 54
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 137823.70895
+
+✖ failing tests:
+
+test at tests/facilities-01-12.test.js:6:1
+✖ individual atlas shells 01–12 are bounded local assemblies with complete picking IDs (4079.736815ms)
+  AssertionError [ERR_ASSERTION]: Combined shell budget: 411046
+      at TestContext.<anonymous> (file:///workspace/scratch/70e443dfbbf1/campus/tests/facilities-01-12.test.js:24:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

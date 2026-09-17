@@ -7,8 +7,6 @@ import {furnishSpecialist,specialistKind} from './interior-equipment.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 export const FINISHES={
- skinLight:{color:0xc79474,roughness:.65},skinMedium:{color:0x916149,roughness:.65},skinDark:{color:0x593b30,roughness:.65},skinLip:{color:0x855746,roughness:.7},
- hair:{color:0x29201d,roughness:.9},shirtBlue:{color:0x6f8894,roughness:.92},shirtIvory:{color:0xbab6a7,roughness:.92},clothNavy:{color:0x273340,roughness:.95},
  stone:{color:0xc6c5bd,roughness:.68}, plaster:{color:0xdedbd1,roughness:.83},
  graphite:{color:0x263039,metalness:.55,roughness:.31}, brass:{color:0xb49a65,metalness:.88,roughness:.22},
  oak:{color:0x937252,roughness:.43}, fabric:{color:0x36464b,roughness:.92}, leather:{color:0x6b5141,roughness:.48},
