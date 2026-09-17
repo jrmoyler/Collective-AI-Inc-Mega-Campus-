@@ -8,18 +8,23 @@ function workroom(b,x,y,z,w,d){glazing(b,x,y,z,w,5,d);for(let i=-1;i<=1;i++){b.b
 function tanks(b,x,y,z,count,r){for(let i=0;i<count;i++){const px=x+i*r*2.5;cylinder(b,'white',px,y+2,z,r,4);cylinder(b,'glass',px,y+4.1,z,r*.9,.2);ring(b,'gold',px,y+4.2,z,r,.12);}}
 function robotArm(b,x,y,z,s=1){cylinder(b,'dark',x,y+.3*s,z,.7*s,.6*s);line(b,'gold',[[x,y+.4*s,z],[x,y+2*s,z],[x+1.2*s,y+2.8*s,z],[x+1.8*s,y+1.8*s,z]],.2*s);for(const [xx,yy] of [[x,y+2*s],[x+1.2*s,y+2.8*s]])cylinder(b,'dark',xx,yy,z,.3*s,.4*s);}
 export function addSignature(b,f){const {w,d,h}=f;const random=seeded(f.id*837);
- // All artwork shares occupied roof gardens, perimeter planters, entry steps and bollards.
- if(!['dome','garden','spire','stadium','transit','greenhouses','bio'].includes(f.form)){
-  for(const side of [-1,1]){b.box('stone',side*w*.46,h+1.4,0,1.1,1,d*.82);b.box('leaf',side*w*.46,h+2,0,1.6,1,d*.8);}
- }
+ // Roof gardens are authored on each actual roof by the shell builder.
+ // Global footprint-wide planters previously floated across courtyard voids.
  for(let i=0;i<4;i++)b.box('stone',0,.18+i*.17,d/2+7-i*1.2,w*.38,.24,1.2);
  for(const side of [-1,1])for(let i=0;i<4;i++){const x=side*(w*.3+i*2.5),z=d/2+5;cylinder(b,'dark',x,.65,z,.16,1.3);cylinder(b,'warm',x,1.25,z,.17,.1);}
  switch(f.id){
  case 1:{
-  // Oculus and three occupied cantilever suites distinguish the facility atlas view.
-  for(const y of [h*.24,h*.48,h*.73]){workroom(b,w*.36,y,d*.24,w*.38,d*.49);terrace(b,w*.36,y+5.4,d*.24,w*.42,d*.52);line(b,'stone',[[w*.17,y-5,d*.25],[w*.52,y,d*.25]],.45);}
-  for(let i=-3;i<=3;i++){const x=i*w*.105;line(b,'dark',[[x,10,d*.405],[x*.64,h-4,d*.405*.64]],.16);}
-  b.box('dark',-w*.31,h*.43,d*.31,w*.22,h*.49,.35);terrace(b,0,10.6,0,w*1.18,d*1.11);break;
+  // Cantilever floors already belong to the governing CF-01 shell. Brace
+  // those exact elevations; duplicated suites formerly intersected its glazing.
+  for(const y of [h*.23,h*.47,h*.71]){
+   for(const side of [-1,1])line(b,'steel',[[w*.13,y-5,d*.13+side*d*.21],[w*.54,y,d*.13+side*d*.21]],.16);
+   for(let i=-1;i<=1;i++){
+    const x=w*.34+i*w*.11;
+    b.box('stone',x,y+1,d*.13,3,.10,1.2);
+    for(const dx of [-1.1,1.1])b.box('steel',x+dx,y+.5,d*.13,.07,1,.9);
+   }
+  }
+  break;
  }
  case 2:workroom(b,0,h+1,0,w*.62,d*.4);for(let i=0;i<7;i++)b.box('cyan',-w*.28+i*w*.09,h+3.1,d*.22,w*.06,1.6,.15);break;
  case 3:{tanks(b,-w*.18,0,-d*.08,3,w*.065);for(let i=0;i<8;i++){b.box('gold',-w*.42+i*w*.12,4,d*.51,.5,8,1);}ring(b,'cyan',0,h*.62,0,w*.16,.2);break;}

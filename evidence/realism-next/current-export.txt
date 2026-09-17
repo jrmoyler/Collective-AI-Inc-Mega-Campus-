@@ -1,0 +1,9 @@
+GLTFExporter: THREE.ShaderMaterial not supported.
+GLTFExporter: THREE.ShaderMaterial not supported.
+GLTFExporter: THREE.ShaderMaterial not supported.
+GLTFExporter: THREE.ShaderMaterial not supported.
+GLTFExporter: THREE.ShaderMaterial not supported.
+GLTFExporter: THREE.ShaderMaterial not supported.
+GLTFExporter: THREE.ShaderMaterial not supported.
+GLTFExporter: THREE.ShaderMaterial not supported.
+{ meshes: 2339, vertices: 8408577 }

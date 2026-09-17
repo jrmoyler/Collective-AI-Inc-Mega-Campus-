@@ -30,12 +30,12 @@ textures.grass.repeat.set(48,42);textures.asphalt.repeat.set(8,1);textures.limes
 function std(params){return new T.MeshStandardMaterial({envMapIntensity:1.05,...params});}
 export const materials={
  steel:std({color:0xa8b2b6,metalness:.9,roughness:.24,map:textures.brushed}),
- glazing:std({color:0x6298aa,metalness:.16,roughness:.08,transparent:true,opacity:.36,depthWrite:false,side:T.DoubleSide,envMapIntensity:1.7}),
+ glazing:std({color:0x93b5c0,metalness:.16,roughness:.08,transparent:true,opacity:.36,depthWrite:false,side:T.DoubleSide,envMapIntensity:1.7}),
  magenta:std({color:0xe9a9ea,emissive:0xd769d6,emissiveIntensity:1.4,roughness:.4}),
  track:std({color:0x8a5d66,roughness:.92}),
  stone:std({color:0xe1dbcc,roughness:.68,map:textures.limestone}),
  dark:std({color:0x29323a,metalness:.52,roughness:.31,map:textures.charcoal}),
- glass:std({color:0x173746,metalness:.48,roughness:.1,envMapIntensity:1.7}),
+ glass:std({color:0x587a89,metalness:.32,roughness:.17,envMapIntensity:1.25}),
  gold:std({color:0xd8b76d,metalness:.83,roughness:.22,emissive:0x5e4319,emissiveIntensity:.32}),
  warm:std({color:0xffd89a,emissive:0xffb24a,emissiveIntensity:1.8,roughness:.36}),
  warmWin:std({color:0xffe2b0,emissive:0xffc066,emissiveIntensity:3.4,roughness:.28,metalness:.02}),
@@ -54,7 +54,7 @@ export const materials={
  copper:std({color:0xc47a48,metalness:.66,roughness:.34,emissive:0x4a2410,emissiveIntensity:.18,map:textures.copper}),
  concrete:std({color:0x969b98,roughness:.82,map:textures.charcoal}),
  night:std({color:0x101820,roughness:.46,metalness:.26,map:textures.charcoal}),
- water:std({color:0x1ec4d8,metalness:.84,roughness:.055,envMapIntensity:2.6,emissive:0x0a5870,emissiveIntensity:.62}),
+ water:std({color:0x406969,metalness:.3,roughness:.16,envMapIntensity:1.4}),
  kinetic:std({color:0x00e8d4,emissive:0x00fff0,emissiveIntensity:5.2,roughness:.14}),
 };
 
@@ -79,7 +79,18 @@ export function ring(batch,mat,x,y,z,r,t=.3,rx=Math.PI/2){const g=new T.TorusGeo
 export function line(batch,mat,pts,r=.2){const curve=new T.CatmullRomCurve3(pts.map(p=>new T.Vector3(...p)));const g=new T.TubeGeometry(curve,Math.max(12,pts.length*10),r,7,false);batch.add(g,mat);g.dispose();return curve;}
 export function seeded(seed){return()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};}
 export function sign(text,w=14,h=3,color='#f3dba5'){const c=document.createElement('canvas');c.width=1024;c.height=192;const ctx=c.getContext('2d');ctx.fillStyle='#09131d';ctx.fillRect(0,0,1024,192);ctx.strokeStyle='#00d9b5';ctx.lineWidth=6;ctx.strokeRect(6,6,1012,180);ctx.fillStyle=color;ctx.font='600 48px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,512,98,960);const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=8;return new T.Mesh(new T.PlaneGeometry(w,h,2,1),new T.MeshBasicMaterial({map:tex,side:T.DoubleSide,toneMapped:false}));}
-export function setDuskMaterials(dusk){materials.warm.emissiveIntensity=dusk?3.4:.22;materials.warmWin.emissiveIntensity=dusk?5.6:.28;materials.cyan.emissiveIntensity=dusk?4.4:.7;materials.violet.emissiveIntensity=dusk?5.2:.85;materials.gold.emissiveIntensity=dusk?1.35:.12;materials.kinetic.emissiveIntensity=dusk?7.2:1.1;materials.blueGlass.emissiveIntensity=dusk?1.45:.28;materials.magenta.emissiveIntensity=dusk?2.6:.45;materials.pink.emissiveIntensity=dusk?.62:.18;materials.leaf.emissiveIntensity=dusk?.16:0;materials.grass.emissiveIntensity=dusk?.1:0;}
+export function setDuskMaterials(dusk){
+ // Light sources glow; masonry, foliage and curtain walls never emit light.
+ materials.warm.emissiveIntensity=dusk?1.5:.12;
+ materials.warmWin.emissiveIntensity=dusk?2:.12;
+ materials.cyan.emissiveIntensity=dusk?1.3:.25;
+ materials.violet.emissiveIntensity=dusk?1.4:.3;
+ materials.gold.emissiveIntensity=dusk?.12:0;
+ materials.kinetic.emissiveIntensity=dusk?1.3:.28;
+ materials.magenta.emissiveIntensity=dusk?1:.18;
+ for(const name of ['blueGlass','pink','leaf','grass','copper'])materials[name].emissiveIntensity=0;
+}
+
 
 export function kineticRoadMaterial(kind='cyan'){
  const glow=kind==='gold'?0xffc45a:0x3dfff4;

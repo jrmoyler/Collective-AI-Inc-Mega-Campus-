@@ -51,19 +51,40 @@ function block(b,x,z,w,d,h,levels=3,skin='stone',base=0){
  if(w>18){b.box('solar',x-w*.14,h+.5,z-d*.16,w*.36,.12,d*.26);for(let q=-w*.31;q<w*.04;q+=1.5)b.box('steel',x+q,h+.57,z-d*.16,.025,.02,d*.26);}
  b.box('leaf',x+w*.08,h+.44,z+d*.18,w*.32,.2,d*.18);
  if(w>22){b.box('steel',x+w*.28,h+.8,z-d*.2,3.1,1.35,2.4);for(let q=-1.2;q<1.3;q+=.3)b.box('dark',x+w*.28+q,h+1.49,z-d*.2,.14,.02,2.1);}
- b.box('gold',x,2.7,z+d/2+2,Math.min(w*.28,11),.16,3.2);
- for(const side of [-1,1])b.box(body,x+side*Math.min(w*.14,5),1.35,z+d/2+2.9,.2,2.7,.2);
+ // Entrances attach only to ground-bearing wings. Elevated cantilevers
+ // must not grow entry canopies or unsupported columns underneath themselves.
+ if(base===0){
+  const entry=Math.min(w*.28,9);
+  b.box('stone',x,.1,z+d/2+1.8,entry+1,.2,3.6);
+  b.box('steel',x,3.15,z+d/2+1.3,entry+.8,.12,2.8);
+  b.box('glazing',x,3.23,z+d/2+1.3,entry+.5,.045,2.55);
+  for(const side of [-1,1]){
+   b.box('steel',x+side*entry/2,1.55,z+d/2+.12,.1,3.1,.16);
+   b.box('glazing',x+side*.72,1.5,z+d/2+.15,1.4,2.85,.045);
+   b.box('steel',x+side*.10,1.27,z+d/2+.25,.035,.62,.035);
+   b.box('dark',x+side*entry/2,2.35,z+d/2+.23,.14,.22,.06);
+  }
+  b.box('steel',x,3.03,z+d/2+.13,entry,.1,.16);
+ }
+
 }
 
 function drum(b,x,z,r,h){
- cylinder(b,'glass',x,h/2,z,r,h,r,48);
- cylinder(b,'stone',x,h,z,r+.8,.7,r+.8,48);
- for(let y=5;y<h;y+=5)ring(b,'gold',x,y,z,r+.2,.26);
- for(let a=0;a<Math.PI*2;a+=Math.PI/24){
-  const xx=x+Math.sin(a)*r,zz=z+Math.cos(a)*r;
-  b.box('stone',xx,h/2,zz,.35,h,.35);
-  if(Math.round(a*24)%3!==0)b.box('warmWin',x+Math.sin(a)*(r-.1),h*.4,z+Math.cos(a)*(r-.1),1.5,h*.65,.2,-a);
+ // Curved curtain wall: floor bands, recessed service core and slender
+ // mullions replace opaque cylinders with scattered luminous rectangles.
+ const floors=Math.max(1,Math.round(h/5)),fh=h/floors;
+ cylinder(b,'glazing',x,h/2,z,r,h,r,64);
+ cylinder(b,'civic',x,h/2,z,r*.28,h,r*.28,32);
+ for(let k=0;k<=floors;k++){
+  cylinder(b,'stone',x,k*fh+.12,z,r+.22,.24,r+.22,64);
+  if(k<floors)ring(b,'dark',x,(k+1)*fh-.22,z,r,.14);
  }
+ for(let i=0;i<48;i++){
+  const a=i*Math.PI/24,xx=x+Math.sin(a)*r,zz=z+Math.cos(a)*r;
+  b.box('steel',xx,h/2,zz,.10,h,.10);
+ }
+ ring(b,'steel',x,h+.8,z,r,.065);
+ cylinder(b,'glazing',x,h+.45,z,r,.7,r,64);
 }
 
 function dome(b,x,z,r,h){
@@ -184,7 +205,7 @@ export function createFacility(f){
  addSignature(b,f);
  const root=b.finish(f.key);root.position.set(f.x,0,f.z);root.userData.facility=f.id;
  root.traverse(o=>{o.userData.facility=f.id;});
- const label=sign(f.key+'  '+f.name.toUpperCase(),Math.min(w*.85,48),3);
+ const label=sign(f.key+'  '+f.name.toUpperCase(),Math.min(w*.52,25),1.35);
  label.position.set(0,Math.min(h*.65,12),d/2+.7);root.add(label);label.userData.facility=f.id;
  root.userData.sculptRuntime={parts:root.children.map(c=>c.name),clickable:true};return root;
 }

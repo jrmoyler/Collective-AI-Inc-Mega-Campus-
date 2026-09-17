@@ -6,15 +6,24 @@ import {InteriorKit,roomKind} from '../viewer/campus/interior-kit.js';
 import {createFleets} from '../viewer/campus/fleets.js';
 import {materials} from '../viewer/campus/geometry.js';
 
-test('indexed rounded furniture preserves the original curved surface, UVs and normals',()=>{
+test('indexed rounded furniture preserves the original curved surface and normals with metre-scale UVs',()=>{
  const kit=new InteriorKit('rounding');const mesh=kit.box('seat','fabric',0,0,0,.52,.12,.49,.05);
  const original=new RoundedBoxGeometry(.52,.12,.49,1,.024);
  const expanded=mesh.geometry.toNonIndexed();
- for(const name of ['position','normal','uv']){
+ for(const name of ['position','normal']){
   assert.equal(expanded.attributes[name].array.length,original.attributes[name].array.length);
   for(let i=0;i<original.attributes[name].array.length;i++)assert.ok(Math.abs(expanded.attributes[name].array[i]-original.attributes[name].array[i])<1e-6,name);
  }
  assert.ok(mesh.geometry.attributes.position.count<original.attributes.position.count/2);
+ const {position,normal,uv}=mesh.geometry.attributes;
+ assert.equal(uv.count,position.count);
+ for(let i=0;i<position.count;i++){
+  const ax=Math.abs(normal.getX(i)),ay=Math.abs(normal.getY(i)),az=Math.abs(normal.getZ(i));
+  const u=ax>ay&&ax>az?position.getZ(i):position.getX(i);
+  const v=ay>ax&&ay>az?position.getZ(i):position.getY(i);
+  assert.ok(Number.isFinite(uv.getX(i))&&Number.isFinite(uv.getY(i)));
+  assert.ok(Math.abs(uv.getX(i)-u)<1e-6&&Math.abs(uv.getY(i)-v)<1e-6,'grain follows physical metre dimensions');
+ }
  expanded.dispose();original.dispose();
 });
 

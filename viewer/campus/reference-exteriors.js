@@ -8,17 +8,54 @@ function rounded(b,mat,x,y,z,w,d,h,r=4){
  s.moveTo(-a+r,-c);s.lineTo(a-r,-c);s.quadraticCurveTo(a,-c,a,-c+r);s.lineTo(a,c-r);s.quadraticCurveTo(a,c,a-r,c);s.lineTo(-a+r,c);s.quadraticCurveTo(-a,c,-a,c-r);s.lineTo(-a,-c+r);s.quadraticCurveTo(-a,-c,-a+r,-c);
  const g=new T.ExtrudeGeometry(s,{depth:h,bevelEnabled:false,curveSegments:8});g.rotateX(-Math.PI/2);b.add(g,mat,x,y,z);g.dispose();
 }
-function curvedWing(b,x,z,w,d,h,levels=2){
- rounded(b,'dark',x,0,z,w,d,h,Math.min(w,d)*.20);
- for(let i=0;i<levels;i++){
-  const y=i*h/levels;
-  rounded(b,'dark',x,y+h/levels-.4,z,w+.55,d+.55,.38,Math.min(w,d)*.20);
-  for(let q=-w*.32;q<w*.33;q+=5.6){
-   if(((Math.round(q)+i)&1)===0)continue;
-   for(const side of [-1,1])b.box('warmWin',x+q,y+h/levels*.52,z+side*d*.5,1.7,h/levels*.4,.08);
+// A perimeter sampled at architectural bay spacing: straight elevations stay
+// straight, rounded corners carry continuous glazing and real frame depth.
+function wingPerimeter(w,d,r){
+ const points=[];
+ for(const [cx,cz,start] of [[w/2-r,d/2-r,0],[-w/2+r,d/2-r,Math.PI/2],[-w/2+r,-d/2+r,Math.PI],[w/2-r,-d/2+r,Math.PI*1.5]]){
+  for(let i=0;i<=8;i++){const a=start+i*Math.PI/16;points.push([cx+Math.cos(a)*r,cz+Math.sin(a)*r]);}
+ }
+ const bays=[];
+ for(let i=0;i<points.length;i++){
+  const a=points[i],c=points[(i+1)%points.length],n=Math.max(1,Math.ceil(Math.hypot(c[0]-a[0],c[1]-a[1])/3.2));
+  for(let j=0;j<n;j++)bays.push([a[0]+(c[0]-a[0])*j/n,a[1]+(c[1]-a[1])*j/n]);
+ }
+ return bays;
+}
+function curvedWing(b,x,z,w,d,h,levels=2,cladding='stone'){
+ const r=Math.min(w,d)*.20,bays=wingPerimeter(w,d,r),fh=h/levels;
+ // Opaque service core is recessed, allowing depth and occupied floor plates
+ // to show through the facade instead of a black monolithic extrusion.
+ rounded(b,'civic',x,0,z,w*.38,d*.45,h,1);
+ for(let floor=0;floor<levels;floor++){
+  const y=floor*fh;
+  rounded(b,cladding,x,y,z,w+.35,d+.35,.32,r);
+  for(let i=0;i<bays.length;i++){
+   const a=bays[i],c=bays[(i+1)%bays.length],dx=c[0]-a[0],dz=c[1]-a[1],len=Math.hypot(dx,dz),rot=-Math.atan2(dz,dx);
+   const px=x+(a[0]+c[0])/2,pz=z+(a[1]+c[1])/2;
+   b.box('glazing',px,y+fh*.5,pz,len,fh-.65,.055,rot);
+   b.box(cladding,px,y+fh-.48,pz,len,.66,.16,rot);
+   b.box('steel',x+a[0],y+fh*.5,z+a[1],.10,fh,.10);
+   b.box('stone',px,y+.51,pz,len,.36,.18,rot);
+   // Interior ceiling ribbon is recessed behind the glass, not random lights.
+   if(i%3===0)b.box('warm',x+(px-x)*.94,y+fh-.9,z+(pz-z)*.94,Math.max(.2,len-.3),.045,.075,rot);
+  }
+  // Restrained communal seating at the two long glazed elevations.
+  for(const side of [-1,1])for(let q=-w*.25;q<=w*.25;q+=6){
+   b.box('copper',x+q,y+.5,z+side*(d/2-2.3),2.4,.18,.65);
+   for(const dx of [-.9,.9])b.box('dark',x+q+dx,y+.24,z+side*(d/2-2.3),.08,.45,.48);
   }
  }
- rounded(b,'stone',x,h,z,w+1.2,d+1.2,.5,Math.min(w,d)*.20);rounded(b,'leaf',x,h+.5,z,w-4,d-4,.4,Math.min(w,d)*.18);
+ rounded(b,cladding,x,h,z,w+.8,d+.8,.38,r);
+ rounded(b,'dark',x,h+.38,z,w-.25,d-.25,.38,r);
+ rounded(b,'leaf',x,h+.76,z,w-3,d-3,.12,Math.max(.4,r-1.5));
+ // Narrow perimeter parapet made of actual frames and glass panels.
+ for(let i=0;i<bays.length;i++){
+  const a=bays[i],c=bays[(i+1)%bays.length],dx=c[0]-a[0],dz=c[1]-a[1],rot=-Math.atan2(dz,dx),len=Math.hypot(dx,dz);
+  const px=x+(a[0]+c[0])/2,pz=z+(a[1]+c[1])/2;
+  b.box('glazing',px,h+1.05,pz,len,1.05,.035,rot);
+  b.box('steel',px,h+1.6,pz,len,.065,.065,rot);
+ }
 }
 export function referenceExterior(b,f,{block,drum}){const {w,d,h,id}=f;
  if(id===1){
@@ -53,13 +90,30 @@ export function referenceExterior(b,f,{block,drum}){const {w,d,h,id}=f;
   return true;
  }
  if([12,13,14,24,28].includes(id)){
-  curvedWing(b,-w*.27,0,w*.46,d,h,2);curvedWing(b,w*.27,0,w*.46,d,h*.94,2);curvedWing(b,0,-d*.33,w*.5,d*.34,h,2);
-  b.box('path',0,.2,0,w*.10,.3,d*.6);ring(b,'gold',0,.5,d*.29,w*.13,.22);
+  // CF-12/13 governing cutaways show open planted terraces, not domes.
+  // CF-14/24 use satin graphite ribbons; CF-12 has pale clinical cladding.
+  const skin=id===12?'white':id===13?'steel':id===28?'stone':'dark';
+  curvedWing(b,-w*.27,0,w*.46,d,h,2,skin);
+  curvedWing(b,w*.27,0,w*.46,d,h*.94,2,skin);
+  curvedWing(b,0,-d*.33,w*.5,d*.34,h,2,skin);
+  b.box('path',0,.2,0,w*.10,.3,d*.6);
+  // The sunken central landscape remains visible from the entrance.
+  rounded(b,'stone',0,.15,d*.18,w*.12,d*.24,.5,2);
+  rounded(b,'leaf',0,.65,d*.18,w*.10,d*.21,.15,1.6);
+  for(const side of [-1,1]){
+   const roof=side<0?h:h*.94;
+   b.box('solar',side*w*.27,roof+1,-d*.15,w*.28,.16,d*.27);
+   for(let i=-3;i<=3;i++)b.box('steel',side*w*.27+i*w*.04,roof+1.1,-d*.15,.028,.018,d*.27);
+  }
   if(id===12||id===13){
-   const r=Math.min(w,d)*.28;
-   const geo=new T.SphereGeometry(r,40,18,0,Math.PI*2,0,Math.PI/2);
-   b.add(geo,'blueGlass',0,h*.55,0,1,(id===12?18:14)/r,1);geo.dispose();
-   ring(b,'gold',0,h*.55+2,0,r*.6,.28);
+   // A recessed glazed link at the first occupied terrace joins both wings.
+   block(b,0,d*.24,w*.22,d*.18,4.2,1,skin,h*.47);
+   if(id===13){
+    b.box('stone',w*.5,1.2,d*.10,1.4,2.4,d*.48);
+    b.box('water',w*.5+.73,1.28,d*.10,.06,2.1,d*.40);
+    b.box('stone',w*.5+1.5,.2,d*.10,2,.3,d*.49);
+    b.box('water',w*.5+1.5,.37,d*.10,1.65,.025,d*.45);
+   }
   }
   if(id===28){for(let i=0;i<4;i++){cylinder(b,'white',-w*.32+i*w*.21,h+1,-d*.25,w*.065,2);cylinder(b,'glass',-w*.32+i*w*.21,h+2.1,-d*.25,w*.06,.15);}}
   return true;

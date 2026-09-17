@@ -42,7 +42,12 @@ export function createInteriorGeometry(f,level=0){
   for(let q=0;q<Math.min(20,Math.floor(r.d/.35));q++)k.box('acoustic timber slat','oak',left+.085,1.7,r.z-r.d*.43+q*.30,.045,2.75,.08,.005);
   for(const offset of [-.27,.27]){k.box('room ceiling baffle','graphite',r.x+offset*r.w,3.77,r.z,.13,.18,r.d*.74,.015);k.box('room light diffuser','warm',r.x+offset*r.w,3.665,r.z,.08,.025,r.d*.73,.006);}
   for(const zOff of [-.31,.31])k.box('room ceiling rail','brass',r.x,3.73,r.z+zOff*r.d,r.w*.72,.022,.04,.003);
-  const panelW=Math.max(.7,Math.min(1.4,r.w/6));for(let px=left+panelW*.75;px<right-panelW*.5;px+=panelW*1.45){if(Math.abs(px-r.doorX)<door)continue;k.box('feature wall panel','oak',px,1.85,r.z+side*(r.d/2-.075),panelW,2.05,.035,.01);k.box('panel brass reveal','brass',px,1.85,r.z+side*(r.d/2-.10),panelW*.82,.012,.018,.003);}
+  // Timber belongs to the solid room partition, never suspended in exterior glass.
+  const panelW=Math.max(.7,Math.min(1.4,r.d/6));
+  for(let pz=r.z-r.d/2+panelW*.85;pz<r.z+r.d/2-panelW*.5;pz+=panelW*1.45){
+   k.box('feature wall panel','oak',right-.075,1.85,pz,.035,2.05,panelW,.01);
+   k.box('panel brass reveal','brass',right-.10,1.85,pz,.018,.012,panelW*.82,.003);
+  }
   // Flush building services preserve the programmed room and arrival clearances.
   const wall=r.z+side*(r.d/2-.14);
   for(const dx of [-.25,.25]){

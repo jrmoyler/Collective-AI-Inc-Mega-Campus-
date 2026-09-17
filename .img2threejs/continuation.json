@@ -1,11 +1,11 @@
 {
   "route": "direct-threejs-blender-and-babylon",
-  "authorization": "User requested complete overhaul against ZIP, interior tours and full infrastructure in a new PR",
+  "authorization": "September 17 user: dispatch a swarm; use Blender, image2threejs, Tripo and any necessary tools to reconstruct a photoreal living campus.",
   "legacyState": "state.json",
   "assessment": "assessment.json",
   "reason": "Full multi-facility environment exceeds single-object generation route; references are internally inconsistent",
   "acceptance": "not-met",
-  "strategy": "Shared detailed geometry kit, room-specific PBR tour assemblies, individual infographic silhouette overrides, offline multi-angle review and opt-in device reports",
+  "strategy": "Reference-guided direct mesh correction, actual Blender prefabs, physical outdoor atmosphere, restrained emissions, botanical instancing and articulated activity; matched offline baseline/current renders with explicit GPU limitations",
   "evidence": "../../evidence",
   "legacyStateSha256": "9cfcd7fea68609365645636ee5c17a7be21490ce5d92a3c48cd2f754161ba5e5",
   "assessmentSha256": "880597dff5279059f5308f72f9bdf86262de8cfc7be84c2a828b4356fe0f380c",
@@ -24,7 +24,12 @@
       "action": "refine-code",
       "evidence": "evidence/VALIDATION-PR8.md",
       "reason": "User locked aerial placement / facility architecture precedence. Rebuilt multi-part furnished interiors, corrected reciprocal pixel scaling, added PBR textures and lighting; replaced conflicting facility silhouettes. Offline review exposed duplicate walls, furnishing sparsity and shelf orientation; corrected them. Browser GPU remains disabled, preview protected; no exact-match acceptance."
+    },
+    {
+      "action": "refine-code",
+      "evidence": "evidence/realism-next/README.md",
+      "reason": "Post-PR11 user screenshot rejects blocklike geometry and flat lighting. Recovered original 220-acre package; replaced botanical crowns, curved facade assemblies, unsupported CF12/13 domes and rigid fleet motion, sculpted upholstery and generated Blender furniture. Preserved acceptance threshold and prior rejections. Browser GPU and physical-device acceptance still open."
     }
   ],
-  "blocker": "GPU browser rendering and physical Galaxy A15 validation unavailable; visual reference reconstruction still approximate."
+  "blocker": "Control-browser Node execution capability is not exposed; no current browser GPU evidence. Tripo through fal returned 403 balance_exhausted. Physical Galaxy A15 validation still required."
 }
