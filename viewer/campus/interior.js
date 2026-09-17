@@ -33,7 +33,7 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
   const finishes=createInteriorMaterials(scene);for(const m of Object.values(finishes))m.maxSimultaneousLights=8;
   for(const source of assembly.root.children.flatMap(g=>g.children)){
    const mesh=new Mesh(source.name,scene),data=new VertexData(),g=source.geometry;
-   data.positions=Array.from(g.attributes.position.array);data.normals=Array.from(g.attributes.normal.array);data.uvs=Array.from(g.attributes.uv.array);data.indices=g.index?Array.from(g.index.array):Array.from({length:g.attributes.position.count},(_,i)=>i);data.applyToMesh(mesh);
+   data.positions=g.attributes.position.array;data.normals=g.attributes.normal.array;data.uvs=g.attributes.uv.array;data.indices=g.index?.array||Uint32Array.from({length:g.attributes.position.count},(_,i)=>i);data.applyToMesh(mesh);
    mesh.material=finishes[source.material.name];mesh.checkCollisions=!!source.userData.collision;mesh.receiveShadows=true;mesh.metadata={components:source.userData.components};g.dispose();
   }
   camera=new FreeCamera('visitor',new Vector3(-layout.w/2+layout.core+1,1.67,0),scene);camera.minZ=.06;camera.speed=.26;camera.angularSensibility=3200;camera.inertia=.5;camera.checkCollisions=true;camera.applyGravity=false;camera.ellipsoid=new Vector3(.26,.76,.26);camera.keysUp=[87,38];camera.keysDown=[83,40];camera.keysLeft=[65,37];camera.keysRight=[68,39];camera.setTarget(new Vector3(layout.w/2,1.67,0));camera.attachControl(canvas,true);

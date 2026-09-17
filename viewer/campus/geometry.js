@@ -58,6 +58,15 @@ export const materials={
  kinetic:std({color:0x00e8d4,emissive:0x00fff0,emissiveIntensity:5.2,roughness:.14}),
 };
 
+// Albedo maps contain the material color; do not multiply it a second time.
+for(const name of ['steel','stone','dark','grass','road','path','white','leaf','pink','trunk','civic','copper','night']){
+ materials[name].color.set(0xffffff);
+}
+materials.concrete.map=textures.porcelain;
+for(const [name,scale] of [['stone',.012],['path',.012],['road',.006],['civic',.012],['copper',.002]]){
+ materials[name].bumpMap=materials[name].map;materials[name].bumpScale=scale;
+}
+
 const boxGeo=new T.BoxGeometry(1,1,1,1,1,1);const temp=new T.Object3D();
 export class Batch{
  constructor(){this.items=new Map();}
