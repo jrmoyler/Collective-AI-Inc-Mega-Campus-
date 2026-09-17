@@ -13,7 +13,7 @@ test('furniture contains structural supports, five casters, input devices and se
  for(const m of root.children){assert.equal(m.userData.collision,true);for(const v of m.geometry.attributes.position.array)assert.ok(Number.isFinite(v));m.geometry.dispose();}
 });
 test('reference room fixtures stay differentiated by program',()=>{
- assert.equal(roomKind('Visitor demonstration'),'demo');assert.equal(roomKind('Identity operations'),'office');assert.equal(roomKind('Credential lab'),'lab');assert.equal(roomKind('Consent review'),'meeting');assert.equal(roomKind('Segmented data networks'),'servers');assert.equal(roomKind('Knowledge keeper records'),'library');
+ assert.equal(roomKind('Visitor demonstration'),'demo');assert.equal(roomKind('Identity operations'),'identity');assert.equal(roomKind('Credential lab'),'identity');assert.equal(roomKind('Consent review'),'meeting');assert.equal(roomKind('Segmented data networks'),'servers');assert.equal(roomKind('Knowledge keeper records'),'library');
 });
 
 import * as T from 'three';

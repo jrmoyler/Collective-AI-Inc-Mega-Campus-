@@ -76,8 +76,8 @@ function renderFailure(error){
 function createAtmosphere(){
  const dome=new Sky();dome.name='physical-daylight-atmosphere';dome.scale.setScalar(8000);
  const u=dome.material.uniforms;
- u.turbidity.value=2.4;u.rayleigh.value=1.4;u.mieCoefficient.value=.004;u.mieDirectionalG.value=.78;
- u.cloudCoverage.value=.36;u.cloudDensity.value=.26;u.cloudElevation.value=.42;
+ u.turbidity.value=1.6;u.rayleigh.value=1.8;u.mieCoefficient.value=.0025;u.mieDirectionalG.value=.78;
+ u.cloudCoverage.value=.25;u.cloudDensity.value=.22;u.cloudElevation.value=.42;
  return dome;
 }
 let environmentTarget=null;
@@ -87,13 +87,14 @@ function setDay(day){
  sun.userData.direction=direction;
  sun.position.copy(direction).multiplyScalar(1400);
  sky.material.uniforms.sunPosition.value.copy(direction);
- sky.material.uniforms.turbidity.value=day?2.4:3.2;
+ sky.material.uniforms.turbidity.value=day?1.6:2.6;
  $('#day')?.setAttribute('aria-pressed',String(day));
  hemi.intensity=day?1.25:.8;hemi.color.set(day?0xdcebf4:0xb5bdd6);hemi.groundColor.set(0x64604e);
  sun.intensity=day?2.6:1.45;sun.color.set(day?0xfff3df:0xffd1a2);
  rim.intensity=day?.22:.3;rim.color.set(0xc4dbed);
  scene.background.set(day?0xb2ccdf:0x9496b0);scene.fog.color.set(day?0xb2ccdf:0x9496b0);
- scene.fog.near=900;scene.fog.far=day?4200:3400;
+ // Keep the complete campus in clear air at the default ~1.2 km aerial.
+ scene.fog.near=day?2300:1800;scene.fog.far=day?7200:5600;
  setDuskMaterials(!day);
  if(bloom){bloom.strength=day?.08:.22;bloom.threshold=1.15;}
  renderer.toneMappingExposure=day?.85:.78;

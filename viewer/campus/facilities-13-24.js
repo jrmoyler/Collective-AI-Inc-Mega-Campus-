@@ -41,12 +41,7 @@ function wing(b,x,z,w,d,h,levels=2,{base=0,r=2,skin='dark',roof=true,fins=false}
   }
   for(const side of [-1,1]){
    b.box('warm',x,y+fh-.68,z+side*(d*.5-1.1),w*.8,.035,.08);
-   for(let q=-w*.3;q<w*.3;q+=6){
-    b.box('stone',x+q,y+.8,z+side*(d*.5-2),2,.1,.9);
-    b.box('steel',x+q,y+.4,z+side*(d*.5-2),.12,.8,.6);
-    b.box('dark',x+q,y+.53,z+side*(d*.5-3),.62,.12,.62);
-    b.box('dark',x+q,y+.89,z+side*(d*.5-3.27),.62,.7,.09);
-   }
+
   }
  }
  if(roof){
@@ -61,6 +56,21 @@ function wing(b,x,z,w,d,h,levels=2,{base=0,r=2,skin='dark',roof=true,fins=false}
  }
  return {x,z,w,d,h,base};
 }
+
+// Swept rectangular metal fascia with finite vertical construction depth.
+function ribbonFascia(b,points,height,depth){
+ const curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)),false,'centripetal');
+ const p=[],idx=[],steps=40;
+ for(let i=0;i<=steps;i++){
+  const c=curve.getPoint(i/steps),t=curve.getTangent(i/steps),n=new T.Vector3(-t.z,0,t.x).normalize();
+  for(const [vertical,lateral] of [[-1,-1],[-1,1],[1,1],[1,-1]])p.push(c.x+n.x*lateral*depth/2,c.y+vertical*height/2,c.z+n.z*lateral*depth/2);
+  if(i<steps)for(let face=0;face<4;face++){const a=i*4+face,d=i*4+(face+1)%4;idx.push(a,d,a+4,d,d+4,a+4);}
+ }
+ idx.push(0,2,1,0,3,2);const end=steps*4;idx.push(end,end+1,end+2,end,end+2,end+3);
+ for(let i=0;i<idx.length;i+=3)[idx[i+1],idx[i+2]]=[idx[i+2],idx[i+1]];
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setIndex(idx);g.computeVertexNormals();b.add(g,'steel');g.dispose();
+}
+
 function entry(b,x,z,w=7){
  slab(b,'stone',x,.03,z,w+2,3,.18,.7);b.box('steel',x,3.35,z-.1,w,.15,2.7);
  for(const side of [-1,1]){b.box(referenceGlazing,x+side*w*.23,1.6,z-1.2,w*.44,3.1,.04);b.box('steel',x+side*w*.46,1.6,z-1.2,.1,3.2,.16);b.box('steel',x+side*.13,1.35,z-1.1,.04,.7,.05);}
@@ -202,18 +212,33 @@ export function createFacility13to24(f,{deferDetails=false}={}){
   wing(b,w*.30,d*.17,w*.31,d*.38,h*.32,1,{r:d*.06});
   terrace(b,w*.23,h*.55,d*.015,w*.39,d*.43);
   terrace(b,w*.30,h*.32,d*.17,w*.31,d*.38);
+  // Eon reference has broad biophilic roof shoulders, not tiny isolated pots.
+  for(const [gx,gz,gw,gd,gy] of [
+   [-w*.21,d*.285,w*.36,3.5,h*.55+.5],
+   [w*.23,-d*.24,w*.29,3.2,h*.55+.5],
+   [-w*.20,-d*.33,w*.43,3,h+.5],
+  ]){
+   slab(b,'dark',gx,gy,gz,gw,gd,.55,.8);
+   slab(b,'leaf',gx,gy+.55,gz,gw-.35,gd-.35,.15,.6);
+   for(let tx=-gw*.39;tx<=gw*.4;tx+=4.1)roofTree(b,gx+tx,gy+.7,gz,1.8);
+  }
+
+  // Atlas graphite signage pier and opaque service shoulder anchor the glazed labs.
+  b.box('dark',-w*.27,h*.38,d*.349,w*.19,h*.76,.62);
+  for(const edge of [-1,1])b.box('steel',-w*.27+edge*w*.095,h*.38,d*.365,.12,h*.76,.70);
+  for(let yy=1.2;yy<h*.72;yy+=2.6)b.box('steel',-w*.27,yy,d*.373,w*.19,.035,.018);
   // Real curved roof-edge ribbons descend around the research shoulder.
   // Both ends terminate in real roof collector beams: the upper rear pavilion
   // and lower garden wing. No open ribbon tip projects unsupported into space.
   b.box('steel',-w*.43,h+.18,-d*.16,.50,.40,d*.43);
   b.box('steel',w*.44,h*.32+.18,d*.17,.50,.40,d*.30);
-  for(const side of [-1,1])line(b,'steel',[
+  for(const side of [-1,1])ribbonFascia(b,[
    [-w*.43,h+.18,-d*.16+side*d*.215],
    [-w*.18,h*.94,side*d*.32],
    [w*.06,h*.68,side*d*.34],
    [w*.29,h*.36,d*.17+side*d*.18],
    [w*.44,h*.32+.18,d*.17+side*d*.15],
-  ],.48);
+  ],1.25,.38);
   pergola(b,-w*.22,h+.3,-d*.16,w*.32,d*.24);solar(b,-w*.22,h+3.4,-d*.16,w*.33,d*.25);
   b.box('blueGlass',w*.45,h*.17,d*.10,w*.065,h*.31,.15);b.box('water',w*.43,.42,d*.16,w*.13,.04,d*.30);
   entry(b,-w*.12,d*.36,w*.17);

@@ -1,0 +1,20 @@
+[
+  {
+    "id": 13,
+    "key": "CF-13",
+    "name": "Eon Core Longevity Research Pavilion",
+    "meshes": 22,
+    "vertices": 95058,
+    "min": [
+      -35.279998779296875,
+      -1.4466140069350846e-15,
+      -25.875
+    ],
+    "max": [
+      35.63999938964844,
+      31.082157135009766,
+      32.2
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  }
+]
