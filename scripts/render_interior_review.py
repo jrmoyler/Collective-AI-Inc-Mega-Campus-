@@ -1,5 +1,5 @@
 """Offline review of the shipped geometry, NOT Babylon/browser validation."""
-import bpy,math,json,sys
+import bpy,math,json,sys,os
 from pathlib import Path
 from mathutils import Vector
 facility=int(sys.argv[-1]) if sys.argv[-1].isdigit() else 30
@@ -28,4 +28,5 @@ for index in [0,1,3]:
  r=layout['rooms'][index];side=1 if r['z']>0 else -1
  views.append((f'room-{index+1}',(r['x']-r['w']*.32,-(r['z']-side*r['d']*.32),1.67),(r['x']+.4,-(r['z']+side*r['d']*.18),1.3)))
 for name,pos,target in views:
+ if os.environ.get('CAMPUS_REVIEW_VIEWS') and name not in os.environ['CAMPUS_REVIEW_VIEWS'].split(','):continue
  cam.location=pos;cam.rotation_euler=(Vector(target)-cam.location).to_track_quat('-Z','Y').to_euler();s.render.image_settings.file_format='JPEG';s.render.image_settings.quality=90;s.render.filepath=str(Path(__file__).resolve().parents[1]/f'evidence/interior-{facility}-{name}.jpg');bpy.ops.render.render(write_still=True)

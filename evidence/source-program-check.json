@@ -1,0 +1,215 @@
+{
+  "source": "Recovered 02_Facility_Plans PDFs; normalized text comparison, not visual acceptance",
+  "facilities": [
+    {
+      "facility": "CF-01",
+      "levels": 12,
+      "rooms": 72,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-02",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-03",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-04",
+      "levels": 4,
+      "rooms": 24,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-05",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-06",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-07",
+      "levels": 1,
+      "rooms": 6,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-08",
+      "levels": 1,
+      "rooms": 6,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-09",
+      "levels": 1,
+      "rooms": 6,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-10",
+      "levels": 1,
+      "rooms": 6,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-11",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-12",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-13",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-14",
+      "levels": 1,
+      "rooms": 6,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-15",
+      "levels": 1,
+      "rooms": 6,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-16",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-17",
+      "levels": 1,
+      "rooms": 6,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-18",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-19",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-20",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-21",
+      "levels": 1,
+      "rooms": 6,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-22",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-23",
+      "levels": 3,
+      "rooms": 18,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-24",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-25",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-26",
+      "levels": 1,
+      "rooms": 6,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-27",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-28",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-29",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-30",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-31",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-32",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-33",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-34",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    },
+    {
+      "facility": "CF-35",
+      "levels": 2,
+      "rooms": 12,
+      "missingRoomLabels": []
+    }
+  ]
+}

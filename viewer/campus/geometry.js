@@ -13,7 +13,7 @@ function paint(size, fn){
 function setRGB(data,i,r,g,b,a=255){const o=i*4;data[o]=Math.max(0,Math.min(255,r));data[o+1]=Math.max(0,Math.min(255,g));data[o+2]=Math.max(0,Math.min(255,b));data[o+3]=a;}
 
 export const textures={
- grass:paint(256,(data,size,rand)=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){const n=Math.sin(x*.17)*Math.cos(y*.13)+rand()*.55;setRGB(data,y*size+x,48+n*22+rand()*10,102+n*32+rand()*16,36+n*12);}}),
+ grass:paint(256,(data,size,rand)=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){const n=(rand()-.5)*.8;setRGB(data,y*size+x,48+n*22+rand()*10,102+n*32+rand()*16,36+n*12);}}),
  bark:paint(128,(data,size,rand)=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){const v=58+Math.sin(x*.9)*10+rand()*28;setRGB(data,y*size+x,v,v*.78,v*.52);}}),
  canopy:paint(128,(data,size,rand)=>{for(let i=0;i<size*size;i++){const v=rand();setRGB(data,i,28+v*50,78+v*100,22+v*30);}}),
  blossom:paint(128,(data,size,rand)=>{for(let i=0;i<size*size;i++){const v=rand();setRGB(data,i,190+v*60,90+v*50,128+v*50);}}),
