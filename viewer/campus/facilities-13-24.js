@@ -1,0 +1,230 @@
+import * as T from 'three';
+import {Batch,cylinder,ring,line,materials} from './geometry.js';
+
+// Neutral low-opacity architectural glass keeps occupied slabs and furnishings
+// legible in both Three.js and glTF/Blender instead of stacking dark tinted walls.
+const referenceGlazing=materials.glazing.clone();
+referenceGlazing.name='reference-clear-architectural-glazing';
+referenceGlazing.color.set(0xc9d8dc);referenceGlazing.opacity=.20;
+referenceGlazing.metalness=.03;referenceGlazing.roughness=.10;referenceGlazing.envMapIntensity=.8;
+
+// Individual CF infographics govern these twelve different compositions. The
+// illustrated cutaways reveal room uses, not a instruction to omit real roofs.
+function outline(w,d,r){
+ const pts=[];r=Math.min(r,w*.4,d*.4);
+ for(const [x,z,a] of [[w/2-r,d/2-r,0],[-w/2+r,d/2-r,Math.PI/2],[-w/2+r,-d/2+r,Math.PI],[w/2-r,-d/2+r,Math.PI*1.5]])
+  for(let i=0;i<=6;i++)pts.push([x+Math.cos(a+i*Math.PI/12)*r,z+Math.sin(a+i*Math.PI/12)*r]);
+ return pts;
+}
+function slab(b,mat,x,y,z,w,d,depth=.35,r=2){
+ const pts=outline(w,d,r),shape=new T.Shape();pts.forEach(([px,pz],i)=>i?shape.lineTo(px,pz):shape.moveTo(px,pz));shape.closePath();
+ const g=new T.ExtrudeGeometry(shape,{depth,bevelEnabled:false,curveSegments:1});g.rotateX(-Math.PI/2);b.add(g,mat,x,y,z);g.dispose();
+}
+function wing(b,x,z,w,d,h,levels=2,{base=0,r=2,skin='dark',roof=true,fins=false}={}){
+ const p=outline(w,d,r),fh=h/levels;
+ // Occupied central support core and floorplates behind transparent facades.
+ b.box(skin,x,base+h*.5,z-d*.16,w*.18,h,d*.35);
+ for(let floor=0;floor<levels;floor++){
+  const y=base+floor*fh;slab(b,'stone',x,y,z,w,d,.3,r);
+  for(let j=0;j<p.length;j++){
+   const a=p[j],c=p[(j+1)%p.length],dx=c[0]-a[0],dz=c[1]-a[1],len=Math.hypot(dx,dz),rot=-Math.atan2(dz,dx),n=Math.max(1,Math.ceil(len/3));
+   b.box(referenceGlazing,x+(a[0]+c[0])*.5,y+fh*.5,z+(a[1]+c[1])*.5,len,fh-.42,.065,rot);
+   b.box(skin,x+(a[0]+c[0])*.5,y+fh-.25,z+(a[1]+c[1])*.5,len,.5,.24,rot);
+   for(let k=0;k<n;k++)b.box(fins?'copper':'steel',x+a[0]+dx*k/n,y+fh*.5,z+a[1]+dz*k/n,.12,fh,fins?.55:.14,rot);
+  }
+  for(const side of [-1,1]){
+   b.box('warm',x,y+fh-.68,z+side*(d*.5-1.1),w*.8,.035,.08);
+   for(let q=-w*.3;q<w*.3;q+=6){
+    b.box('stone',x+q,y+.8,z+side*(d*.5-2),2,.1,.9);
+    b.box('steel',x+q,y+.4,z+side*(d*.5-2),.12,.8,.6);
+    b.box('dark',x+q,y+.53,z+side*(d*.5-3),.62,.12,.62);
+    b.box('dark',x+q,y+.89,z+side*(d*.5-3.27),.62,.7,.09);
+   }
+  }
+ }
+ if(roof){
+  slab(b,skin,x,base+h,z,w+.25,d+.25,.36,r);
+  slab(b,'stone',x,base+h+.37,z,w-1,d-1,.08,Math.max(.2,r-.5));
+  // Occupied roof terraces are stone with narrow planted edges, never a green slab.
+  for(const side of [-1,1]){
+   b.box('dark',x,base+h+.63,z+side*(d*.5-.28),w-r*2,.52,.22);
+   if(w>14&&d>12)planter(b,x+side*w*.24,base+h+.46,z-d*.32,w*.20,1.25);
+  }
+ }
+ return {x,z,w,d,h,base};
+}
+function entry(b,x,z,w=7){
+ slab(b,'stone',x,.03,z,w+2,3,.18,.7);b.box('steel',x,3.35,z-.1,w,.15,2.7);
+ for(const side of [-1,1]){b.box(referenceGlazing,x+side*w*.23,1.6,z-1.2,w*.44,3.1,.04);b.box('steel',x+side*w*.46,1.6,z-1.2,.1,3.2,.16);b.box('steel',x+side*.13,1.35,z-1.1,.04,.7,.05);}
+ b.box('warm',x,3.25,z-.1,w*.84,.04,.15);
+}
+function solar(b,x,y,z,w,d){
+ for(let a=-w*.5;a<w*.5;a+=3.2)for(let c=-d*.5;c<d*.5;c+=2.2){b.box('solar',x+a+1.45,y,z+c+.95,2.9,.13,1.9);b.box('steel',x+a+1.45,y+.075,z+c+.95,.035,.02,1.9);}
+}
+function pergola(b,x,y,z,w,d){
+ for(const side of [-1,1])for(const end of [-1,1])cylinder(b,'steel',x+side*w*.45,y+1.5,z+end*d*.45,.1,3,.1,8);
+ for(let q=-w*.5;q<=w*.5;q+=.9)b.box('copper',x+q,y+3,z,.13,.22,d);
+}
+function planter(b,x,y,z,w,d){slab(b,'stone',x,y,z,w,d,.65,.6);slab(b,'leaf',x,y+.66,z,w-.3,d-.3,.2,.4);}
+function screen(b,x,y,z,w,h){b.box('dark',x,y,z,w,h,.2);b.box('blueGlass',x,y,z+.115,w-.2,h-.2,.025);for(let q=-w*.4;q<w*.4;q+=w*.12)b.box('cyan',x+q,y-h*.1,z+.135,.07,h*.45,.01);}
+function auditorium(b,x,y,z,w,d){
+ for(let row=0;row<6;row++)for(let seat=0;seat<9;seat++){
+  const px=x+(seat-4)*w/10,pz=z+row*d/7;
+  b.box('dark',px,y+row*.35+.48,pz,w/12,.18,.7);b.box('copper',px,y+row*.35+.92,pz+.36,w/12,.86,.10);
+ }
+ screen(b,x,y+3,z-1,w*.8,4);
+}
+function verticalFins(b,x,z,w,h,depth=.7){for(let q=-w*.5;q<=w*.5;q+=1.1)b.box('copper',x+q,h*.5,z,.12,h,depth);}
+function terrace(b,x,y,z,w,d){slab(b,'stone',x,y,z,w,d,.32,2);for(const side of [-1,1])b.box(referenceGlazing,x,y+.95,z+side*d*.5,w,1.25,.05);for(let q=-w*.35;q<=w*.35;q+=6)planter(b,x+q,y+.33,z+d*.28,3,1.4);}
+
+export function createFacility13to24(f){
+ if(f.id<13||f.id>24)return null;
+ const {w,d,h,id}=f,b=new Batch(),root=new T.Group();root.name=`CF-${id}-individual-reference-architecture`;
+ if(id===13){ // Eon Core: low garden shoulder and flowing high-to-low research frontage.
+  wing(b,0,-d*.03,w*.97,d*.75,h*.55,2,{r:d*.17,skin:'dark',fins:true});
+  wing(b,-w*.20,-d*.16,w*.57,d*.45,h*.45,1,{base:h*.55,r:2});
+  wing(b,w*.30,d*.17,w*.31,d*.38,h*.32,1,{r:d*.06});
+  terrace(b,w*.23,h*.55,d*.015,w*.39,d*.43);
+  terrace(b,w*.30,h*.32,d*.17,w*.31,d*.38);
+  // Real curved roof-edge ribbons descend around the research shoulder.
+  // Both ends terminate in real roof collector beams: the upper rear pavilion
+  // and lower garden wing. No open ribbon tip projects unsupported into space.
+  b.box('steel',-w*.43,h+.18,-d*.16,.50,.40,d*.43);
+  b.box('steel',w*.44,h*.32+.18,d*.17,.50,.40,d*.30);
+  for(const side of [-1,1])line(b,'steel',[
+   [-w*.43,h+.18,-d*.16+side*d*.215],
+   [-w*.18,h*.94,side*d*.32],
+   [w*.06,h*.68,side*d*.34],
+   [w*.29,h*.36,d*.17+side*d*.18],
+   [w*.44,h*.32+.18,d*.17+side*d*.15],
+  ],.48);
+  pergola(b,-w*.22,h+.3,-d*.16,w*.32,d*.24);solar(b,-w*.22,h+3.4,-d*.16,w*.33,d*.25);
+  b.box('blueGlass',w*.45,h*.17,d*.10,w*.065,h*.31,.15);b.box('water',w*.43,.42,d*.16,w*.13,.04,d*.30);
+  entry(b,-w*.12,d*.36,w*.17);
+ }else if(id===14){ // Cognara: asymmetric rounded interview wing and research-booth roof court.
+  wing(b,0,0,w,d*.89,h*.34,1,{r:d*.28,fins:true});
+  wing(b,w*.23,d*.065,w*.52,d*.75,h*.33,1,{base:h*.34,r:d*.20,fins:true});
+  wing(b,-w*.26,-d*.20,w*.47,d*.40,h*.66,2,{base:h*.34,r:1.4});
+  wing(b,w*.14,-d*.26,w*.40,d*.27,h*.33,1,{base:h*.67,r:d*.10});
+  terrace(b,-w*.24,h*.34,d*.17,w*.46,d*.32);
+  terrace(b,w*.22,h*.67,d*.07,w*.50,d*.49);
+  for(let k=0;k<4;k++)wing(b,-w*.42+k*w*.105,-d*.20,w*.09,d*.19,2.5,1,{base:h,r:.35});
+  solar(b,w*.12,h+.55,-d*.26,w*.26,d*.16);entry(b,-w*.1,d*.46,w*.18);
+ }else if(id===15){ // Kinetic Edge: multi-storey sports science building, not a stadium slab.
+  // The old stadium placeholder height (14m) contradicts the source's three
+  // occupied levels plus tall motion-capture pavilion. Retain the footprint,
+  // explicitly recover the visible envelope rather than compressing floors.
+  const podiumH=Math.max(25.5,h*1.8),captureH=8.5;
+  root.userData.envelopeHeight=podiumH+captureH;
+  wing(b,0,-d*.035,w,d*.93,podiumH,3,{r:d*.12,fins:true});
+  const y=podiumH+.6,rx=w*.36,rz=d*.30,trackZ=-d*.055;
+  slab(b,'track',-w*.045,y,trackZ,rx*2,rz*2,.10,rz);
+  slab(b,'leaf',-w*.045,y+.12,trackZ,rx*1.42,rz*1.12,.04,rz*.45);
+  for(let lane=0;lane<4;lane++){const pts=outline(rx*2-lane*1.25,rz*2-lane*1.25,rz-lane*.65).map(([x,z])=>[x-w*.045,y+.17,z+trackZ]);pts.push(pts[0]);line(b,'white',pts,.04);}
+  for(const side of [-1,1])b.box('white',side*rx*.63-w*.045,y+.18,trackZ,.09,.035,rz*.94);
+  // Tall glazed motion cage and lower projecting recovery suite articulate
+  // the prominent front-right corner shown in the infographic.
+  wing(b,w*.30,d*.14,w*.31,d*.36,captureH,1,{base:podiumH,r:1,roof:true});
+  wing(b,w*.32,d*.335,w*.31,d*.28,podiumH*.33,1,{base:podiumH*.33,r:1});
+  terrace(b,w*.32,podiumH*.67,d*.35,w*.31,d*.26);
+  for(const side of [-1,1])for(let z=-d*.33;z<d*.26;z+=4)b.box('steel',side*w*.47,y+2,z,.08,4,.08);
+  // Diagonal architectural cheeks mark the training hall's long elevations.
+  for(const side of [-1,1])line(b,'civic',[[side*w*.48,1,-d*.35],[side*w*.49,podiumH*.42,-d*.15],[side*w*.48,podiumH+.6,d*.20]],.55);
+  // Actual treadmills in the glazed recovery gym, visible from the approach.
+  for(let i=0;i<6;i++){
+   const x=-w*.31+i*w*.09,z=d*.385;
+   b.box('dark',x,1,z,1.35,.22,2.4);b.box('steel',x,.55,z,.18,.9,1.8);
+   for(const side of [-1,1])line(b,'steel',[[x+side*.55,1.1,z-.8],[x+side*.55,2,z-.85],[x+side*.55,2,z+.3]],.055);
+   screen(b,x,2.05,z-.9,1,.62);
+  }
+  entry(b,-w*.06,d*.47,w*.20);
+ }else if(id===16){ // Civic: public auditorium flanked by labs, sweeping solar-glass plaza canopy.
+  wing(b,0,-d*.14,w*.92,d*.65,h*.70,2,{r:2,fins:true});
+  auditorium(b,0,h*.36,-d*.10,w*.31,d*.25);
+  wing(b,-w*.32,-d*.08,w*.25,d*.5,h*.30,1,{base:h*.70,r:1});
+  wing(b,w*.31,-d*.08,w*.26,d*.5,h*.30,1,{base:h*.70,r:1});
+  const pts=[];for(let i=0;i<=18;i++){const x=-w*.49+i*w*.98/18;pts.push([x,5.6+Math.sin(i/18*Math.PI)*2,d*.35]);}
+  for(const side of [-1,1])line(b,'steel',pts.map(([x,y,z])=>[x,y,z+side*d*.10]),.15);
+  for(let i=0;i<18;i++){const [x,y,z]=pts[i],nx=pts[i+1][0],ny=pts[i+1][1];b.box('blueGlass',(x+nx)/2,(y+ny)/2,z,nx-x+.05,.12,d*.21);line(b,'steel',[[x,y,z-d*.1],[x,y,z+d*.1]],.07);}
+  for(const x of [-w*.42,0,w*.42])cylinder(b,'steel',x,3.3,d*.35,.16,6.6,.16,10);
+  entry(b,0,d*.21,w*.23);
+ }else if(id===17){ // Terra Axis: tall stepped testing block, inspection roof and prototype court.
+  const researchH=Math.max(h,26);root.userData.envelopeHeight=researchH+3.6;
+  wing(b,-w*.10,-d*.13,w*.60,d*.67,researchH,3,{r:1,fins:true});
+  wing(b,w*.28,-d*.18,w*.28,d*.51,researchH*.66,2,{r:1});
+  wing(b,-w*.32,d*.10,w*.23,d*.28,researchH*.66,2,{r:1});
+  pergola(b,-w*.12,researchH+.5,-d*.16,w*.35,d*.38);solar(b,-w*.12,researchH+3.6,-d*.16,w*.36,d*.39);
+  cylinder(b,'concrete',w*.28,researchH*.66+.65,-d*.18,d*.17,.18,d*.17,48);ring(b,'white',w*.28,researchH*.66+.77,-d*.18,d*.13,.10);
+  b.box('white',w*.28,researchH*.66+.78,-d*.18,d*.11,.03,.16);for(const a of [-1,1])b.box('white',w*.28+a*d*.052,researchH*.66+.78,-d*.18,.16,.03,d*.1);
+  for(let i=0;i<3;i++){const x=-w*.31+i*w*.20;wing(b,x,d*.36,w*.14,d*.20,4.2,1,{r:.6});solar(b,x,4.8,d*.36,w*.12,d*.16);}
+  terrace(b,-w*.32,researchH*.66,d*.10,w*.23,d*.28);
+  for(let i=0;i<5;i++){const x=-w*.34+i*w*.15;b.box('gold',x,.12,d*.22,w*.11,.03,.12);b.box('gold',x+w*.055,.12,d*.26,.1,.03,d*.08);}
+  entry(b,w*.10,d*.22,w*.10);
+ }else if(id===18){ // Nomad Nexus: two-storey deployment courtyard and prominent map room.
+  wing(b,-w*.30,0,w*.32,d*.88,h,2,{r:1,fins:true});
+  wing(b,w*.27,0,w*.42,d*.88,h,2,{r:1,fins:true});
+  wing(b,0,-d*.31,w*.29,d*.26,h,2,{r:1});
+  terrace(b,0,.12,d*.1,w*.29,d*.58);screen(b,-w*.28,h*.7,d*.10,w*.24,h*.22);
+  for(let j=0;j<4;j++)for(let i=0;i<3;i++){b.box('dark',-w*.37+i*2.2,1.0+j*1.15,d*.28,1.9,.95,1.3);b.box('steel',-w*.37+i*2.2,1+j*1.15,d*.28+.67,1.4,.05,.06);}
+  solar(b,w*.25,h+.55,-d*.17,w*.23,d*.26);entry(b,0,d*.42,w*.19);
+ }else if(id===19){ // Juris Guard: four stepped regulatory levels, solid judicial spine and policy gallery.
+  for(let i=0;i<3;i++)wing(b,-w*.04+i*w*.015,-d*.04-i*d*.035,w*(.98-i*.16),d*(.89-i*.14),h*.29,1,{base:i*h*.29,r:1,fins:true});
+  wing(b,-w*.18,-d*.15,w*.50,d*.38,h*.13,1,{base:h*.87,r:.5});
+  b.box('dark',-w*.42,h*.47,d*.10,w*.14,h*.94,d*.43);
+  // Architectural scales: balanced pans and an actual central column.
+  cylinder(b,'gold',-w*.423,h*.61,d*.321,.10,h*.20,.10,10);b.box('gold',-w*.423,h*.69,d*.322,w*.11,.09,.09);
+  for(const side of [-1,1]){line(b,'gold',[[-w*.423+side*w*.045,h*.69,d*.325],[-w*.423+side*w*.045,h*.61,d*.325]],.04);ring(b,'gold',-w*.423+side*w*.045,h*.61,d*.33,w*.018,.035,0);}
+  screen(b,w*.23,h*.43,d*.405,w*.29,h*.22);entry(b,w*.12,d*.43,w*.18);
+ }else if(id===20){ // Aether Link: asymmetric glazed communications spire, open antenna crown.
+  wing(b,0,0,w*.96,d*.91,h*.21,2,{r:2});
+  for(let level=0;level<3;level++)wing(b,w*.05,-d*.03,w*(.69-level*.12),d*(.65-level*.1),h*.17,1,{base:h*(.21+level*.17),r:2});
+  b.box('dark',-w*.25,h*.40,-d*.10,w*.22,h*.79,d*.37);
+  for(const side of [-1,1])line(b,'steel',[[side*w*.44,0,-d*.27],[side*w*.30,h*.52,-d*.18],[side*w*.17,h*.79,-d*.12]],.55);
+  const radius=Math.min(w,d)*.32;cylinder(b,'steel',0,h*.75,0,radius,.7,radius,48);ring(b,'cyan',0,h*.765,0,radius,.13);
+  for(let a=0;a<Math.PI*2;a+=Math.PI/4){const x=Math.cos(a)*radius*.80,z=Math.sin(a)*radius*.80;cylinder(b,'steel',x,h*.82,z,.15,h*.13,.1,10);b.box('white',x,h*.84,z,1.3,h*.07,.5);}
+  cylinder(b,'steel',0,h*.87,0,.3,h*.25,.10,12);entry(b,0,d*.46,w*.23);
+ }else if(id===21){ // Central utility: separately legible battery, turbine, cooling and water districts.
+  wing(b,-w*.24,-d*.16,w*.45,d*.52,h*.55,1,{r:.7});
+  wing(b,w*.30,d*.24,w*.35,d*.39,h*.40,1,{r:.7});
+  wing(b,-w*.17,d*.31,w*.56,d*.27,h*.38,1,{r:.7,roof:false});
+  for(let row=0;row<4;row++)for(let j=0;j<6;j++){const x=-w*.42+j*w*.065,z=-d*.34+row*d*.10;b.box('white',x,h*.55+2,z,2,3.4,2);b.box('dark',x,h*.55+2,z+1.02,1.45,2.7,.035);}
+  for(let k=0;k<3;k++){const x=w*.05+k*w*.135;const g=new T.CylinderGeometry(2.1,2.1,d*.38,24);g.rotateX(Math.PI/2);b.add(g,'steel',x,3.1,-d*.18);g.dispose();for(let j=0;j<4;j++)ring(b,'dark',x,3.1,-d*.34+j*d*.09,2.17,.12,0);}
+  for(let i=0;i<2;i++)cylinder(b,'steel',w*.39+i*w*.07,h*.49,-d*.38,1,h*.98,.65,16);
+  for(let j=0;j<5;j++)cylinder(b,'steel',-w*.38+j*w*.10,2.1,d*.31,1.5,4.2,1.5,20);
+  for(let j=0;j<3;j++){cylinder(b,'dark',w*.23+j*w*.095,h*.40+.55,d*.24,2,.45,2,24);ring(b,'steel',w*.23+j*w*.095,h*.40+.8,d*.24,1.9,.12);}
+  screen(b,w*.3,h*.22,d*.439,w*.25,h*.19);entry(b,w*.3,d*.43,w*.17);
+ }else if(id===22){ // Visitor center: bent glazed arrival frontage and upper command/theatre suites.
+  wing(b,0,-d*.10,w*.97,d*.77,h*.60,2,{r:d*.11,fins:true});
+  wing(b,-w*.29,-d*.14,w*.32,d*.55,h*.40,1,{base:h*.60,r:1});
+  wing(b,w*.29,-d*.14,w*.32,d*.55,h*.40,1,{base:h*.60,r:1});
+  auditorium(b,w*.26,h*.60,-d*.18,w*.23,d*.28);screen(b,-w*.27,h*.80,d*.10,w*.26,h*.16);
+  terrace(b,0,h*.60,d*.1,w*.27,d*.36);entry(b,0,d*.30,w*.32);
+  for(const side of [-1,1]){cylinder(b,'steel',side*w*.16,1.05,d*.42,.13,2.1,.13,8);b.box(referenceGlazing,side*w*.12,1.05,d*.42,w*.075,1.35,.04);}
+  solar(b,-w*.28,h+.54,-d*.17,w*.21,d*.35);
+ }else if(id===23){ // Commons: three inhabited wings around a genuine central forum/courtyard.
+  wing(b,-w*.34,0,w*.30,d*.93,h,3,{r:1,fins:true});
+  wing(b,w*.34,0,w*.30,d*.93,h,3,{r:1,fins:true});
+  wing(b,0,-d*.33,w*.42,d*.27,h,3,{r:1});
+  auditorium(b,0,.35,-d*.06,w*.30,d*.25);
+  wing(b,w*.16,d*.29,w*.23,d*.34,h*.33,1,{r:.8});
+  pergola(b,-w*.31,h+.5,-d*.12,w*.20,d*.42);solar(b,w*.33,h+.6,-d*.13,w*.20,d*.41);
+  for(let i=0;i<4;i++){const x=-w*.14+i*w*.09;cylinder(b,'stone',x,.72,d*.29,.65,.12,.65,12);cylinder(b,'steel',x,.36,d*.29,.07,.7,.07,8);}
+  entry(b,-w*.07,d*.4,w*.17);
+ }else if(id===24){ // KEOC: continuous bronze curving control facade, crescent entry recess.
+  wing(b,0,-d*.02,w,d*.86,h*.67,2,{r:d*.27,skin:'copper',fins:false});
+  wing(b,-w*.16,-d*.17,w*.67,d*.46,h*.33,1,{base:h*.67,r:d*.20,skin:'copper'});
+  terrace(b,w*.24,h*.67,d*.07,w*.46,d*.46);
+  // Front operations bays sit behind projecting rounded bronze floor ribbons.
+  for(const y of [h*.34,h*.67]){
+   const pts=outline(w*.99,d*.86,d*.27).filter(([x,z])=>z>0).map(([x,z])=>[x,y,z-d*.02]);
+   line(b,'copper',pts,.22);
+  }
+  solar(b,-w*.15,h+.55,-d*.17,w*.43,d*.26);
+  for(let k=0;k<3;k++)screen(b,w*.02+k*w*.12,h*.49,d*.414,w*.10,h*.14);
+  pergola(b,w*.27,h*.67+.5,d*.03,w*.25,d*.22);
+  entry(b,-w*.14,d*.43,w*.22);
+
+ }
+ root.add(b.finish(`CF-${id}-reference-envelope`));root.userData.referenceFacility=id;
+ return root;
+}

@@ -29,7 +29,12 @@
       "action": "refine-code",
       "evidence": "evidence/realism-next/README.md",
       "reason": "Post-PR11 user screenshot rejects blocklike geometry and flat lighting. Recovered original 220-acre package; replaced botanical crowns, curved facade assemblies, unsupported CF12/13 domes and rigid fleet motion, sculpted upholstery and generated Blender furniture. Preserved acceptance threshold and prior rejections. Browser GPU and physical-device acceptance still open."
+    },
+    {
+      "action": "refine-code",
+      "evidence": "evidence/facility-review/README.md",
+      "reason": "PR12 acceptance rejection: replaced every shared-family exterior dispatch with 35 individually inspected reference assemblies; all35 actual-geometry comparison renders drove further fixes to03/07/13-17/24-26/35. Fixed water view-space normals, reversed road smoothsteps, shader startup, postprocessing fallback and interior cancellation/resource recovery. Native eight-program compilation/link gate passes. Browser control now works, but hosted browser GL_VENDOR/GL_RENDERER Disabled prevents all GPU/tour/frame acceptance. Exact-reference and photoreal acceptance remains not-met."
     }
   ],
-  "blocker": "Control-browser Node execution capability is not exposed; no current browser GPU evidence. Tripo through fal returned 403 balance_exhausted. Physical Galaxy A15 validation still required."
+  "blocker": "Browser-control execution available; hosted browser explicitly disables WebGL before scene creation. Native EGL compile/link validates syntax/interfaces only. Browser GPU appearance/tours, exact-reference fidelity and physical Galaxy A15 validation remain unverified. Tripo through fal previously returned 403 balance_exhausted."
 }

@@ -19,13 +19,14 @@ import {animate} from 'animejs';
 import {createInteriorGeometry} from './interior-architecture.js';
 import {createInteriorMaterials} from './interior-materials.js';
 import {interiorPixelRatio} from './quality.js';
-export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOverride=null,quality='balanced',onFrame=()=>{}}){
+export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOverride=null,quality='balanced',onFrame=()=>{},onError=error=>console.error(error)}){
  const engine=engineOverride||new Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true});
- const scale=()=>engine.setHardwareScalingLevel(1/interiorPixelRatio(globalThis.devicePixelRatio||1,quality));scale();
+ const scale=()=>engine.setHardwareScalingLevel(1/interiorPixelRatio(globalThis.devicePixelRatio||1,quality));
  let scene,camera,layout,level=0,flight=null,currentRoom=null,disposed=false,shadow=null,shadowLight=null,lights=[];const held=new Set();
  function label(text,x,y,z,width=4){const tex=new DynamicTexture('room-sign',{width:1024,height:128},scene,false);const ctx=tex.getContext();ctx.fillStyle='#17252f';ctx.fillRect(0,0,1024,128);ctx.fillStyle='#eeddbb';ctx.font='36px sans-serif';ctx.textAlign='center';ctx.fillText(text,512,78,990);tex.update();const m=new StandardMaterial('sign',scene);m.diffuseTexture=tex;m.emissiveColor=new Color3(.45,.45,.45);m.backFaceCulling=false;const p=CreatePlane('Program: '+text,{width,height:width/8},scene);p.position.set(x,y,z);p.material=m;return p;}
  function build(l){
   const assembly=createInteriorGeometry(f,l); // Validate floor before disposing the active scene.
+  try{
   flight?.pause();flight=null;held.clear();shadow?.dispose();shadow=null;scene?.dispose();level=l;currentRoom=null;layout=assembly.layout;scene=new Scene(engine);scene.useRightHandedSystem=true;scene.clearColor=new Color4(.46,.61,.68,1);scene.collisionsEnabled=true;
   scene.imageProcessingConfiguration.toneMappingEnabled=true;scene.imageProcessingConfiguration.exposure=1.18;scene.imageProcessingConfiguration.contrast=1.12;
   const faces=Array.from({length:6},(_,face)=>{const bytes=new Uint8Array(16*16*4);for(let i=0;i<256;i++){const y=Math.floor(i/16)/15;const rgb=face===2?[170,185,197]:face===3?[80,75,65]:[130+y*30,145+y*24,155+y*21];for(let c=0;c<3;c++)bytes[i*4+c]=rgb[c];bytes[i*4+3]=255;}return bytes;});
@@ -34,7 +35,7 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
   for(const source of assembly.root.children.flatMap(g=>g.children)){
    const mesh=new Mesh(source.name,scene),data=new VertexData(),g=source.geometry;
    data.positions=g.attributes.position.array;data.normals=g.attributes.normal.array;data.uvs=g.attributes.uv.array;data.indices=g.index?.array||Uint32Array.from({length:g.attributes.position.count},(_,i)=>i);data.applyToMesh(mesh);
-   mesh.material=finishes[source.material.name];mesh.checkCollisions=!!source.userData.collision;mesh.receiveShadows=true;mesh.metadata={components:source.userData.components};g.dispose();
+   mesh.material=finishes[source.material.name];mesh.checkCollisions=!!source.userData.collision;mesh.receiveShadows=true;mesh.metadata={components:source.userData.components};
   }
   camera=new FreeCamera('visitor',new Vector3(-layout.w/2+layout.core+1,1.67,0),scene);camera.minZ=.06;camera.speed=.26;camera.angularSensibility=3200;camera.inertia=.5;camera.checkCollisions=true;camera.applyGravity=false;camera.ellipsoid=new Vector3(.26,.76,.26);camera.keysUp=[87,38];camera.keysDown=[83,40];camera.keysLeft=[65,37];camera.keysRight=[68,39];camera.setTarget(new Vector3(layout.w/2,1.67,0));camera.attachControl(canvas,true);
   const hemi=new HemisphericLight('daylight fill',new Vector3(0,1,0),scene);hemi.intensity=.55;hemi.groundColor=new Color3(.24,.22,.18);
@@ -46,6 +47,7 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
   scene.onBeforeRenderObservable.add(()=>{const r=layout.rooms.findIndex(room=>Math.abs(camera.position.x-room.x)<room.w/2&&Math.abs(camera.position.z-room.z)<room.d/2);if(r>=0){if(currentRoom!==r){currentRoom=r;onRoom(layout.rooms[r].name);if(!engineOverride)assignShadow(r);}}else if(currentRoom!==null){currentRoom=null;onRoom('Arrival corridor');}});
   for(const r of layout.rooms){const side=Math.sign(r.z);const sign=label(r.name,r.doorX,3.28,side*(layout.corridor/2-.14),Math.min(r.w*.78,3.8));if(side<0)sign.rotation.y=Math.PI;}
   onFloor(l,layout.rooms);onRoom('Arrival corridor');
+  }finally{assembly.root.traverse(object=>object.geometry?.dispose());}
  }
  function stop(){flight?.pause();flight=null;}
  function visit(index){stop();const r=layout.rooms[index];if(!r)return;const prior=layout.rooms.find(room=>Math.abs(camera.position.x-room.x)<room.w/2&&Math.abs(camera.position.z-room.z)<room.d/2);
@@ -53,8 +55,13 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
   function next(){if(disposed)return;if(k>=points.length){currentRoom=index;camera.setTarget(new Vector3(r.x,1.45,r.z+Math.sign(r.z)*1.5));camera.attachControl(canvas,true);flight=null;onRoom(r.name);return;}const [x,z]=points[k++];camera.setTarget(new Vector3(x,1.7,z));flight=animate(camera.position,{x,z,duration:reduced?0:Math.max(350,Math.hypot(x-camera.position.x,z-camera.position.z)*100),ease:'inOutSine',onComplete:next});}next();
  }
  function interrupt(){stop();camera?.attachControl(canvas,true);}
- canvas.addEventListener('pointerdown',interrupt);const onKey=e=>{if(['w','a','s','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))interrupt();};window.addEventListener('keydown',onKey);
- build(0);engine.runRenderLoop(()=>{if(!scene||disposed)return;const dt=Math.min(engine.getDeltaTime()/1000,.05);if(held.size){interrupt();const fwd=camera.getDirection(new Vector3(0,0,-1));fwd.y=0;fwd.normalize();const right=camera.getDirection(Vector3.Right());right.y=0;const delta=Vector3.Zero();if(held.has('forward'))delta.addInPlace(fwd);if(held.has('back'))delta.subtractInPlace(fwd);if(held.has('left'))delta.subtractInPlace(right);if(held.has('right'))delta.addInPlace(right);camera.cameraDirection.addInPlace(delta.scale(dt*2.5));}camera.position.y=1.67;scene.render();onFrame({engine:'Babylon.js',facility:f.key,floor:level+1,frameMs:engine.getDeltaTime(),width:engine.getRenderWidth(),height:engine.getRenderHeight(),meshes:scene.meshes.length});});
- const resize=()=>{scale();engine.resize();};window.addEventListener('resize',resize);
- return {setFloor:build,visit,setQuality(value){quality=value;scale();engine.resize();},hold(key,value){if(value)held.add(key);else held.delete(key);},dispose(){disposed=true;stop();held.clear();canvas.removeEventListener('pointerdown',interrupt);window.removeEventListener('keydown',onKey);window.removeEventListener('resize',resize);shadow?.dispose();scene.dispose();engine.dispose();}};
+ const onKey=e=>{if(['w','a','s','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))interrupt();};
+ const resize=()=>{scale();engine.resize();};
+ const blur=()=>{stop();held.clear();camera?.detachControl();if(camera){camera.cameraDirection.set(0,0,0);camera.cameraRotation.set(0,0);camera.attachControl(canvas,true);}};
+ function dispose(){if(disposed)return;disposed=true;stop();held.clear();engine.stopRenderLoop();canvas.removeEventListener('pointerdown',interrupt);window.removeEventListener('keydown',onKey);window.removeEventListener('resize',resize);window.removeEventListener('blur',blur);shadow?.dispose();scene?.dispose();engine.dispose();}
+ try{
+  scale();canvas.addEventListener('pointerdown',interrupt);window.addEventListener('keydown',onKey);window.addEventListener('resize',resize);window.addEventListener('blur',blur);
+  build(0);engine.runRenderLoop(()=>{if(!scene||disposed||document.hidden)return;try{const dt=Math.min(engine.getDeltaTime()/1000,.05);if(held.size){interrupt();const fwd=camera.getDirection(new Vector3(0,0,-1));fwd.y=0;fwd.normalize();const right=camera.getDirection(Vector3.Right());right.y=0;const delta=Vector3.Zero();if(held.has('forward'))delta.addInPlace(fwd);if(held.has('back'))delta.subtractInPlace(fwd);if(held.has('left'))delta.subtractInPlace(right);if(held.has('right'))delta.addInPlace(right);camera.cameraDirection.addInPlace(delta.scale(dt*2.5));}camera.position.y=1.67;scene.render();onFrame({engine:'Babylon.js',facility:f.key,floor:level+1,frameMs:engine.getDeltaTime(),width:engine.getRenderWidth(),height:engine.getRenderHeight(),meshes:scene.meshes.length});}catch(error){dispose();onError(error);}});
+ }catch(error){dispose();throw error;}
+ return {setFloor(l){if(disposed)return;const previous=scene;try{build(l);}catch(error){if(scene===previous&&!previous.isDisposed)throw error;dispose();onError(error);}},visit,setQuality(value){if(disposed)return;quality=value;scale();if(shadow)shadow.mapSize=value==='high'?2048:1024;engine.resize();},hold(key,value){if(disposed)return;if(value)held.add(key);else held.delete(key);},dispose};
 }

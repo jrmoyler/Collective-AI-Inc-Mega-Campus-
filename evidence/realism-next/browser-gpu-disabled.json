@@ -1,0 +1,50 @@
+[
+  {
+    "level": "error",
+    "message": "THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .",
+    "timestamp": "2026-09-17T05:45:38.319Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js"
+  },
+  {
+    "level": "error",
+    "message": "THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .",
+    "timestamp": "2026-09-17T05:45:38.319Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js"
+  },
+  {
+    "level": "error",
+    "message": "THREE.WebGLRenderer: THREE.WebGLRenderer: Error creating WebGL context.",
+    "timestamp": "2026-09-17T05:45:38.319Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js"
+  },
+  {
+    "level": "error",
+    "message": "Error: THREE.WebGLRenderer: Error creating WebGL context.\n    at new Gd (https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js:4221:24414)\n    at Nv (https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js:4685:35957)\n    at https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js:4685:40970",
+    "timestamp": "2026-09-17T05:45:38.319Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js"
+  },
+  {
+    "level": "error",
+    "message": "THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .",
+    "timestamp": "2026-09-17T05:56:16.155Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js"
+  },
+  {
+    "level": "error",
+    "message": "THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .",
+    "timestamp": "2026-09-17T05:56:16.156Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js"
+  },
+  {
+    "level": "error",
+    "message": "THREE.WebGLRenderer: THREE.WebGLRenderer: Error creating WebGL context.",
+    "timestamp": "2026-09-17T05:56:16.157Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js"
+  },
+  {
+    "level": "error",
+    "message": "Error: THREE.WebGLRenderer: Error creating WebGL context.\n    at new Gd (https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js:4221:24414)\n    at Nv (https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js:4685:35957)\n    at https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js:4685:40970",
+    "timestamp": "2026-09-17T05:56:16.157Z",
+    "url": "https://collective-ai-inc-mega-cam-git-848653-jrmoyler93-7522s-projects.vercel.app/assets/index-D-NfvPq1.js"
+  }
+]

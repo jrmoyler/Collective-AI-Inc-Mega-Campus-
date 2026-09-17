@@ -1,0 +1,52 @@
+BJS - [01:48:52]: Babylon.js v9.26.2 - Null engine
+BJS - [01:48:57]: Babylon.js v9.26.2 - Null engine
+BJS - [01:48:58]: Babylon.js v9.26.2 - Null engine
+BJS - [01:48:59]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:01]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:02]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:03]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:03]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:03]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:04]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:04]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:05]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:06]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:07]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:08]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:08]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:09]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:10]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:10]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:11]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:12]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:13]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:14]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:15]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:16]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:17]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:18]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:19]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:20]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:21]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:22]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:23]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:24]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:25]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:26]: Babylon.js v9.26.2 - Null engine
+✔ all 74 Babylon floor scenes construct and dispose without missing registrations (35196.046952ms)
+BJS - [01:48:52]: Babylon.js v9.26.2 - Null engine
+BJS - [01:48:53]: Babylon.js v9.26.2 - Null engine
+BJS - [01:48:53]: Babylon.js v9.26.2 - Null engine
+✔ render failure stops scheduling before recovery disposes a renderer (1.157402ms)
+✔ teardown cancels both queued frames and a frame stopped during its callback (0.223921ms)
+✔ a floor construction callback failure releases the engine and installed input handlers (457.473927ms)
+✔ a later frame failure disposes the tour once and reports recovery instead of repeating (441.723771ms)
+✔ losing focus cancels touch movement and residual camera motion (445.86086ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 35919.489953

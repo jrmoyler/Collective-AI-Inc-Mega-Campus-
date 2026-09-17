@@ -106,9 +106,9 @@ ground.receiveShadow=true;ground.name='forest-floor';root.add(ground);
    shader.vertexShader='uniform float uTime;\nvarying vec3 waterWorld;\n'+shader.vertexShader;
    shader.vertexShader=shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n waterWorld=(modelMatrix*vec4(transformed,1.0)).xyz;');
    shader.fragmentShader='uniform float uTime;\nvarying vec3 waterWorld;\n'+shader.fragmentShader;
-   shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_begin>','#include <normal_fragment_begin>\n normal=normalize(normal + vec3(sin(waterWorld.x*2.3+waterWorld.z*.7+uTime*.8)*.075,cos(waterWorld.z*2.7-waterWorld.x*.8+uTime*.65)*.065,0.0));');
+   shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_begin>','#include <normal_fragment_begin>\n float waveDx=.0495*cos(waterWorld.x*.45+uTime*1.1)+.0184*cos(waterWorld.x*2.3+waterWorld.z*.7+uTime*.8); float waveDz=-.048*sin(waterWorld.z*.6+uTime*.9)+.0056*cos(waterWorld.x*2.3+waterWorld.z*.7+uTime*.8); normal=normalize(mat3(viewMatrix)*vec3(-waveDx,1.0,-waveDz))*faceDirection;');
    shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
-    '#include <begin_vertex>\n transformed.y += sin(position.x*.45+uTime*1.1)*.11 + cos(position.z*.6+uTime*.9)*.08;');
+    '#include <begin_vertex>\n vec3 waterPosition=(modelMatrix*vec4(position,1.0)).xyz; transformed.y += sin(waterPosition.x*.45+uTime*1.1)*.11 + cos(waterPosition.z*.6+uTime*.9)*.08;');
   };
   const m=new T.Mesh(g,mat);m.position.set(x,.38,z);m.name='lake';root.add(m);
   const pts=[];for(let i=0;i<=48;i++){const a=i/48*6.283,r=1+.07*Math.sin(a*3);pts.push([x+Math.cos(a)*(rx+2.4)*r,.5,z-Math.sin(a)*(rz+2.4)*r]);}

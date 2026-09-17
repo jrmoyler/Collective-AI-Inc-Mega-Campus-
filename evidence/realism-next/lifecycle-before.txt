@@ -1,0 +1,73 @@
+BJS - [01:49:10]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:11]: Babylon.js v9.26.2 - Null engine
+BJS - [01:49:12]: Babylon.js v9.26.2 - Null engine
+✔ render failure stops scheduling before recovery disposes a renderer (0.966799ms)
+✔ teardown cancels both queued frames and a frame stopped during its callback (0.177042ms)
+✖ a floor construction callback failure releases the engine and installed input handlers (685.288164ms)
+✖ a later frame failure disposes the tour once and reports recovery instead of repeating (536.642193ms)
+✖ losing focus cancels touch movement and residual camera motion (706.501478ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 2
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2633.846894
+
+✖ failing tests:
+
+test at tests/qa-before-lifecycle.test.js:23:1
+✖ a floor construction callback failure releases the engine and installed input handlers (685.288164ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  1 !== 0
+
+      at TestContext.<anonymous> (file:///workspace/scratch/e4aff718301b/campus/tests/qa-before-lifecycle.test.js:26:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/qa-before-lifecycle.test.js:28:1
+✖ a later frame failure disposes the tour once and reports recovery instead of repeating (536.642193ms)
+  Error: frame report failed
+      at TestContext.<anonymous> (file:///workspace/scratch/e4aff718301b/campus/tests/qa-before-lifecycle.test.js:30:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
+
+test at tests/qa-before-lifecycle.test.js:34:1
+✖ losing focus cancels touch movement and residual camera motion (706.501478ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + 1.4142135623730951
+  - 0
+
+      at TestContext.<anonymous> (file:///workspace/scratch/e4aff718301b/campus/tests/qa-before-lifecycle.test.js:38:39)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1.4142135623730951,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

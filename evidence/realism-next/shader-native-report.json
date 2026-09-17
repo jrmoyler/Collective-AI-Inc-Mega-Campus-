@@ -1,0 +1,250 @@
+{
+  "negativeControl": {
+    "passed": true,
+    "native": {
+      "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+      "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+      "stages": [
+        {
+          "stage": "vertex",
+          "passed": true,
+          "log": ""
+        },
+        {
+          "stage": "fragment",
+          "passed": true,
+          "log": ""
+        }
+      ],
+      "link": {
+        "passed": false,
+        "log": "error: vertex shader output `waterWorld' declared as type `vec3', but fragment shader input declared as type `vec4'\n"
+      }
+    }
+  },
+  "threeRevision": "186",
+  "compiler": {
+    "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+    "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "stages": []
+  },
+  "scope": "Offline GLSL ES 3.00 vertex/fragment compilation and interface linking only. No browser, WebGL context, rendered-frame, device, visual-fidelity or performance validation.",
+  "cases": [
+    {
+      "name": "water-daylight",
+      "passed": true,
+      "vertexSHA256": "903fa2350c75781bfa9bf2c07c74a60a0f09833fb8d86ddf6925d08d2c73f9e8",
+      "fragmentSHA256": "c4ad3bd59a6a638b8e1339e4f632abbb160865bbd693a7bf39a9a8b71d7e0c14",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "water-shadowed",
+      "passed": true,
+      "vertexSHA256": "7740b5cd5274ffeca2deb647db7c8d8a9e842e8c906d4e2eb67aefa9f77bcec9",
+      "fragmentSHA256": "f291742a86756cb26fdd835577a6dfb5449245ebe234d80357b1b2d8defd510c",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "foliage-instanced",
+      "passed": true,
+      "vertexSHA256": "df3e8f34488264ce05c97b3181e970abaebec100bf83a4250b13c669fc9eb85a",
+      "fragmentSHA256": "7ac832dfa635c3a9e3b45f54694f6ef6afcafbe34ce9b38295ae2ccb8d19d6e1",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "blossom-instanced-shadowed",
+      "passed": true,
+      "vertexSHA256": "981ef851bea78ab866423b0fbeaf2e1c61c49a219735ba13af873571237f947d",
+      "fragmentSHA256": "7e4632cfb6bc41999a87f830412f557a0d144efa34f8752ea424e82cd79e3ba1",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "foliage-uninstanced",
+      "passed": true,
+      "vertexSHA256": "c1e4cd68f177cb394015d6b64326280707e14d56fff08d228edc65f487eb6983",
+      "fragmentSHA256": "19e0901d2f0ed6dcfa197c52f3377169505385aa35ccfbd46a5ba6e0f3297698",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "kinetic-road-cyan",
+      "passed": true,
+      "vertexSHA256": "81bfe8b33c6e0272406dd8fabd1af0dd1878097bb8f17a3353ab4d0533e09a30",
+      "fragmentSHA256": "9bff218817ce1de0423ab7333ff42b6625ecf74b7b262141cbcd49941d928df0",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "kinetic-road-gold",
+      "passed": true,
+      "vertexSHA256": "c7a974b4abdb6ddeac74feb5cc5f186128ae154392c54d36fc3d95a0f6ad0d6c",
+      "fragmentSHA256": "f1791c904eca4a2ab05b8c16ef028ee6d116402a21d68389635edeed265f09fc",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    },
+    {
+      "name": "atmospheric-sky",
+      "passed": true,
+      "vertexSHA256": "6f73b2756187b685ed3dc95c9ee238fcc9b97d285f3dbeeb7657845a44d772af",
+      "fragmentSHA256": "06ab4885cdb84720422b26abd796c2a0753fcd6d0551d1c2c5113c307243da83",
+      "native": {
+        "api": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+        "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+        "stages": [
+          {
+            "stage": "vertex",
+            "passed": true,
+            "log": ""
+          },
+          {
+            "stage": "fragment",
+            "passed": true,
+            "log": ""
+          }
+        ],
+        "link": {
+          "passed": true,
+          "log": ""
+        }
+      },
+      "log": ""
+    }
+  ]
+}
