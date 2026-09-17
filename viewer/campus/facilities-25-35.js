@@ -4,28 +4,30 @@ import * as T from 'three';
 import {Batch,cylinder,ring,line,materials} from './geometry.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
+import {facadeEdge,roofCoping,roofTree,occupiedBays} from './facade-craft.js';
+
 function footprint(w,d,r=1.4){
  const s=new T.Shape(),x=w/2,z=d/2;r=Math.min(r,x*.8,z*.8);
  s.moveTo(-x+r,-z);s.lineTo(x-r,-z);s.quadraticCurveTo(x,-z,x,-z+r);s.lineTo(x,z-r);s.quadraticCurveTo(x,z,x-r,z);s.lineTo(-x+r,z);s.quadraticCurveTo(-x,z,-x,z-r);s.lineTo(-x,-z+r);s.quadraticCurveTo(-x,-z,-x+r,-z);return s;
 }
 function plate(b,mat,x,y,z,w,d,th=.32,r=1.4){const g=new T.ExtrudeGeometry(footprint(w,d,r),{depth:th,bevelEnabled:false,curveSegments:5});g.rotateX(-Math.PI/2);b.add(g,mat,x,y,z);g.dispose();}
-function tree(b,x,y,z,r=1.3){cylinder(b,'trunk',x,y+1.3,z,.13,2.6,.07,8);const g=new T.SphereGeometry(r,8,6);b.add(g,'leaf',x,y+2.9,z,1,1.3,1);g.dispose();}
+function tree(b,x,y,z,r=1.3){roofTree(b,x,y,z,r*2);}
 function planter(b,x,y,z,w=3,d=2){plate(b,'stone',x,y,z,w,d,.5,.45);plate(b,'leaf',x,y+.5,z,w-.3,d-.3,.1,.3);tree(b,x,y+.5,z,Math.min(w,d)*.55);}
-function solar(b,x,y,z,w,d){b.box('dark',x,y,z,w,.22,d);for(let xx=-w/2+.5;xx<w/2;xx+=2.2)for(let zz=-d/2+.5;zz<d/2;zz+=3.2){b.box('solar',x+xx,y+.17,z+zz,2,.10,3);b.box('steel',x+xx,y+.23,z+zz,1.95,.02,.04);}}
+function solar(b,x,y,z,w,d){(b.solarZones ||= []).push({x,y,z,w,d});for(const sx of [-1,1])for(const sz of [-1,1])b.box('steel',x+sx*w*.35,y+.24,z+sz*d*.32,.10,.55,.10);y+=.55;b.box('dark',x,y,z,w,.22,d);for(let xx=-w/2+.5;xx<w/2;xx+=2.2)for(let zz=-d/2+.5;zz<d/2;zz+=3.2){b.box('solar',x+xx,y+.17,z+zz,2,.10,3);b.box('steel',x+xx,y+.23,z+zz,1.95,.02,.04);}}
 function rail(b,x,y,z,w,d){for(const s of [-1,1]){b.box('glazing',x,y+.6,z+s*d/2,w,1.2,.035);b.box('steel',x,y+1.2,z+s*d/2,w,.06,.06);b.box('glazing',x+s*w/2,y+.6,z,.035,1.2,d);b.box('steel',x+s*w/2,y+1.2,z,.06,.06,d);}}
 function wing(b,x,z,w,d,h,levels=2,{skin='dark',base=0,r=1.6,roof=true,planted=false}={}){
- b.occupiedWings??=[];b.occupiedWings.push({x,z,w,d,h,levels,base});
+ b.occupiedWings??=[];b.occupiedWings.push({x,z,w,d,h,levels,base,r});
  const perimeter=footprint(w,d,r).getSpacedPoints(Math.max(20,Math.ceil((w+d)*.65))),fh=h/levels;
  for(let k=0;k<levels;k++){
   const y=base+k*fh;plate(b,'stone',x,y,z,w,d,.3,r);
   for(let j=0;j<perimeter.length-1;j++){
    const a=perimeter[j],c=perimeter[j+1],dx=c.x-a.x,dz=c.y-a.y,len=Math.hypot(dx,dz),yaw=-Math.atan2(dz,dx),px=x+(a.x+c.x)/2,pz=z+(a.y+c.y)/2;
-   b.box('glazing',px,y+fh/2,pz,len,fh-.45,.04,yaw);b.box(skin,px,y+fh-.48,pz,len,.7,.26,yaw);
+   b.pane('glazing',px,y+fh/2,pz,len,fh-.45,yaw);facadeEdge(b,[x+a.x,z+a.y],[x+c.x,z+c.y],y,fh,{center:[x,z],skin});b.box(skin,px,y+fh-.48,pz,len,.7,.26,yaw);
    b.box('steel',x+a.x,y+fh/2,z+a.y,.09,fh,.09);
    if(j%3===0)b.box('warm',x+(px-x)*.94,y+fh-.85,z+(pz-z)*.94,len*.8,.035,.06,yaw);
   }
  }
- if(roof){plate(b,skin,x,base+h,z,w+.5,d+.5,.4,r);if(planted){plate(b,'leaf',x,base+h+.45,z,w-2,d-2,.12,r);for(let q=-w*.3;q<=w*.3;q+=6)planter(b,x+q,base+h+.55,z,2,2);}rail(b,x,base+h+.4,z,w-.2,d-.2);}
+ if(roof){roofCoping(b,perimeter.slice(0,-1).map(p=>[x+p.x,z+p.y]),base+h+.4,{center:[x,z],skin});plate(b,skin,x,base+h,z,w+.5,d+.5,.4,r);if(planted){plate(b,'path',x,base+h+.45,z,w-2,d-2,.12,r);for(const side of [-1,1]){plate(b,'stone',x,base+h+.58,z+side*d*.36,w*.68,d*.13,.24,1);plate(b,'leaf',x,base+h+.83,z+side*d*.36,w*.68-.3,d*.13-.3,.09,.8);for(let q=-w*.28;q<=w*.28;q+=3.5)(b.roofPlanting ||= []).push({x:x+q,y:base+h+.92,z:z+side*d*.36,scale:.7});}}rail(b,x,base+h+.4,z,w-.2,d-.2);}
 }
 function benches(b,x,y,z,n=3){for(let i=0;i<n;i++){b.box('copper',x+i*3,y+.48,z,2.4,.15,.7);for(const dx of [-.9,.9])b.box('dark',x+i*3+dx,y+.23,z,.07,.46,.6);}}
 function desks(b,x,y,z,n=4){for(let i=0;i<n;i++){const xx=x+i*3;b.box('white',xx,y+.8,z,2,.1,.9);b.box('steel',xx,y+.4,z,.08,.8,.7);b.box('dark',xx,y+1.15,z+.25,.7,.5,.045);b.box('cyan',xx,y+1.15,z+.275,.6,.38,.015);b.box('dark',xx,y+.45,z-1,.5,.12,.5);b.box('dark',xx,y+.72,z-1.2,.5,.6,.08);}}
@@ -56,6 +58,7 @@ function nearOccupancy(f,wings){
   if(q.w<6||q.d<6||q.base>f.h*.8)continue;
   for(let floor=0;floor<q.levels;floor++){
    const y=q.base+floor*q.h/q.levels+.34,front=q.z+q.d/2-2.4,back=q.z-q.d/2+2.5;
+   if(f.id!==26)occupiedBays(b,footprint(q.w,q.d,q.r).getPoints(4).slice(0,-1).map(p=>[q.x+p.x,q.z+p.y]),y,q.h/q.levels-.34);
    const count=Math.min(6,Math.max(1,Math.floor((q.w-4)/5.5)));
    for(let i=0;i<count;i++){
     const x=q.x+(i-(count-1)/2)*5.5;
@@ -241,6 +244,8 @@ export function createFacility25to35(f,{deferDetails=false}={}){
 
  }
  identityDetails(b,f);
+ // Keep taller planting clear of installed panel arrays; sedum may remain below raised modules.
+ for(const p of b.roofPlanting||[])if(!(b.solarZones||[]).some(s=>Math.abs(p.y-s.y)<2&&Math.abs(p.x-s.x)<s.w/2+1.7&&Math.abs(p.z-s.z)<s.d/2+1.7))roofTree(b,p.x,p.y,p.z,p.scale);
  // Capture only scalar placement records. No Batch or buffer geometry is retained.
  const occupiedRecords=(b.occupiedWings||[]).map(q=>({...q}));
  const createNearDetail=()=>{const detail=nearOccupancy(f,occupiedRecords);detail.traverse(o=>{if(o.material===materials.glazing){o.material=clearFacade;o.castShadow=false;}});return detail;};

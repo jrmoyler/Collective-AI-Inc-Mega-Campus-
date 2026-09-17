@@ -2,6 +2,8 @@
 import * as T from 'three';
 import {Batch,cylinder,ring,materials} from './geometry.js';
 
+import {facadeEdge,roofCoping,roofTree,occupiedBays} from './facade-craft.js';
+
 const rect=(x,z,w,d)=>[[x-w/2,z-d/2],[x+w/2,z-d/2],[x+w/2,z+d/2],[x-w/2,z+d/2]];
 function plate(b,points,y,depth,mat='stone'){
  const s=new T.Shape();points.forEach(([x,z],i)=>i?s.lineTo(x,-z):s.moveTo(x,-z));s.closePath();
@@ -11,15 +13,21 @@ function perimeter(b,p,y,height,{skin='dark',bay=3.2,opaque=[]}={}){
  for(let i=0;i<p.length;i++){
   const a=p[i],c=p[(i+1)%p.length],dx=c[0]-a[0],dz=c[1]-a[1],length=Math.hypot(dx,dz),rot=-Math.atan2(dz,dx),n=Math.max(1,Math.ceil(length/bay));
   const x=(a[0]+c[0])/2,z=(a[1]+c[1])/2;
-  b.box(opaque.includes(i)?skin:'glazing',x,y+height/2,z,length,height-.25,.10,rot);
+  if(opaque.includes(i))b.box(skin,x,y+height/2,z,length,height-.25,.10,rot);
+  else b.pane('glazing',x,y+height/2,z,length,height-.25,rot);
+  const center=p.reduce((v,q)=>[v[0]+q[0]/p.length,v[1]+q[1]/p.length],[0,0]);
+  facadeEdge(b,a,c,y,height,{center,skin});
   b.box(skin,x,y+height-.22,z,length,.42,.22,rot);
   for(let j=0;j<n;j++)b.box('steel',a[0]+dx*j/n,y+height/2,a[1]+dz*j/n,.10,height,.10);
  }
 }
 function shell(b,p,y,h,levels,{skin='dark',bay=3.2,opaque=[]}={}){
  const fh=h/levels;
+ (b.occupiedLevels ||= []).push({points:p,y,height:h,levels});
  for(let i=0;i<levels;i++){plate(b,p,y+i*fh,.26);perimeter(b,p,y+i*fh+.26,fh-.26,{skin,bay,opaque});}
  plate(b,p,y+h,.32,skin);
+ const center=p.reduce((v,q)=>[v[0]+q[0]/p.length,v[1]+q[1]/p.length],[0,0]);
+ roofCoping(b,p,y+h+.32,{center,skin});
 }
 function rail(b,p,y){perimeter(b,p,y,1.05,{skin:'steel',bay:3});}
 function rounded(x,z,w,d,r=4){
@@ -33,7 +41,7 @@ function beam(b,a,c,r=.12,mat='steel'){
 }
 
 function solar(b,x,y,z,w,d){b.box('solar',x,y,z,w,.14,d);for(let i=-w/2;i<=w/2;i+=2)b.box('steel',x+i,y+.08,z,.03,.018,d);for(let j=-d/2;j<=d/2;j+=2)b.box('steel',x,y+.08,z+j,w,.018,.025);}
-function garden(b,x,y,z,w,d){b.box('stone',x,y+.18,z,w,.36,d);b.box('leaf',x,y+.40,z,w-.35,.18,d-.35);for(let i=0;i<Math.min(7,Math.floor(w/3));i++){const px=x-w*.38+i*w*.76/Math.max(1,Math.min(7,Math.floor(w/3))-1);cylinder(b,'trunk',px,y+1,z,.065,1.2,.04,7);const g=new T.SphereGeometry(.68,7,5);b.add(g,'leaf',px,y+1.8,z,1,1.3,1);g.dispose();}}
+function garden(b,x,y,z,w,d){b.box('stone',x,y+.18,z,w,.36,d);b.box('leaf',x,y+.40,z,w-.35,.18,d-.35);for(let i=0;i<Math.min(7,Math.floor(w/3));i++){const px=x-w*.38+i*w*.76/Math.max(1,Math.min(7,Math.floor(w/3))-1);roofTree(b,px,y+.50,z,1.4);}}
 function office(b,x,y,z,cols=3){for(let i=0;i<cols;i++){const px=x+(i-(cols-1)/2)*3.2;b.box('stone',px,y+.85,z,2.2,.09,1);for(const dx of [-.85,.85])b.box('steel',px+dx,y+.42,z,.07,.8,.72);b.box('dark',px,y+1.28,z-.2,.78,.48,.07);b.box('dark',px,y+.52,z+.8,.5,.12,.5);b.box('dark',px,y+.86,z+1,.52,.6,.08);}}
 function racks(b,x,y,z,n=5){for(let i=0;i<n;i++){const px=x+i*2;b.box('dark',px,y+1.45,z,1.2,2.9,1.1);for(let j=0;j<8;j++){b.box('steel',px,y+.3+j*.32,z+.565,1,.22,.025);b.box('cyan',px-.35,y+.3+j*.32,z+.59,.06,.05,.018);}}}
 function machinery(b,x,y,z){b.box('white',x,y+1.1,z,2.7,2.2,2.1);b.box('glazing',x,y+1.25,z+1.06,1.8,1.4,.04);b.box('dark',x+1.05,y+1.6,z+1.1,.4,.65,.05);b.box('steel',x,y+.65,z+.3,1.4,.2,1);}
@@ -264,11 +272,13 @@ function facadeIdentity(b,f){const {id,w,d,h}=f;
 const atlasGlazing=materials.glazing.clone();
 atlasGlazing.name='Atlas neutral clear architectural glazing';atlasGlazing.color.set(0xc1d0d0);atlasGlazing.opacity=.20;atlasGlazing.metalness=.02;atlasGlazing.roughness=.11;atlasGlazing.envMapIntensity=.6;atlasGlazing.depthWrite=false;
 
-function nearDetailFactory(f){
- // This closure retains only the facility description, never a built Batch or
+function nearDetailFactory(f,levels){
+ // This closure retains only the facility description and numeric floor outlines, never a built Batch or
  // merged geometry. Fine equipment is allocated on the first close approach.
  return function createNearDetail(){
-  const batch=new Batch(),tags=occupiedDetails(batch,f),detail=batch.finish(`${f.key}-occupied-detail`);
+  const batch=new Batch(),tags=occupiedDetails(batch,f);
+  if(![8,10,11].includes(f.id))for(const q of levels)for(let k=0;k<q.levels;k++)occupiedBays(batch,q.points,q.y+k*q.height/q.levels+.28,q.height/q.levels-.28);
+  const detail=batch.finish(`${f.key}-occupied-detail`);
   detail.userData.nearDetail=true;detail.userData.programDetails=tags;
   detail.traverse(o=>{o.userData.facility=f.id;if(o.isMesh&&o.material===materials.glazing)o.material=atlasGlazing;});
   return detail;
@@ -279,7 +289,7 @@ export function createFacility01to12(f,{deferDetails=false}={}){
  const build=builders[f.id];if(!build)return null;
  const b=new Batch();b.box('path',0,.10,0,f.w+8,.2,f.d+8);build(b,f);facadeIdentity(b,f);
  const root=b.finish(`${f.key}-atlas-shell`);
- const createNearDetail=nearDetailFactory(f);
+ const createNearDetail=nearDetailFactory(f,b.occupiedLevels||[]);
  if(deferDetails)root.userData.createNearDetail=createNearDetail;else root.add(createNearDetail());
  root.userData.facility=f.id;root.userData.referenceSource=`CF-${String(f.id).padStart(2,'0')}_Facility_Infographic.png`;
  root.userData.referenceInterpretation='Observed facade reconstruction; hidden elevations and dimensions inferred';

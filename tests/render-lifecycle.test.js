@@ -64,3 +64,15 @@ test('an invalid floor request leaves the existing valid tour usable',()=>{
  const scene=engine.scenes[0];assert.throws(()=>interior.setFloor(999),RangeError);
  assert.equal(engine.scenes[0],scene);assert.equal(scene.isDisposed,false);interior.dispose();
 });
+
+test('interior context loss stops frame evidence and movement until a restored frame renders',()=>{
+ const {engine,canvas}=environment();let frame;const events=[];let frames=0;
+ engine.runRenderLoop=callback=>{frame=callback;};
+ const interior=createInterior(canvas,FACILITIES[0],{engineOverride:engine,onRoom(){},onFloor(){},onFrame(){frames++;},onLifecycle:(type,detail)=>events.push({type,...detail})});
+ frame();assert.equal(frames,1);assert.ok(events.some(e=>e.type==='floor-first-frame'));
+ interior.hold('forward',true);engine.onContextLostObservable.notifyObservers(engine);frame();assert.equal(frames,1);assert.equal(events.at(-1).type,'interior-context-lost');
+ engine.onContextRestoredObservable.notifyObservers(engine);assert.equal(events.at(-1).type,'interior-context-lost','restore notification alone is not a rendered frame');
+ frame();assert.equal(frames,2);assert.equal(events.at(-1).type,'interior-context-restored');
+ assert.equal(engine.scenes[0].activeCamera.cameraDirection.length(),0);interior.dispose();
+ assert.equal(engine.onContextLostObservable.hasObservers(),false);assert.equal(engine.onContextRestoredObservable.hasObservers(),false);
+});

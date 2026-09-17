@@ -1,6 +1,8 @@
 import * as T from 'three';
 import {Batch,cylinder,ring,line,materials} from './geometry.js';
 
+import {facadeEdge,roofCoping,roofTree,occupiedBays} from './facade-craft.js';
+
 // Neutral low-opacity architectural glass keeps occupied slabs and furnishings
 // legible in both Three.js and glTF/Blender instead of stacking dark tinted walls.
 const referenceGlazing=materials.glazing.clone();
@@ -29,7 +31,8 @@ function wing(b,x,z,w,d,h,levels=2,{base=0,r=2,skin='dark',roof=true,fins=false}
   const y=base+floor*fh;slab(b,'stone',x,y,z,w,d,.3,r);
   for(let j=0;j<p.length;j++){
    const a=p[j],c=p[(j+1)%p.length],dx=c[0]-a[0],dz=c[1]-a[1],len=Math.hypot(dx,dz),rot=-Math.atan2(dz,dx),n=Math.max(1,Math.ceil(len/3));
-   b.box(referenceGlazing,x+(a[0]+c[0])*.5,y+fh*.5,z+(a[1]+c[1])*.5,len,fh-.42,.065,rot);
+   b.pane(referenceGlazing,x+(a[0]+c[0])*.5,y+fh*.5,z+(a[1]+c[1])*.5,len,fh-.42,rot);
+   facadeEdge(b,[x+a[0],z+a[1]],[x+c[0],z+c[1]],y,fh,{center:[x,z],skin});
    b.box(skin,x+(a[0]+c[0])*.5,y+fh-.25,z+(a[1]+c[1])*.5,len,.5,.24,rot);
    // Recessed bronze sill and head reveal articulate every occupied storey.
    b.box('copper',x+(a[0]+c[0])*.5,y+.40,z+(a[1]+c[1])*.5,len,.08,.28,rot);
@@ -49,6 +52,7 @@ function wing(b,x,z,w,d,h,levels=2,{base=0,r=2,skin='dark',roof=true,fins=false}
  if(roof){
   slab(b,skin,x,base+h,z,w+.25,d+.25,.36,r);
   slab(b,'stone',x,base+h+.37,z,w-1,d-1,.08,Math.max(.2,r-.5));
+  roofCoping(b,p.map(([px,pz])=>[x+px,z+pz]),base+h+.45,{center:[x,z],skin});
   // Occupied roof terraces are stone with narrow planted edges, never a green slab.
   for(const side of [-1,1]){
    b.box('dark',x,base+h+.63,z+side*(d*.5-.28),w-r*2,.52,.22);
@@ -69,7 +73,7 @@ function pergola(b,x,y,z,w,d){
  for(const side of [-1,1])for(const end of [-1,1])cylinder(b,'steel',x+side*w*.45,y+1.5,z+end*d*.45,.1,3,.1,8);
  for(let q=-w*.5;q<=w*.5;q+=.9)b.box('copper',x+q,y+3,z,.13,.22,d);
 }
-function planter(b,x,y,z,w,d){slab(b,'stone',x,y,z,w,d,.65,.6);slab(b,'leaf',x,y+.66,z,w-.3,d-.3,.2,.4);}
+function planter(b,x,y,z,w,d){slab(b,'stone',x,y,z,w,d,.65,.6);slab(b,'leaf',x,y+.66,z,w-.3,d-.3,.2,.4);for(let xx=-w*.3;xx<=w*.3;xx+=2.4)roofTree(b,x+xx,y+.86,z,Math.min(.85,d*.5));}
 function screen(b,x,y,z,w,h){b.box('dark',x,y,z,w,h,.2);b.box('blueGlass',x,y,z+.115,w-.2,h-.2,.025);for(let q=-w*.4;q<w*.4;q+=w*.12)b.box('cyan',x+q,y-h*.1,z+.135,.07,h*.45,.01);}
 function auditorium(b,x,y,z,w,d){
  for(let row=0;row<6;row++)for(let seat=0;seat<9;seat++){
@@ -122,6 +126,7 @@ function clinicalBed(b,x,y,z){
 }
 function occupiedDetails(b,wing,id,floor,index){
  const {x,z,w,d,base,h,levels}=wing,y=base+floor*h/levels+.32;
+ occupiedBays(b,outline(w,d,wing.r).map(([px,pz])=>[x+px,z+pz]),y,h/levels-.32);
  // Small rooftop booths deliberately receive one compact work setting only.
  if(w<8||d<10){if(w>3.5&&d>3.5){const zz=z+d*.26;desk(b,x,y,zz,.95);monitor(b,x,y+.8,zz-.2,.50);}return;}
  const n=Math.min(4,Math.max(1,Math.floor((w-8)/8)));

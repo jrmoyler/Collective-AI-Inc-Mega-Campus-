@@ -67,11 +67,22 @@ for(const [name,scale] of [['stone',.012],['path',.012],['road',.006],['civic',.
  materials[name].bumpMap=materials[name].map;materials[name].bumpScale=scale;
 }
 
+const paneGeo=new T.PlaneGeometry(1,1),horizontalPaneGeo=new T.PlaneGeometry(1,1).rotateX(-Math.PI/2);
 const boxGeo=new T.BoxGeometry(1,1,1,1,1,1);const temp=new T.Object3D();
 export class Batch{
  constructor(){this.items=new Map();}
  add(g,mat,x=0,y=0,z=0,sx=1,sy=1,sz=1,ry=0,rx=0){temp.position.set(x,y,z);temp.rotation.set(rx,ry,0);temp.scale.set(sx,sy,sz);temp.updateMatrix();const c=g.clone().applyMatrix4(temp.matrix);if(!c.index)c.setIndex(Array.from({length:c.attributes.position.count},(_,i)=>i));if(!c.attributes.uv)c.setAttribute('uv',new T.Float32BufferAttribute(new Float32Array(c.attributes.position.count*2),2));if(!this.items.has(mat))this.items.set(mat,[]);this.items.get(mat).push(c);}
- box(mat,x,y,z,w,h,d,ry=0){this.add(boxGeo,mat,x,y,z,w,h,d,ry);}
+ pane(mat,x,y,z,w,h,ry=0){this.add(paneGeo,mat,x,y,z,w,h,1,ry);}
+ box(mat,x,y,z,w,h,d,ry=0){
+  // Thin clear panes need one two-sided surface, not two superimposed tinted
+  // faces plus invisible edges. Solid display cases and equipment stay volumetric.
+  if(mat==='glazing'||(mat?.isMaterial&&mat.transparent&&mat.opacity<.5)){
+   if(d<=.10){this.pane(mat,x,y,z,w,h,ry);return;}
+   if(w<=.10){this.pane(mat,x,y,z,d,h,ry+Math.PI/2);return;}
+   if(h<=.10){this.add(horizontalPaneGeo,mat,x,y,z,w,1,d,ry);return;}
+  }
+  this.add(boxGeo,mat,x,y,z,w,h,d,ry);
+ }
  finish(name='assembly'){const group=new T.Group();group.name=name;for(const [mat,gs] of this.items){const g=mergeGeometries(gs,false);gs.forEach(x=>x.dispose());const m=new T.Mesh(g,materials[mat]||mat);m.name=name+'-'+(typeof mat==='string'?mat:'surface');m.castShadow=!(m.material.transparent&&m.material.alphaTest===0);m.receiveShadow=true;group.add(m);}this.items.clear();return group;}
 }
 export function cylinder(batch,mat,x,y,z,r,h,rt=r,n=32){const g=new T.CylinderGeometry(rt,r,h,n,1,false);batch.add(g,mat,x,y,z);g.dispose();}

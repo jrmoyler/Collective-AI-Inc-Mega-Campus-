@@ -1,6 +1,7 @@
 // @ts-nocheck
 import {createFrameLoop,withRendererState,disposeSceneResources} from './campus/render-lifecycle.js';
 import {exteriorPixelRatio} from './campus/quality.js';
+import {createAcceptancePanel} from './campus/acceptance-panel.js';
 import {createPerformanceReport} from './campus/performance-report.js';
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -22,7 +23,7 @@ import {createStreetFurniture} from './campus/street-furniture.js';
 import {setDuskMaterials} from './campus/geometry.js';
 import {createCampusMap,createPlanViewer} from './campus/plans.js';
 const $=s=>document.querySelector(s);const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;let renderer,scene,camera,controls,composer,landscape,infrastructure,fleets,streetFurniture,interior=null,selected=null,flight=null,flyover=false,showLabels=true,entering=false,clock=0;
-let quality='balanced';const performanceReport=createPerformanceReport();
+let quality='balanced';const performanceReport=createPerformanceReport({metadata:()=>({build:__CAMPUS_BUILD__,userAgent:navigator.userAgent,viewport:[innerWidth,innerHeight],devicePixelRatio})});let acceptancePanel=null,pendingReadyEvent=null;
 const buildings=[],markers=[];const mobile=matchMedia('(max-width:760px)').matches;let sun,hemi,rim,sky,bloom,ambient;let graphicsReady=false;const planViewer=createPlanViewer();
 let booted=false,frameLoop=null,tourRequest=0,resizeHandler=null,graphicsGeneration=0;
 function message(text){const el=$('#status');if(el)el.textContent=text;}
@@ -51,6 +52,7 @@ function checkPostprocessing(){
  }catch(error){console.warn('Effects framebuffer unavailable; using base rendering',error);disposePostprocessing();message('Effects unavailable · base 3D rendering active');}
 }
 function failGraphics(error){
+ performanceReport.event('graphics-failed',{message:String(error?.message||error)});performanceReport.pause('graphics-failed');
  console.error(error);graphicsGeneration++;graphicsReady=false;frameLoop?.stop();flight?.pause();flyover=false;
  try{exit();}catch(cleanupError){console.warn('Interior cleanup failed',cleanupError);interior=null;if($('#interior'))$('#interior').hidden=true;}
  disposePostprocessing();
@@ -109,10 +111,13 @@ function setDay(day){
  }catch(e){if(next!==environmentTarget)next?.dispose();console.warn('Atmosphere reflections unavailable',e);}
  finally{pmrem?.dispose();if(envSky?.material!==sky.material)envSky?.material.dispose();}
 }
-async function enter(){if(!graphicsReady)return;if(!selected||entering||interior)return;entering=true;if($('#enter')){$('#enter').disabled=true;$('#enter').textContent='Opening interior…';}const f=selected,request=++tourRequest;try{const {createInterior}=await import('./campus/interior.js');if(request!==tourRequest||!graphicsReady)return;flight?.pause();flyover=false;$('#interior').hidden=false;$('#inside-key').textContent=f.key;$('#inside-name').textContent=f.name;$('#floor-select').replaceChildren();for(let i=0;i<f.levels;i++){const option=document.createElement('option');option.value=i;option.textContent=f.id===3?`B${i+1}`:`L${String(i+1).padStart(2,'0')}`;$('#floor-select').append(option);}interior=createInterior($('#interior-canvas'),f,{reduced,quality,onError:error=>{exit();message('Interior graphics stopped. You can reopen the tour.');console.error(error);},onFrame:sample=>performanceReport.record({...sample,quality}),onRoom:name=>{$('#room-status').textContent=name;},onFloor:(l,rooms)=>{$('#floor-select').value=l;$('#room-list').hidden=false;$('#rooms-toggle').setAttribute('aria-expanded','true');$('#room-list').replaceChildren();rooms.forEach((r,i)=>{const button=document.createElement('button');button.textContent=`${i+1}. ${r.name}`;button.onclick=()=>{interior?.visit(i);if(innerWidth<761){$('#room-list').hidden=true;$('#rooms-toggle').setAttribute('aria-expanded','false');}};$('#room-list').append(button);});}});$('#interior-canvas').focus();message('');}catch(e){if(request!==tourRequest)return;console.error(e);$('#interior').hidden=true;interior?.dispose();interior=null;message('Interior could not open. Please try again.');}finally{if(request===tourRequest){entering=false;if($('#enter')){$('#enter').disabled=false;$('#enter').innerHTML='Explore inside <span>↗</span>';}}}}
-function exit(){tourRequest++;entering=false;if($('#enter')){$('#enter').disabled=!graphicsReady;$('#enter').innerHTML='Explore inside <span>↗</span>';}interior?.dispose();interior=null;if($('#interior'))$('#interior').hidden=true;if(graphicsReady){renderer?.setSize(innerWidth,innerHeight);composer?.setSize(innerWidth,innerHeight);checkPostprocessing();}$('#enter')?.focus();}
+async function enter(){if(!graphicsReady)return;if(!selected||entering||interior)return;entering=true;if($('#enter')){$('#enter').disabled=true;$('#enter').textContent='Opening interior…';}const f=selected,request=++tourRequest;performanceReport.pause('tour-load');performanceReport.event('tour-request',{facility:f.key});try{const {createInterior}=await import('./campus/interior.js');if(request!==tourRequest||!graphicsReady)return;flight?.pause();flyover=false;$('#interior').hidden=false;$('#inside-key').textContent=f.key;$('#inside-name').textContent=f.name;$('#floor-select').replaceChildren();for(let i=0;i<f.levels;i++){const option=document.createElement('option');option.value=i;option.textContent=f.id===3?`B${i+1}`:`L${String(i+1).padStart(2,'0')}`;$('#floor-select').append(option);}interior=createInterior($('#interior-canvas'),f,{reduced,quality,onError:error=>{performanceReport.event('interior-error',{message:String(error.message)});exit();message('Interior graphics stopped. You can reopen the tour.');console.error(error);},onLifecycle:(type,detail)=>{performanceReport.event(type,detail);if(type==='floor-request'||type==='interior-context-lost')performanceReport.pause(type);},onFrame:sample=>{performanceReport.record({...sample,quality});acceptancePanel?.frame($('#interior-canvas'),sample);},onRoom:name=>{$('#room-status').textContent=name;},onFloor:(l,rooms)=>{$('#floor-select').value=l;$('#room-list').hidden=false;$('#rooms-toggle').setAttribute('aria-expanded','true');$('#room-list').replaceChildren();rooms.forEach((r,i)=>{const button=document.createElement('button');button.textContent=`${i+1}. ${r.name}`;button.onclick=()=>{interior?.visit(i);if(innerWidth<761){$('#room-list').hidden=true;$('#rooms-toggle').setAttribute('aria-expanded','false');}};$('#room-list').append(button);});}});$('#interior-canvas').focus();message('');}catch(e){if(request!==tourRequest)return;console.error(e);$('#interior').hidden=true;interior?.dispose();interior=null;message('Interior could not open. Please try again.');}finally{if(request===tourRequest){entering=false;if($('#enter')){$('#enter').disabled=false;$('#enter').innerHTML='Explore inside <span>↗</span>';}}}}
+function exit(){if(interior||entering){performanceReport.event('tour-exit',{facility:selected?.key});performanceReport.pause('tour-exit');}tourRequest++;entering=false;if($('#enter')){$('#enter').disabled=!graphicsReady;$('#enter').innerHTML='Explore inside <span>↗</span>';}interior?.dispose();interior=null;if($('#interior'))$('#interior').hidden=true;if(graphicsReady){renderer?.setSize(innerWidth,innerHeight);composer?.setSize(innerWidth,innerHeight);checkPostprocessing();}$('#enter')?.focus();}
 function bind(){
- const setQuality=value=>{quality=value;document.querySelectorAll('[data-quality]').forEach(s=>s.value=value);renderer?.setPixelRatio(exteriorPixelRatio(devicePixelRatio,value,mobile));renderer?.setSize(innerWidth,innerHeight);composer?.setPixelRatio(renderer.getPixelRatio());composer?.setSize(innerWidth,innerHeight);checkPostprocessing();interior?.setQuality(value);};
+ acceptancePanel=createAcceptancePanel({report:performanceReport,getCanvas:()=>interior?.getCanvas()||renderer?.domElement,});
+ document.addEventListener('visibilitychange',()=>performanceReport.pause(document.hidden?'hidden':'visible'));
+ performanceReport.event('startup-begin');
+ const setQuality=value=>{performanceReport.pause('quality-change');performanceReport.event('quality-change',{quality:value});quality=value;document.querySelectorAll('[data-quality]').forEach(s=>s.value=value);renderer?.setPixelRatio(exteriorPixelRatio(devicePixelRatio,value,mobile));renderer?.setSize(innerWidth,innerHeight);composer?.setPixelRatio(renderer.getPixelRatio());composer?.setSize(innerWidth,innerHeight);checkPostprocessing();interior?.setQuality(value);};
  document.querySelectorAll('[data-quality]').forEach(s=>s.onchange=e=>setQuality(e.target.value));
  if($('#rooms-toggle'))$('#rooms-toggle').onclick=()=>{const open=$('#room-list').hidden;$('#room-list').hidden=!open;$('#rooms-toggle').setAttribute('aria-expanded',String(open));};
  if($('#performance-report'))$('#performance-report').onclick=()=>{if(performanceReport.active){const report=performanceReport.finish();$('#performance-report').textContent='Record device performance';message(report.segments.length?'Device report downloaded.':'No rendered frames recorded.');}else{performanceReport.start();$('#performance-report').textContent='Finish & download report';message('Recording locally · explore the campus and interiors, then finish in Systems.');}};
@@ -154,8 +159,10 @@ async function boot(){
  booted=true;
  try{
  bind();
- renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance',preserveDrawingBuffer:false,alpha:false});renderer.debug.onShaderError=(gl,program)=>{throw new Error('WebGL shader compilation failed: '+gl.getProgramInfoLog(program));};renderer.setPixelRatio(exteriorPixelRatio(devicePixelRatio,quality,mobile));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;attachCanvas();
- renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();graphicsGeneration++;graphicsReady=false;frameLoop?.stop();environmentTarget?.dispose();environmentTarget=null;if(scene)scene.environment=null;exit();message('Graphics paused · waiting for the browser to restore them');});
+ const canvas=document.createElement('canvas');canvas.addEventListener('webglcontextcreationerror',event=>performanceReport.event('context-creation-error',{message:event.statusMessage}));
+ renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance',preserveDrawingBuffer:false,alpha:false});renderer.debug.onShaderError=(gl,program)=>{throw new Error('WebGL shader compilation failed: '+gl.getProgramInfoLog(program));};renderer.setPixelRatio(exteriorPixelRatio(devicePixelRatio,quality,mobile));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;attachCanvas();
+ {const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');performanceReport.event('graphics-capabilities',{api:gl.getParameter(gl.VERSION),vendor:gl.getParameter(debug?debug.UNMASKED_VENDOR_WEBGL:gl.VENDOR),renderer:gl.getParameter(debug?debug.UNMASKED_RENDERER_WEBGL:gl.RENDERER),maxTextureSize:gl.getParameter(gl.MAX_TEXTURE_SIZE)});}
+ renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();performanceReport.event('exterior-context-lost');performanceReport.pause('exterior-context-lost');flight?.pause();flyover=false;graphicsGeneration++;graphicsReady=false;frameLoop?.stop();environmentTarget?.dispose();environmentTarget=null;if(scene)scene.environment=null;exit();message('Graphics paused · waiting for the browser to restore them');});
  scene=new T.Scene();scene.background=new T.Color(0x6a2848);scene.fog=new T.Fog(0xe88870,1700,4000);sky=createAtmosphere();scene.add(sky);camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.5,9000);camera.position.set(40,mobile?720:680,mobile?980:920);controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,10,-40);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.02;controls.minDistance=8;controls.maxDistance=2300;controls.update();controls.addEventListener('start',()=>{document.body.classList.add('exploring');flight?.pause();flight=null;flyover=false;$('#tour')?.classList.remove('active');});
  ambient=new T.AmbientLight(0xffead4,.28);scene.add(ambient);
  hemi=new T.HemisphereLight(0xffc090,0x3a2818,.85);scene.add(hemi);sun=new T.DirectionalLight(0xff9a48,2.4);sun.position.set(-400,180,-1200);{sun.castShadow=true;sun.shadow.mapSize.set(mobile?1024:2048,mobile?1024:2048);sun.shadow.camera.left=-700;sun.shadow.camera.right=700;sun.shadow.camera.top=700;sun.shadow.camera.bottom=-700;sun.shadow.camera.far=2400;sun.shadow.normalBias=.6;}scene.add(sun);rim=new T.DirectionalLight(0xb08cff,1.15);rim.position.set(420,180,380);scene.add(rim);
@@ -189,6 +196,8 @@ async function boot(){
   fitSunShadow(controls.target,camera.position.distanceTo(controls.target),sun.userData.direction);
   renderer.info.autoReset=false;renderer.info.reset();
   if(composer)composer.render();else renderer.render(scene,camera);
+  if(pendingReadyEvent){performanceReport.event(pendingReadyEvent,{effects:!!composer,width:renderer.domElement.width,height:renderer.domElement.height});if(pendingReadyEvent==='exterior-context-restored')message('Graphics restored');pendingReadyEvent=null;reveal();}
+  acceptancePanel?.frame(renderer.domElement,{engine:'Three.js',facility:selected?.key||'campus',quality,camera:camera.position.toArray(),target:controls.target.toArray()});
   if(performanceReport.active){let meshes=0;scene.traverseVisible(object=>{if(object.isMesh)meshes++;});performanceReport.record({engine:'Three.js',quality,width:renderer.domElement.width,height:renderer.domElement.height,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,meshes});}
   if(++frames%3===0&&showLabels){const far=camera.position.length()>800;const occupied=[];const host=document.getElementById('markers');for(const {el,f} of markers){if(!el.isConnected&&host)host.append(el);projected.set(f.x,facilityHeight(f)+8,f.z).project(camera);const x=(projected.x*.5+.5)*innerWidth,y=(-projected.y*.5+.5)*innerHeight;let visible=projected.z<1&&projected.z>-1&&x>10&&x<innerWidth-10&&y>90&&y<innerHeight-135;if(mobile&&far&&f.id%2===0)visible=false;if(visible&&occupied.some(p=>Math.hypot(p[0]-x,p[1]-y)<28))visible=false;if(visible)occupied.push([x,y]);el.hidden=!visible;el.style.left=x+'px';el.style.top=y+'px';}}
  }
@@ -214,7 +223,7 @@ async function boot(){
  renderer.domElement.addEventListener('webglcontextrestored',async event=>{
   if(!renderer||renderer.domElement!==event.currentTarget)return;
   const restoringRenderer=renderer,generation=++graphicsGeneration;
-  try{checkPostprocessing();setDay($('#day')?.getAttribute('aria-pressed')==='true');await restoringRenderer.compileAsync(scene,camera);if(renderer!==restoringRenderer||generation!==graphicsGeneration||restoringRenderer.getContext().isContextLost())return;graphicsReady=true;last=performance.now();if($('#enter'))$('#enter').disabled=false;frameLoop.start();reveal();message('Graphics restored');}
+  try{checkPostprocessing();setDay($('#day')?.getAttribute('aria-pressed')==='true');await restoringRenderer.compileAsync(scene,camera);if(renderer!==restoringRenderer||generation!==graphicsGeneration||restoringRenderer.getContext().isContextLost())return;graphicsReady=true;last=performance.now();pendingReadyEvent='exterior-context-restored';if($('#enter'))$('#enter').disabled=false;try{render(performance.now());}catch(error){if(!composer)throw error;disposePostprocessing();render(performance.now());}frameLoop.start();}
   catch(error){if(generation===graphicsGeneration&&renderer===restoringRenderer)failGraphics(error);}
  });
  if($('#load-message'))$('#load-message').textContent='Preparing materials and lighting…';
@@ -223,9 +232,9 @@ async function boot(){
  await startupRenderer.compileAsync(scene,camera);
  if(renderer!==startupRenderer||startupGeneration!==graphicsGeneration||startupRenderer.getContext().isContextLost())return;
  // Render once under the loading overlay so link/shader errors cannot expose a broken first frame.
- graphicsReady=true;if($('#enter'))$('#enter').disabled=false;
+ pendingReadyEvent='startup-first-frame';graphicsReady=true;if($('#enter'))$('#enter').disabled=false;
  try{render(performance.now());}catch(error){if(!composer)throw error;console.warn('Initial postprocessing failed; using base rendering',error);disposePostprocessing();render(performance.now());}
- frameLoop.start();reveal();
+ frameLoop.start();
  }catch(e){failGraphics(e);}
 }
 export {boot};
