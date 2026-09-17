@@ -26,7 +26,7 @@ export function fitoutProfile(name,facility=0,level=0){
 }
 export function furnishWorkplace(k,r,{desk,taskChair,sofa,shelving}){
  const p=r.fitout||fitoutProfile(r.name),{x,z,w,d}=r,side=Math.sign(z),back=z+side*d*.28;
- const rotateCluster=(start,xx,zz,angle)=>{for(const m of k.parts.slice(start)){const dx=m.position.x-xx,dz=m.position.z-zz;m.position.x=xx+dx*Math.cos(angle)+dz*Math.sin(angle);m.position.z=zz-dx*Math.sin(angle)+dz*Math.cos(angle);m.rotateY(angle);}};
+ const rotateCluster=(start,xx,zz,angle)=>{for(const m of k.parts.slice(start)){const dx=m.position.x-xx,dz=m.position.z-zz;m.position.x=xx+dx*Math.cos(angle)+dz*Math.sin(angle);m.position.z=zz-dx*Math.sin(angle)+dz*Math.cos(angle);m.rotateOnWorldAxis({x:0,y:1,z:0},angle);}};
  const workstation=(xx,zz,angle=0,lab=false)=>{const start=k.parts.length;desk(k,xx,zz,lab);rotateCluster(start,xx,zz,angle);};
  if(p.arrangement==='control'){
   const cols=Math.min(4,Math.max(1,Math.floor((w-2)/2.5))),rows=Math.min(3,Math.max(1,Math.floor((d-4)/2.6)));

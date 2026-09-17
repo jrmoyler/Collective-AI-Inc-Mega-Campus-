@@ -1,0 +1,12 @@
+✔ research function selects distinct apparatus and excludes unrelated generic analyzers (50.309539ms)
+✔ occupants follow actual rotated task seats and remain non-colliding geometry (26.305958ms)
+✔ occupant faces the open side of a half-turned chair, not its backrest (2.818252ms)
+✔ rotated occupant limbs stay attached to their modeled joints (3.60069ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 207.782384

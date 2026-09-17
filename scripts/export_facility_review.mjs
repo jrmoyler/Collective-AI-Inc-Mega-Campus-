@@ -15,6 +15,13 @@ const ids=process.env.CAMPUS_FACILITY_IDS?.split(',').map(Number);
 const manifest=[];
 for(const f of FACILITIES.filter(f=>!ids||ids.includes(f.id))){
  const root=createFacility(f);root.position.set(0,0,0);root.updateMatrixWorld(true);
+ // Native Canvas exposes a data() method that GLTFExporter mistakes for a
+ // DataTexture byte array. Supply actual pixels, including its expected Y flip.
+ root.traverse(o=>{const map=o.material?.map,canvas=map?.image;if(!canvas?.getContext)return;
+  const {width,height}=canvas,source=canvas.getContext('2d').getImageData(0,0,width,height).data,pixels=new Uint8Array(source.length);
+  for(let y=0;y<height;y++)pixels.set(source.subarray(y*width*4,(y+1)*width*4),(map.flipY?height-1-y:y)*width*4);
+  const exported=map.clone();exported.image={data:pixels,width,height};exported.flipY=false;o.material=o.material.clone();o.material.map=exported;
+ });
  let vertices=0,meshes=0;
  root.traverse(o=>{if(o.isMesh){meshes++;vertices+=o.geometry.attributes.position.count;for(const v of o.geometry.attributes.position.array)if(!Number.isFinite(v))throw Error(f.key+' nonfinite geometry');}o.userData={facility:f.id};});
  const bounds=new T.Box3().setFromObject(root);

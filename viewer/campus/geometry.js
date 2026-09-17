@@ -87,9 +87,28 @@ export class Batch{
 }
 export function cylinder(batch,mat,x,y,z,r,h,rt=r,n=32){const g=new T.CylinderGeometry(rt,r,h,n,1,false);batch.add(g,mat,x,y,z);g.dispose();}
 export function ring(batch,mat,x,y,z,r,t=.3,rx=Math.PI/2){const g=new T.TorusGeometry(r,t,8,72);batch.add(g,mat,x,y,z,1,1,1,0,rx);g.dispose();}
-export function line(batch,mat,pts,r=.2){const curve=new T.CatmullRomCurve3(pts.map(p=>new T.Vector3(...p)));const g=new T.TubeGeometry(curve,Math.max(12,pts.length*10),r,7,false);batch.add(g,mat);g.dispose();return curve;}
+export function line(batch,mat,pts,r=.2){
+ const curve=new T.CatmullRomCurve3(pts.map(p=>new T.Vector3(...p)));
+ let g;
+ if(pts.length===2){
+  // Straight rods need one axial segment, not twenty identical tube rings.
+  const a=new T.Vector3(...pts[0]),c=new T.Vector3(...pts[1]),delta=c.clone().sub(a);
+  g=new T.CylinderGeometry(r,r,delta.length(),8,1,false);
+  if(delta.lengthSq()>0)g.applyQuaternion(new T.Quaternion().setFromUnitVectors(new T.Vector3(0,1,0),delta.normalize()));
+  g.translate(...a.add(c).multiplyScalar(.5).toArray());
+ }else g=new T.TubeGeometry(curve,Math.max(12,pts.length*10),r,7,false);
+ batch.add(g,mat);g.dispose();return curve;
+}
+
 export function seeded(seed){return()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};}
-export function sign(text,w=14,h=3,color='#f3dba5'){const c=document.createElement('canvas');c.width=1024;c.height=192;const ctx=c.getContext('2d');ctx.fillStyle='#09131d';ctx.fillRect(0,0,1024,192);ctx.strokeStyle='#00d9b5';ctx.lineWidth=6;ctx.strokeRect(6,6,1012,180);ctx.fillStyle=color;ctx.font='600 48px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,512,98,960);const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=8;return new T.Mesh(new T.PlaneGeometry(w,h,2,1),new T.MeshBasicMaterial({map:tex,side:T.DoubleSide,toneMapped:false}));}
+export function sign(text,w=14,h=3,color='#f3dba5',{architectural=false}={}){
+ const c=document.createElement('canvas');c.width=1024;c.height=192;const ctx=c.getContext('2d');
+ if(!architectural){ctx.fillStyle='#09131d';ctx.fillRect(0,0,1024,192);ctx.strokeStyle='#00d9b5';ctx.lineWidth=6;ctx.strokeRect(6,6,1012,180);}
+ ctx.fillStyle=color;ctx.font=`${architectural?'400 140':'600 48'}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,512,98,960);
+ const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=8;
+ return new T.Mesh(new T.PlaneGeometry(w,h,2,1),new T.MeshBasicMaterial({map:tex,side:T.DoubleSide,toneMapped:false,transparent:architectural,depthWrite:!architectural}));
+}
+
 export function setDuskMaterials(dusk){
  // Light sources glow; masonry, foliage and curtain walls never emit light.
  materials.warm.emissiveIntensity=dusk?1.5:.12;

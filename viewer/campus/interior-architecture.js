@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {furnishOccupants} from './room-occupants.js';
 import {floorLayout} from './data.js';
 import {InteriorKit,furnishRoom,planter} from './interior-kit.js';
 // Bake oriented room vertices: Babylon and offline glTF consume the same buffers.
@@ -74,7 +75,7 @@ export function createInteriorGeometry(f,level=0){
   k.cylinder('sprinkler head','brass',r.x+.75,h-0.125,r.z,.014,.07);
   k.box('room thermostat','porcelain',dr+.28,1.42,edge+side*.12,.085,.11,.026,.008);
   k.box('thermostat display','display',dr+.28,1.44,edge+side*.139,.057,.035,.004,.001);
-  const furniture=new InteriorKit(`room-${i+1}: ${r.name}`);const kind=furnishRoom(furniture,r);if(!profile.technical&&r.w>7&&r.d>6){planter(furniture,r.x-r.w*.34,r.z-side*r.d*.31,.36);planter(furniture,r.x+r.w*.34,r.z-side*r.d*.31,.36);}const room=furniture.finish(true);room.userData.kind=kind;room.userData.fitout=profile;place(room,source);root.add(room);
+  const furniture=new InteriorKit(`room-${i+1}: ${r.name}`);const kind=furnishRoom(furniture,r);if(!profile.technical&&r.w>7&&r.d>6){planter(furniture,r.x-r.w*.34,r.z-side*r.d*.31,.36);planter(furniture,r.x+r.w*.34,r.z-side*r.d*.31,.36);}const occupants=new InteriorKit(`occupants room ${i+1}`),occupiedSeats=furnishOccupants(occupants,furniture,r);const people=occupants.finish(false);people.userData.occupiedSeats=occupiedSeats;place(people,source);root.add(people);const room=furniture.finish(true);room.userData.kind=kind;room.userData.fitout=profile;place(room,source);root.add(room);
   const shell=k.finish(true);place(shell,source);root.add(shell);
  }
  const k=new InteriorKit('architecture circulation');
