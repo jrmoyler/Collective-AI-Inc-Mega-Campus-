@@ -1,3 +1,5 @@
+> Later PR13 continuation: the universal two-bank layout and 3.9m enclosure described below have been replaced. See [current topology evidence](../topology-pass/README.md). This document preserves the earlier acceptance/rejection history.
+
 # Post-PR12 individuality pass
 
 **Acceptance: improved, not complete.** This is a follow-up to merged main `2b16657`. It preserves all 35 facilities, 74 floor programs, 444 room programs, canonical placement, fleets, and CF-24/25 uncertainty.

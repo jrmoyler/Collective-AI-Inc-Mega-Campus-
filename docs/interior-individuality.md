@@ -1,3 +1,5 @@
+> Later PR13 continuation: the universal two-bank layout and 3.9m enclosure described below have been replaced. See [current topology evidence](../evidence/topology-pass/README.md). This document preserves the earlier acceptance/rejection history.
+
 # Program-driven interior finishing pass
 
 Status: geometry and headless runtime regression verified; exact-reference and browser visual acceptance remain open.

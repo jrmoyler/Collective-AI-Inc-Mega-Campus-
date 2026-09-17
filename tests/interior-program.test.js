@@ -16,8 +16,11 @@ test('all 74 floors have distinct geometry and all 444 guided entries remain ope
   const signature=hash.digest('hex');assert.ok(!hashes.has(signature),`${f.key} floor ${level+1} duplicates rendered geometry`);hashes.add(signature);
   assert.ok(bytes<96*1024*1024,`${f.key} floor memory budget`);
   for(const r of layout.rooms){
-   const side=Math.sign(r.z),from=new T.Vector3(r.doorX,1.67,0),to=new T.Vector3(r.doorX,1.67,side*(layout.corridor/2+Math.min(2,r.d*.24))),delta=to.clone().sub(from);
-   assert.equal(new T.Raycaster(from,delta.clone().normalize(),0,delta.length()).intersectObject(root,true).length,0,`${f.key}/${level+1} ${r.name} arrival blocked`);rooms++;
+   for(let j=1;j<r.route.length;j++){
+    const from=new T.Vector3(r.route[j-1][0],1.67,r.route[j-1][1]),to=new T.Vector3(r.route[j][0],1.67,r.route[j][1]),delta=to.clone().sub(from);
+    if(delta.length()<.001)continue;
+    assert.equal(new T.Raycaster(from,delta.clone().normalize(),0,delta.length()).intersectObject(root,true).length,0,`${f.key}/${level+1} ${r.name} route segment ${j} blocked`);
+   }rooms++;
   }
   root.traverse(o=>o.geometry?.dispose());floors++;
  }
@@ -27,12 +30,11 @@ test('all 74 floors have distinct geometry and all 444 guided entries remain ope
 test('canonical programs retain order and activity controls room allocation',()=>{
  for(const f of FACILITIES)for(let level=0;level<f.levels;level++){
   const a=floorLayout(f,level);assert.deepEqual(a.rooms.map(r=>r.name),f.program[level].split(';'));
-  for(const bank of [a.rooms.slice(0,3),a.rooms.slice(3)]){
-   assert.ok(Math.abs(bank.reduce((v,r)=>v+r.w,0)-(a.w-2*a.core))<1e-7);
-   for(let i=1;i<bank.length;i++)assert.ok(Math.abs(bank[i-1].x+bank[i-1].w/2-(bank[i].x-bank[i].w/2))<1e-7,'continuous non-overlapping envelopes');
+  for(let i=0;i<a.rooms.length;i++)for(let j=i+1;j<a.rooms.length;j++){
+   const r=a.rooms[i],s=a.rooms[j];assert.ok(Math.abs(r.x-s.x)>=(r.w+s.w)/2-.001||Math.abs(r.z-s.z)>=(r.d+s.d)/2-.001,'room envelopes must not overlap');
   }
  }
- const f=FACILITIES[4],r=floorLayout(f,0).rooms;assert.ok(r[0].w>r[4].w,'LED volume allocates more space than equipment storage');
+ const f=FACILITIES[4],r=floorLayout(f,0).rooms;assert.ok(r[0].w*r[0].d>r[4].w*r[4].d,'LED volume allocates more space than equipment storage');
 });
 
 test('specialist programs produce their actual equipment instead of repeated office clusters',()=>{

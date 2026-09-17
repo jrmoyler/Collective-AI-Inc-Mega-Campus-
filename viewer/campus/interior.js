@@ -16,6 +16,7 @@ import {DynamicTexture} from '@babylonjs/core/Materials/Textures/dynamicTexture.
 import {RawCubeTexture} from '@babylonjs/core/Materials/Textures/rawCubeTexture.js';
 import '@babylonjs/core/Collisions/collisionCoordinator.js';
 import {animate} from 'animejs';
+import {routeToRoom} from './floor-topology.js';
 import {createInteriorGeometry} from './interior-architecture.js';
 import {createInteriorMaterials} from './interior-materials.js';
 import {interiorPixelRatio} from './quality.js';
@@ -38,22 +39,23 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
    data.positions=g.attributes.position.array;data.normals=g.attributes.normal.array;data.uvs=g.attributes.uv.array;data.indices=g.index?.array||Uint32Array.from({length:g.attributes.position.count},(_,i)=>i);data.applyToMesh(mesh);
    mesh.material=finishes[source.material.name];mesh.checkCollisions=!!source.userData.collision;mesh.receiveShadows=true;mesh.metadata={components:source.userData.components};
   }
-  camera=new FreeCamera('visitor',new Vector3(-layout.w/2+layout.core+1,1.67,0),scene);camera.minZ=.06;camera.speed=.26;camera.angularSensibility=3200;camera.inertia=.5;camera.checkCollisions=true;camera.applyGravity=false;camera.ellipsoid=new Vector3(.26,.76,.26);camera.keysUp=[87,38];camera.keysDown=[83,40];camera.keysLeft=[65,37];camera.keysRight=[68,39];camera.setTarget(new Vector3(layout.w/2,1.67,0));camera.attachControl(canvas,true);
+  camera=new FreeCamera('visitor',new Vector3(layout.entry[0],1.67,layout.entry[1]),scene);camera.minZ=.06;camera.speed=.26;camera.angularSensibility=3200;camera.inertia=.5;camera.checkCollisions=true;camera.applyGravity=false;camera.ellipsoid=new Vector3(.26,.76,.26);camera.keysUp=[87,38];camera.keysDown=[83,40];camera.keysLeft=[65,37];camera.keysRight=[68,39];camera.setTarget(new Vector3(layout.circulation[0].x,1.67,layout.circulation[0].z));camera.attachControl(canvas,true);
   const hemi=new HemisphericLight('daylight fill',new Vector3(0,1,0),scene);hemi.intensity=.55;hemi.groundColor=new Color3(.24,.22,.18);
   const sun=new DirectionalLight('terrace daylight',new Vector3(.45,-.8,.6),scene);sun.intensity=1.2;sun.diffuse=new Color3(1,.92,.79);
-  lights=layout.rooms.map((r,i)=>{const lamp=new SpotLight('room luminaire '+i,new Vector3(r.x,3.58,r.z),new Vector3(0,-1,0),2.6,1,scene);const kind=assembly.root.children[i].userData.kind;const technical=r.fitout?.technical||['lab','clinical','servers','industrial','electrical','process','fabrication','maintenance','stage','shielded','aerospace','logistics','algae','test-track'].includes(kind);lamp.intensity=18+Math.min(24,r.w*r.d*.08);lamp.range=Math.hypot(r.w,r.d)+4;lamp.diffuse=technical?new Color3(.89,.95,1):new Color3(1,.91,.78);lamp.includedOnlyMeshes=scene.meshes.filter(m=>m.name.startsWith('room-'+(i+1)+':')||m.name.startsWith('architecture'));return lamp;});
+  lights=layout.rooms.map((r,i)=>{const lamp=new SpotLight('room luminaire '+i,new Vector3(r.x,r.height-.32,r.z),new Vector3(0,-1,0),2.6,1,scene);const kind=assembly.root.children.find(g=>g.name.startsWith('room-'+(i+1)+':')).userData.kind;const technical=r.fitout?.technical||['lab','clinical','servers','industrial','electrical','process','fabrication','maintenance','stage','shielded','aerospace','logistics','algae','test-track'].includes(kind);lamp.intensity=(18+Math.min(24,r.w*r.d*.08))*((r.height-.32)/3.58)**2;lamp.range=Math.max(Math.hypot(r.w,r.d)+4,r.height+2);lamp.diffuse=technical?new Color3(.89,.95,1):new Color3(1,.91,.78);lamp.includedOnlyMeshes=scene.meshes.filter(m=>m.name.startsWith('room-'+(i+1)+':')||m.name.startsWith('architecture'));return lamp;});
   // Only the nearest room casts dynamic soft shadows; other fixtures retain local illumination.
   function assignShadow(index){shadow?.dispose();shadowLight=lights[index];shadow=new ShadowGenerator(quality==='high'?2048:1024,shadowLight);shadow.usePercentageCloserFiltering=true;shadow.bias=.0004;shadow.normalBias=.015;for(const mesh of scene.meshes)if(mesh.material&&mesh.material.alpha===1&&!['warm','blue','display'].includes(mesh.material.name))shadow.addShadowCaster(mesh);}
   if(!engineOverride)assignShadow(0);
   scene.onBeforeRenderObservable.add(()=>{const r=layout.rooms.findIndex(room=>Math.abs(camera.position.x-room.x)<room.w/2&&Math.abs(camera.position.z-room.z)<room.d/2);if(r>=0){if(currentRoom!==r){currentRoom=r;onRoom(layout.rooms[r].name);if(!engineOverride)assignShadow(r);}}else if(currentRoom!==null){currentRoom=null;onRoom('Arrival corridor');}});
-  for(const r of layout.rooms){const side=Math.sign(r.z);const sign=label(r.name,r.doorX,3.28,side*(layout.corridor/2-.14),Math.min(r.w*.78,3.8));if(side<0)sign.rotation.y=Math.PI;}
+  for(const r of layout.rooms){const sign=label(r.name,r.doorX-Math.sin(r.angle)*.14,2.8,r.doorZ-Math.cos(r.angle)*.14,Math.min(r.localWidth*.78,3.8));sign.rotation.y=r.angle+Math.PI;}
+
   onFloor(l,layout.rooms);onRoom('Arrival corridor');awaitingFrame='floor-first-frame';
   }finally{assembly.root.traverse(object=>object.geometry?.dispose());}
  }
  function stop(){flight?.pause();flight=null;}
- function visit(index){stop();const r=layout.rooms[index];if(!r)return;const prior=layout.rooms.find(room=>Math.abs(camera.position.x-room.x)<room.w/2&&Math.abs(camera.position.z-room.z)<room.d/2);
-  const points=[];if(prior)points.push([prior.doorX,camera.position.z],[prior.doorX,0]);points.push([r.doorX,0],[r.doorX,Math.sign(r.z)*(layout.corridor/2+1)],[r.doorX,Math.sign(r.z)*(layout.corridor/2+Math.min(2, r.d*.24))]);let k=0;camera.detachControl();
-  function next(){if(disposed)return;if(k>=points.length){currentRoom=index;camera.setTarget(new Vector3(r.x,1.45,r.z+Math.sign(r.z)*1.5));camera.attachControl(canvas,true);flight=null;onRoom(r.name);return;}const [x,z]=points[k++];camera.setTarget(new Vector3(x,1.7,z));flight=animate(camera.position,{x,z,duration:reduced?0:Math.max(350,Math.hypot(x-camera.position.x,z-camera.position.z)*100),ease:'inOutSine',onComplete:next});}next();
+ function visit(index){stop();const r=layout.rooms[index];if(!r)return;
+  const points=routeToRoom(layout,[camera.position.x,camera.position.z],index);let k=0;camera.detachControl();
+  function next(){if(disposed)return;if(k>=points.length){currentRoom=index;camera.setTarget(new Vector3(r.x,1.45,r.z));camera.attachControl(canvas,true);flight=null;onRoom(r.name);return;}const [x,z]=points[k++];camera.setTarget(new Vector3(x,1.7,z));flight=animate(camera.position,{x,z,duration:reduced?0:Math.max(350,Math.hypot(x-camera.position.x,z-camera.position.z)*100),ease:'inOutSine',onComplete:next});}next();
  }
  function interrupt(){stop();camera?.attachControl(canvas,true);}
  const onKey=e=>{if(['w','a','s','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))interrupt();};

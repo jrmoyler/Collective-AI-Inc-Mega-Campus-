@@ -20,14 +20,22 @@ export function furnishDomain(k,r,{desk,taskChair,sofa,shelving}){
  const {x,z,w,d}=r,side=Math.sign(z),back=z+side*d*.24;
  const box=(n,m,xx,y,zz,ww,hh,dd,rad=.01)=>k.box(n,m,xx,y,zz,ww,hh,dd,rad);
  if(kind==='stage'){
+  const rigHeight=(r.height||3.9)-.65,panelHeight=Math.min(rigHeight-.45,6);
   const led=/led volume/i.test(r.name),stageW=led?Math.min(w-2,12.192):Math.min(w*.7,13),stageD=led?Math.min(d-2,18.288):Math.min(d*.6,12),zz=led?z:z+side*d*.12;
   box('sprung studio stage','graphite',x,.08,zz,stageW,.16,stageD,.008);
-  for(const bank of [-1,1]){const xx=x+bank*stageW*.49;k.bar('lighting truss column','steel',[xx,.16,zz+side*stageD*.4],[xx,3.45,zz+side*stageD*.4],.055);}
-  k.bar('stage lighting truss','steel',[x-stageW*.49,3.45,zz+side*stageD*.4],[x+stageW*.49,3.45,zz+side*stageD*.4],.055);
-  for(let i=0;i<5;i++){const xx=x+(i-2)*stageW*.18;box('studio light yoke','steel',xx,3.18,zz+side*stageD*.4,.4,.36,.12);k.cylinder('stage fresnel housing','graphite',xx,3.06,zz+side*stageD*.4,.16,.3,.16,Math.PI/2);}
-  if(/led volume/i.test(r.name))for(let i=0;i<9;i++){const angle=(i-4)*.12,xx=x+Math.sin(angle)*stageW*.82,wall=zz+side*(stageD*.4-Math.abs(Math.sin(angle))*stageD*.12);box('LED volume structural panel','graphite',xx,1.72,wall,stageW*.1,3.04,.12);box('LED volume emissive tile','display',xx,1.72,wall-side*.075,stageW*.095,2.95,.016);}
+  for(const bank of [-1,1]){const xx=x+bank*stageW*.49;k.bar('lighting truss column','steel',[xx,.16,zz+side*stageD*.4],[xx,rigHeight,zz+side*stageD*.4],.055);}
+  k.bar('stage lighting truss','steel',[x-stageW*.49,rigHeight,zz+side*stageD*.4],[x+stageW*.49,rigHeight,zz+side*stageD*.4],.055);
+  for(let i=0;i<5;i++){const xx=x+(i-2)*stageW*.18;box('studio light yoke','steel',xx,rigHeight-.27,zz+side*stageD*.4,.4,.36,.12);k.cylinder('stage fresnel housing','graphite',xx,rigHeight-.39,zz+side*stageD*.4,.16,.3,.16,Math.PI/2);}
+  if(led){
+   const sweep=1.3,count=13,radius=stageW/(2*Math.sin(sweep/2)),tileW=radius*sweep/count*1.004;
+   for(let i=0;i<count;i++){
+    const angle=-sweep/2+(i+.5)*sweep/count,xx=x+Math.sin(angle)*radius,wall=zz+side*(stageD*.4-radius+Math.cos(angle)*radius);
+    const housing=box('LED volume structural panel','graphite',xx,panelHeight/2+.2,wall,tileW,panelHeight,.12);housing.rotation.y=side*angle;
+    const face=box('LED volume emissive tile','stageScreen',xx-Math.sin(angle)*.075,panelHeight/2+.2,wall-side*Math.cos(angle)*.075,tileW-.012,panelHeight-.09,.016);face.rotation.y=side*angle;
+   }
+  }
   else if(/motion capture/i.test(r.name)){for(const dx of [-stageW*.44,stageW*.44])for(const dz of [-stageD*.43,stageD*.43]){k.bar('optical camera mast','steel',[x+dx,.2,zz+dz],[x+dx,2.8,zz+dz],.025);box('motion tracking camera','graphite',x+dx,2.85,zz+dz,.25,.16,.17);box('tracking lens','glass',x+dx,2.85,zz+dz-side*.10,.08,.08,.024);}}
-  else box('studio cyclorama back','plaster',x,1.65,zz+side*stageD*.48,stageW,3.3,.09,0);
+  else box('studio cyclorama back','plaster',x,panelHeight/2,zz+side*stageD*.48,stageW,panelHeight,.09,0);
   for(const bank of [-1,1]){const xx=x+bank*(stageW*.4);for(const dx of [-.3,.3])k.bar('camera tripod leg','steel',[xx,1.35,z-side*d*.28],[xx+dx,.04,z-side*d*.28+.3],.018);box('production camera body','graphite',xx,1.5,z-side*d*.28,.32,.3,.5,.025);k.cylinder('camera lens','graphite',xx,1.5,z-side*d*.28+side*.34,.11,.3,.11,Math.PI/2);}
  }else if(kind==='shielded'){
   const ww=Math.min(w*.68,6),dd=Math.min(d*.48,6),zz=back;

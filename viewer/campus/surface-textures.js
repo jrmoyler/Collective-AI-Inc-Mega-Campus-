@@ -30,6 +30,10 @@ export function paintFinish(ctx,name,base,size=name==='display'?1024:384){
   for(let i=0;i<size*6;i++){const x=r()*size,y=r()*size,v=r()>.5?255:20;ctx.fillStyle=`rgba(${v},${v},${v},${.025+r()*.045})`;ctx.fillRect(x,y,1+r()*1.5,1+r()*1.5);}
  }else if(name==='leaf'||name==='soil'){
   for(let i=0;i<size*3;i++){ctx.fillStyle=`rgba(0,0,0,${.02+r()*.05})`;ctx.fillRect(r()*size,r()*size,1+r()*3,1+r()*3);}
+ }else if(name==='stageScreen'){
+  // Neutral LED-volume calibration pattern, never the office analytics dashboard.
+  ctx.fillStyle='#555b60';ctx.fillRect(0,0,size,size);ctx.strokeStyle='#778086';ctx.lineWidth=1;
+  for(let i=0;i<=16;i++){ctx.beginPath();ctx.moveTo(i*size/16,0);ctx.lineTo(i*size/16,size);ctx.moveTo(0,i*size/16);ctx.lineTo(size,i*size/16);ctx.stroke();}
  }else if(name==='display'){
   paintSurface(ctx,'display');
  }

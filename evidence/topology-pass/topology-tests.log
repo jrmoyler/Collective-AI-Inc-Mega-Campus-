@@ -1,0 +1,14 @@
+✔ all 74 floor envelopes differ before materials or furniture are created (8.501566ms)
+✔ LED source stage dimensions and production clearances are not clamped to an office bay (0.427921ms)
+✔ free-walking branch routes never travel diagonally through a room envelope (332.83442ms)
+✔ all 74 floors have distinct geometry and all 444 guided entries remain open (11880.360491ms)
+✔ canonical programs retain order and activity controls room allocation (5.946762ms)
+✔ specialist programs produce their actual equipment instead of repeated office clusters (5.517494ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12119.431036

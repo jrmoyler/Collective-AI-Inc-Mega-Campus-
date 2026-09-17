@@ -1,4 +1,4 @@
-import {roomDemand,fitoutProfile} from './interior-program.js';
+import {buildFloorLayout} from './floor-topology.js';
 import program from '../../data/campus-program.json' with {type:'json'};
 // Exterior positions trace the artwork, not the separate rectangular CAD test fit.
 // x/z metres centered on the 3300 x 2904 ft schematic site. North = negative Z.
@@ -22,19 +22,5 @@ export const SPIRES=[[-432,-300],[-134,-363],[274,-375],[-161,-174],[-173,-20],[
 export const LAKES=[[-75,-229,103,36],[-70,-126,99,40],[-353,61,67,32],[-66,153,59,33],[12,220,78,30],[62,300,58,27],[-118,412,147,15]];
 export function floorLayout(f,level){
  if(!Number.isInteger(level)||level<0||level>=f.levels)throw new RangeError('Unknown floor');
- const w=f.width*.3048,d=f.depth*.3048,core=Math.min(16,f.width*.14)*.3048,corridor=12*.3048;
- // Keep canonical six programs and support cores; allocate area by equipment demand.
- const usable=w-2*core,rh=(d-corridor)/2,names=f.program[Math.min(level,f.program.length-1)].split(';');
- const rooms=[];
- for(let sideIndex=0;sideIndex<2;sideIndex++){
-  const bank=names.slice(sideIndex*3,sideIndex*3+3),weights=bank.map(roomDemand),total=weights.reduce((a,b)=>a+b,0);
-  // Reserve practical minimum room width, distribute remaining width by use.
-  const minimum=Math.min(4.4,usable/4),remaining=usable-3*minimum;let cursor=-w/2+core;
-  for(let col=0;col<3;col++){
-   const name=bank[col],rw=minimum+remaining*weights[col]/total,x=cursor+rw/2,fitout=fitoutProfile(name,f.id,level);
-   const side=sideIndex===0?-1:1;
-   rooms.push({name,x,z:side*(corridor/2+rh/2),w:rw,d:rh,doorX:x,fitout});cursor+=rw;
-  }
- }
- return {w,d,core,corridor,rooms};
+ return buildFloorLayout(f,level);
 }

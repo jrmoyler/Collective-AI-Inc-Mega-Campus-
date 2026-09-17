@@ -39,7 +39,7 @@ export function createInteriorMaterials(scene){const result={};for(const [name,p
  if(p.emissive){m.emissiveColor=Color3.FromInts((p.emissive>>16)&255,(p.emissive>>8)&255,p.emissive&255).scale(p.emissiveIntensity||1);}
  if(name==='leaf')m.backFaceCulling=false;
  if(name==='glass'){m.alpha=Math.min(.32,p.opacity||.2);m.backFaceCulling=false;m.transparencyMode=PBRMaterial.PBRMATERIAL_ALPHABLEND;m.indexOfRefraction=1.5;m.microSurface=.96;}
- if(name==='display'){m.emissiveTexture=tex;m.emissiveColor=new Color3(.5,.58,.62);m.roughness=.23;}
+ if(name==='display'||name==='stageScreen'){m.emissiveTexture=tex;m.emissiveColor=new Color3(.5,.58,.62);m.roughness=.23;}
  if(name==='brass'){m.metallic=.9;m.roughness=.2;}if(name==='steel'){m.metallic=.92;m.roughness=.22;}if(name==='graphite'){m.metallic=.58;m.roughness=.3;}
  result[name]=m;
  }return result;}

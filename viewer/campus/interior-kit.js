@@ -14,6 +14,7 @@ export const FINISHES={
  leaf:{color:0x3c6240,roughness:.84,side:T.DoubleSide}, soil:{color:0x30291d,roughness:1},
  warm:{color:0xffecc8,emissive:0xffdb98,emissiveIntensity:1.7,roughness:.3},
  blue:{color:0x5daab9,emissive:0x2b647b,emissiveIntensity:.75,roughness:.28},
+ stageScreen:{color:0xffffff,emissive:0xffffff,emissiveIntensity:.3,roughness:.6},
  display:{color:0xffffff,emissive:0xffffff,emissiveIntensity:.38,roughness:.28},
  rubber:{color:0x171e21,roughness:.88}, book:{color:0x826e47,roughness:.76},
 };
@@ -46,7 +47,7 @@ function geo(key,create){if(!cache.has(key))cache.set(key,create());return cache
 export class InteriorKit{
  constructor(name){this.name=name;this.parts=[];this.root=new T.Group();this.root.name=name;}
  add(name,g,finish,x,y,z,rx=0,ry=0,rz=0){const m=new T.Mesh(g,mats[finish]);m.name=name;m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;m.receiveShadow=true;this.parts.push(m);return m;}
- box(name,finish,x,y,z,w,h,d,r=.015,ry=0){const radius=Math.min(r,w*.2,h*.2,d*.2);const segments=radius>=.025?4:1;const g=geo(`b:${w}:${h}:${d}:${radius}`,()=>radius?indexedRoundedBox(w,h,d,segments,radius):new T.BoxGeometry(w,h,d));return this.add(name,finish==='display'?g:geo(`metric:${g.uuid}`,()=>metricBoxUV(g.clone())),finish,x,y,z,0,ry);}
+ box(name,finish,x,y,z,w,h,d,r=.015,ry=0){const radius=Math.min(r,w*.2,h*.2,d*.2);const segments=radius>=.025?4:1;const g=geo(`b:${w}:${h}:${d}:${radius}`,()=>radius?indexedRoundedBox(w,h,d,segments,radius):new T.BoxGeometry(w,h,d));return this.add(name,['display','stageScreen'].includes(finish)?g:geo(`metric:${g.uuid}`,()=>metricBoxUV(g.clone())),finish,x,y,z,0,ry);}
  cushion(name,finish,x,y,z,w,h,d,back=false){
   const g=geo(`upholstery:${w}:${h}:${d}:${back}`,()=>{
    const g=indexedRoundedBox(w,h,d,4,Math.min(.065,h*.32,d*.28));

@@ -1,0 +1,105 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test
+> node --test tests/*.test.js
+
+✔ corrected register preserves 35 facilities and 74 floor programs (1.530043ms)
+✔ every program is reachable through a floor and six positive room envelopes (11.401202ms)
+✔ exterior envelopes remain inside the 220-acre scene (0.310671ms)
+✔ Blender GLB is shipped and contains named node components (1.310559ms)
+✔ thin facade glazing preserves horizontal and vertical panel extents without doubled tint surfaces (5.779345ms)
+✔ individual atlas shells 01–12 are bounded local assemblies with complete picking IDs (1132.114495ms)
+✔ fine detail culling measures from the placed facility envelope and preserves its shell (3.020401ms)
+✔ deferred equipment is constructed only upon approaching a facility (0.908524ms)
+✔ distant eviction disposes private buffers once and preserves shared facade materials (1.119966ms)
+✔ fleet population is real, articulated and independent of automation detection (215.361099ms)
+✔ road fleet travels in metres per second and tyres roll (84.142592ms)
+✔ missing road input has honest counts and leaves aerial activity available (35.683331ms)
+✔ all 74 floor envelopes differ before materials or furniture are created (15.067744ms)
+✔ LED source stage dimensions and production clearances are not clamped to an office bay (0.295297ms)
+✔ free-walking branch routes never travel diagonally through a room envelope (592.881505ms)
+✔ all 35 exterior assemblies merge successfully, have finite geometry and retain picking IDs (5251.77873ms)
+✔ finish grain keeps a physical scale across differently sized interior boxes (3.429256ms)
+✔ soft furnishings have sculpted depression, finite normals and bounded indexed topology (47.064324ms)
+✔ workstation includes readable small scale tools and open cup finish (63.517171ms)
+✔ lecture hall uses fixed seats with a clear central aisle inside its room (24.510788ms)
+✔ all 74 floors have distinct geometry and all 444 guided entries remain open (20851.225285ms)
+✔ canonical programs retain order and activity controls room allocation (7.620536ms)
+✔ specialist programs produce their actual equipment instead of repeated office clusters (9.408802ms)
+BJS - [23:49:14]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:22]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:24]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:25]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:28]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:29]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:31]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:31]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:32]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:32]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:33]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:34]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:36]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:37]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:37]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:38]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:39]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:40]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:41]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:42]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:43]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:44]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:45]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:47]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:48]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:50]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:51]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:52]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:53]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:55]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:56]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:57]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:58]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:59]: Babylon.js v9.26.2 - Null engine
+BJS - [23:50:00]: Babylon.js v9.26.2 - Null engine
+✔ all 74 Babylon floor scenes construct and dispose without missing registrations (46683.459425ms)
+✔ individual shorelines close and stay inside canonical planting clearance envelopes (2.811787ms)
+✔ expanded terrain preserves level campus foundations (0.654478ms)
+✔ device report keeps foreground stalls over two seconds and reports tail latency (2.434466ms)
+✔ hidden time, tour loads and quality changes cannot pollute another view timing (0.601764ms)
+✔ startup events survive opt-in recording, while new recordings reset coverage (0.28866ms)
+✔ HDR samples use color/depth format intersection rather than global maximum (1.203441ms)
+✔ silent incomplete bloom framebuffer becomes an error and restores renderer binding (1.055941ms)
+✔ MSAA validation checks both draw and resolve framebuffer attachments (0.39168ms)
+✔ unsupported real MSAA allocation can downgrade once to complete HDR buffers (0.364759ms)
+✔ indexed rounded furniture preserves the original curved surface and normals with metre-scale UVs (14.770593ms)
+✔ all cargo and survey rotor arms meet their motors and only rotor blades spin (199.170173ms)
+✔ specialist schedules receive equipment appropriate to their program (1.608751ms)
+BJS - [23:49:15]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:15]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:16]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:17]: Babylon.js v9.26.2 - Null engine
+BJS - [23:49:17]: Babylon.js v9.26.2 - Null engine
+✔ render failure stops scheduling before recovery disposes a renderer (1.479934ms)
+✔ teardown cancels both queued frames and a frame stopped during its callback (0.289512ms)
+✔ failed atmosphere compilation restores the screen target and renderer settings (1.009368ms)
+✔ fallback and discarded asset cleanup release shared geometry, materials and textures once (2.22452ms)
+✔ one broken disposal listener cannot block other resources or scene removal (0.611001ms)
+✔ a floor construction callback failure releases the engine and installed input handlers (764.023557ms)
+✔ a later frame failure disposes the tour once and reports recovery instead of repeating (785.177434ms)
+✔ losing focus cancels touch movement and residual camera motion (663.015067ms)
+✔ an invalid floor request leaves the existing valid tour usable (572.890768ms)
+✔ interior context loss stops frame evidence and movement until a restored frame renders (775.485899ms)
+✔ shipped Blender furnishings load with finite transforms and cull during aerial views (30.393592ms)
+✔ street shadow detail improves without allocating another map or changing sun direction (1.313912ms)
+✔ high-DPR interiors never fall below CSS resolution and obey the selected pixel budget (1.130273ms)
+✔ furniture contains structural supports, five casters, input devices and server units (80.527608ms)
+✔ reference room fixtures stay differentiated by program (1.252686ms)
+✔ Trust Vault guided room arrival paths remain open at visitor eye height (404.464165ms)
+ℹ tests 52
+ℹ suites 0
+ℹ pass 52
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 47959.163397
