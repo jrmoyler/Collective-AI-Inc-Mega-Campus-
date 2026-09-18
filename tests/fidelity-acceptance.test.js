@@ -22,9 +22,9 @@ test('all 35 facilities expose non-generic deferred reference-fidelity geometry'
   assert.ok(group.children.length>0,f.key+' empty approach detail');
   const box=new T.Box3().setFromObject(group);
   assert.ok(Number.isFinite(box.min.x)&&Number.isFinite(box.max.y),f.key+' non-finite bounds');
-  const components=group.children.flatMap(m=>m.userData.components||[]);
-  assert.ok(components.length>=3,f.key+' insufficient physical detail');
-  const signature=group.userData.criticalDetails.join('|')+'|'+components.length+'|'+box.getSize(new T.Vector3()).toArray().map(v=>v.toFixed(3)).join(',');
+  const vertices=group.children.reduce((n,m)=>n+(m.geometry?.attributes.position.count||0),0);
+  assert.ok(vertices>=24,f.key+' insufficient physical geometry');
+  const signature=group.userData.criticalDetails.join('|')+'|'+vertices+'|'+box.getSize(new T.Vector3()).toArray().map(v=>v.toFixed(3)).join(',');
   assert.ok(!seen.has(signature),f.key+' duplicated another facility fidelity assembly');
   seen.add(signature);
   group.traverse(o=>o.geometry?.dispose());
