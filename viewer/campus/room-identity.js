@@ -29,13 +29,14 @@ export function roomIdentity(r,index=0){
  const key='CF-'+String(facility).padStart(2,'0')+'-L'+String(level+1).padStart(2,'0')+'-R'+String(index+1).padStart(2,'0');
  const seed=hash(key+'|'+r.name),kind=semanticKind(r.name),serial=facility*1000+level*10+index;
  const accent=ACCENTS[(seed+facility+level)%ACCENTS.length],secondary=ACCENTS[(seed>>>8)%ACCENTS.length],metal=METALS[(seed>>>16)%METALS.length];
+ const floorFinish=({care:'terrazzo','living-systems':'terrazzo',trust:'slate',media:'slate',making:'terrazzo',operations:'slate',learning:'oak',hospitality:'terrazzo',mobility:'terrazzo',workplace:'oak'})[kind];
  const left=unit(seed,0)>.5;
  const panelSpan=Math.max(1.2,Math.min(r.d*.44,1.7+unit(seed,8)*2.1));
  const credenzaWidth=Math.max(1.1,Math.min(r.w*.42,1.4+unit(seed,16)*2.0));
  const artifactScale=.72+unit(seed,4)*.46;
  const revealCount=3+((seed>>>20)%5);
  const offset=(unit(seed,12)-.5)*Math.max(.2,r.w*.18);
- return {key,seed,serial,kind,accent,secondary,metal,left,panelSpan,credenzaWidth,artifactScale,revealCount,offset,geometrySignature:[kind,accent,secondary,metal,left?1:0,panelSpan.toFixed(3),credenzaWidth.toFixed(3),artifactScale.toFixed(3),revealCount,offset.toFixed(3),serial].join('|')};
+ return {key,seed,serial,kind,accent,secondary,metal,floorFinish,left,panelSpan,credenzaWidth,artifactScale,revealCount,offset,geometrySignature:[kind,accent,secondary,metal,left?1:0,panelSpan.toFixed(3),credenzaWidth.toFixed(3),artifactScale.toFixed(3),revealCount,offset.toFixed(3),serial].join('|')};
 }
 function storage(k,i,r){
  const back=r.d-.43,x=Math.max(-r.w*.24,Math.min(r.w*.24,i.offset));
