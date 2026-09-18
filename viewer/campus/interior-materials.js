@@ -36,7 +36,7 @@ export function createInteriorMaterials(scene,usedOccupantNames=null){const resu
  // Surface pixels already contain the finish color.
  m.metallic=p.metalness||0;m.roughness=Math.max(.08,p.roughness??.5);m.environmentIntensity=name==='glass'?1.65:1.05;m.specularIntensity=name==='fabric'||name==='soil'?0.25:1;
  const tex=surface(scene,name,p.color||0xffffff);m.albedoTexture=tex;m.albedoTexture.uScale=name==='fabric'||name==='leather'?3:1;m.albedoTexture.vScale=name==='fabric'||name==='leather'?3:1;
- if(['stone','plaster','oak','fabric','leather'].includes(name))m.bumpTexture=finishNormal(scene,name,tex);
+ if(['stone','plaster','oak','fabric','leather','walnut','linen','terrazzo','slate','sage','clay'].includes(name))m.bumpTexture=finishNormal(scene,name,tex);
  if(p.emissive){m.emissiveColor=Color3.FromInts((p.emissive>>16)&255,(p.emissive>>8)&255,p.emissive&255).scale(p.emissiveIntensity||1);}
  if(name==='leaf')m.backFaceCulling=false;
  if(name==='glass'){m.alpha=Math.min(.32,p.opacity||.2);m.backFaceCulling=false;m.transparencyMode=PBRMaterial.PBRMATERIAL_ALPHABLEND;m.indexOfRefraction=1.5;m.microSurface=.96;}
