@@ -19,6 +19,9 @@ export const FINISHES={
  instrumentDisplay:{color:0xffffff,emissive:0xffffff,emissiveIntensity:.3,roughness:.3},
  display:{color:0xffffff,emissive:0xffffff,emissiveIntensity:.38,roughness:.28},
  rubber:{color:0x171e21,roughness:.88}, book:{color:0x826e47,roughness:.76},
+ walnut:{color:0x5b4031,roughness:.46}, linen:{color:0xb9aa90,roughness:.90},
+ terrazzo:{color:0xb8b4aa,roughness:.72}, slate:{color:0x46535a,roughness:.68},
+ sage:{color:0x78907a,roughness:.78}, clay:{color:0xa66f55,roughness:.70},
 };
 const mats=Object.fromEntries(Object.entries(FINISHES).map(([k,p])=>[k,new T.MeshStandardMaterial({...p,name:k,envMapIntensity:1.05})]));
 const cache=new Map();
