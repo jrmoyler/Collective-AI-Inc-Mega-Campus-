@@ -74,7 +74,7 @@ export function createReferenceFidelityDetail(f){
   case 2:
    equipmentCourt(b,w*.16,h*.92,-d*.30,w*.42,d*.19,7);equipmentCourt(b,-w*.23,h*.925,-d*.32,w*.25,d*.14,4);
    for(let i=0;i<4;i++){const y=h*(.22+i*.12);b.box('dark',w*.405,y,d*.405,w*.11,h*.075,.62);b.box('cyan',w*.405,y,d*.42,w*.085,.035,.64);}
-   tags.push('roof equipment courts','stepped communications frontage');
+   tags.push('roof equipment courts','stepped communications frontage','compute-hall service depth');
    break;
   case 3:
    for(const side of [-1,1]){frame(b,side*w*.28,0,d*.29,w*.26,h*.40,'dark');for(let i=0;i<4;i++)b.box('gold',side*w*.28+(i-1.5)*w*.045,h*.19,d*.302,.12,h*.32,.24);}
