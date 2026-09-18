@@ -2,6 +2,7 @@ import * as T from 'three';
 import {furnishOccupants} from './room-occupants.js';
 import {floorLayout} from './data.js';
 import {InteriorKit,furnishRoom,planter} from './interior-kit.js';
+import {roomIdentity,furnishRoomIdentity} from './room-identity.js';
 // Bake oriented room vertices: Babylon and offline glTF consume the same buffers.
 function place(group,r){
  const matrix=new T.Matrix4().makeRotationY(r.angle);matrix.setPosition(r.doorX,0,r.doorZ);
@@ -13,6 +14,7 @@ export function createInteriorGeometry(f,level=0){
  for(const [i,source] of layout.rooms.entries()){
   const k=new InteriorKit('architecture room '+(i+1));
   const r={...source,x:0,z:source.localDepth/2,w:source.localWidth,d:source.localDepth,doorX:0};
+  const identity=roomIdentity(r,i);
   const corridor=0,door=source.doorWidth,partitionKeys=new Set();
   k.box('room acoustic ceiling','plaster',0,r.height+.04,r.z,r.w,.12,r.d,0);
   // A perimeter room receives daylight; an internal room has a solid back wall.
@@ -27,7 +29,7 @@ export function createInteriorGeometry(f,level=0){
   const profile=r.fitout,h=r.height;
   const side=Math.sign(r.z),edge=side*corridor/2,left=r.x-r.w/2,right=r.x+r.w/2,dl=r.doorX-door/2,dr=r.doorX+door/2;
   for(const x of [left,right]){const key=x.toFixed(3)+':'+r.z.toFixed(3);if(!partitionKeys.has(key)){k.box('room partition','plaster',x,h/2,r.z,.12,h,r.d,0);for(const zz of [r.z-r.d/2+.10,r.z+r.d/2-.10])k.box('partition brass edge','brass',x+.065,h/2,zz,.018,h-.35,.025,.002);partitionKeys.add(key);}}
-  k.box('program floor finish',profile.floor,r.x,.046,r.z,r.w-.16,.022,r.d-.14,0);
+  k.box('program floor finish',identity.floorFinish,r.x,.046,r.z,r.w-.16,.022,r.d-.14,0);
   for(const [a,b] of [[left,dl],[dr,right]]){
    k.box('corridor plinth','graphite',(a+b)/2,.33,edge,b-a,.66,.14,.01);
    k.box(profile.privateRoom?'privacy partition':'corridor glazing',profile.privateRoom?'plaster':'glass',(a+b)/2,1.94,edge,b-a,2.55,profile.privateRoom?.12:.012,0);
@@ -58,8 +60,8 @@ export function createInteriorGeometry(f,level=0){
   // Timber belongs to the solid room partition, never suspended in exterior glass.
   const panelW=Math.max(.7,Math.min(1.4,r.d/6));
   if(!profile.technical)for(let pz=r.z-r.d/2+panelW*.85;pz<r.z+r.d/2-panelW*.5;pz+=panelW*1.45){
-   k.box('feature wall panel','oak',right-.075,1.85,pz,.035,2.05,panelW,.01);
-   k.box('panel brass reveal','brass',right-.10,1.85,pz,.018,.012,panelW*.82,.003);
+   k.box('feature wall panel',identity.accent,right-.075,1.85,pz,.035,2.05,panelW,.01);
+   k.box('panel material reveal',identity.metal,right-.10,1.85,pz,.018,.012,panelW*.82,.003);
   }
   // Flush building services preserve the programmed room and arrival clearances.
   const wall=r.z+side*(r.d/2-.14);
@@ -75,8 +77,8 @@ export function createInteriorGeometry(f,level=0){
   k.cylinder('sprinkler head','brass',r.x+.75,h-0.125,r.z,.014,.07);
   k.box('room thermostat','porcelain',dr+.28,1.42,edge+side*.12,.085,.11,.026,.008);
   k.box('thermostat display','display',dr+.28,1.44,edge+side*.139,.057,.035,.004,.001);
-  const furniture=new InteriorKit(`room-${i+1}: ${r.name}`);const kind=furnishRoom(furniture,r);if(!profile.technical&&r.w>7&&r.d>6){planter(furniture,r.x-r.w*.34,r.z-side*r.d*.31,.36);planter(furniture,r.x+r.w*.34,r.z-side*r.d*.31,.36);}const occupants=new InteriorKit(`occupants room ${i+1}`),occupiedSeats=furnishOccupants(occupants,furniture,r);const people=occupants.finish(false);people.userData.occupiedSeats=occupiedSeats;place(people,source);root.add(people);const room=furniture.finish(true);room.userData.kind=kind;room.userData.fitout=profile;place(room,source);root.add(room);
-  const shell=k.finish(true);place(shell,source);root.add(shell);
+  const furniture=new InteriorKit(`room-${i+1}: ${r.name}`);const kind=furnishRoom(furniture,r);const authored=furnishRoomIdentity(furniture,r,i);if(!profile.technical&&r.w>7&&r.d>6){if(authored.seed&1)planter(furniture,r.x-r.w*.34,r.z-side*r.d*.31,.36);if(authored.seed&2)planter(furniture,r.x+r.w*.34,r.z-side*r.d*.31,.36);}const occupants=new InteriorKit(`occupants room ${i+1}`),occupiedSeats=furnishOccupants(occupants,furniture,r,authored);const people=occupants.finish(false);people.userData.occupiedSeats=occupiedSeats;people.userData.identityKey=authored.key;place(people,source);root.add(people);const room=furniture.finish(true);room.userData.kind=kind;room.userData.fitout=profile;room.userData.identityKey=authored.key;room.userData.geometrySignature=authored.geometrySignature;place(room,source);root.add(room);
+  const shell=k.finish(true);shell.userData.identityKey=identity.key;place(shell,source);root.add(shell);
  }
  const k=new InteriorKit('architecture circulation');
  k.box('structural floor','stone',0,-.15,0,w,.3,d,0);
