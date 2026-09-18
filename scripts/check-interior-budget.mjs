@@ -13,13 +13,16 @@ for(const f of FACILITIES)for(let l=0;l<f.levels;l++){
  root.updateMatrixWorld(true);
  const blocked=[];
  for(const r of layout.rooms){
-  const from=new T.Vector3(r.doorX,1.67,0),to=new T.Vector3(r.doorX,1.67,Math.sign(r.z)*(layout.corridor/2+Math.min(2,r.d*.24))),v=to.clone().sub(from);
-  const hits=new T.Raycaster(from,v.clone().normalize(),0,v.length()).intersectObject(root,true);
-  if(hits.length)blocked.push(r.name);
+  for(let i=1;i<r.route.length;i++){
+   const from=new T.Vector3(r.route[i-1][0],1.67,r.route[i-1][1]),to=new T.Vector3(r.route[i][0],1.67,r.route[i][1]),v=to.clone().sub(from);
+   if(v.length()<.001)continue;
+   const hits=new T.Raycaster(from,v.clone().normalize(),0,v.length()).intersectObject(root,true);
+   if(hits.length)blocked.push(r.name+' segment '+i);
+  }
  }
  floors.push({facility:f.key,floor:l+1,vertices,bytes,parts,constructionAndCheckMs:Math.round(performance.now()-start),blockedArrivals:blocked});
  root.traverse(o=>o.geometry?.dispose());
 }
-fs.writeFileSync('evidence/interior-budget.json',JSON.stringify({renderer:'Node geometry and ray checks; not browser or phone',floors},null,2));
+fs.writeFileSync(process.argv[2]||'evidence/interior-budget.json',JSON.stringify({renderer:'Node geometry and ray checks; not browser or phone',floors},null,2));
 console.log({floors:floors.length,maxBytes:Math.max(...floors.map(f=>f.bytes)),blocked:floors.filter(f=>f.blockedArrivals.length)});
 assert.equal(floors.filter(f=>f.blockedArrivals.length).length,0,'guided arrivals must remain clear');

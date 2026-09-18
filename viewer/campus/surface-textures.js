@@ -30,6 +30,19 @@ export function paintFinish(ctx,name,base,size=name==='display'?1024:384){
   for(let i=0;i<size*6;i++){const x=r()*size,y=r()*size,v=r()>.5?255:20;ctx.fillStyle=`rgba(${v},${v},${v},${.025+r()*.045})`;ctx.fillRect(x,y,1+r()*1.5,1+r()*1.5);}
  }else if(name==='leaf'||name==='soil'){
   for(let i=0;i<size*3;i++){ctx.fillStyle=`rgba(0,0,0,${.02+r()*.05})`;ctx.fillRect(r()*size,r()*size,1+r()*3,1+r()*3);}
+ }else if(name==='stageScreen'){
+  // Neutral LED-volume calibration pattern, never the office analytics dashboard.
+  ctx.fillStyle='#555b60';ctx.fillRect(0,0,size,size);ctx.strokeStyle='#778086';ctx.lineWidth=1;
+  for(let i=0;i<=16;i++){ctx.beginPath();ctx.moveTo(i*size/16,0);ctx.lineTo(i*size/16,size);ctx.moveTo(0,i*size/16);ctx.lineTo(size,i*size/16);ctx.stroke();}
+ }else if(name==='instrumentDisplay'){
+  ctx.fillStyle='#0b171c';ctx.fillRect(0,0,size,size);
+  ctx.strokeStyle='#254047';ctx.lineWidth=1;
+  for(let i=1;i<9;i++){ctx.beginPath();ctx.moveTo(size*.08,i*size*.1);ctx.lineTo(size*.93,i*size*.1);ctx.moveTo(i*size*.1,size*.12);ctx.lineTo(i*size*.1,size*.88);ctx.stroke();}
+  for(let trace=0;trace<3;trace++){
+   ctx.strokeStyle=['#68baba','#e2be73','#a5b5c4'][trace];ctx.lineWidth=2;ctx.beginPath();
+   for(let i=0;i<100;i++){const x=size*(.08+i*.0085),y=size*(.30+trace*.21+Math.sin(i*.18+trace)*.035+Math.cos(i*.057)*.022);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.stroke();
+  }
+  ctx.fillStyle='#a6bdc4';ctx.font=`${Math.round(size*.035)}px sans-serif`;ctx.fillText('ACQUISITION / PREVIEW',size*.08,size*.075);
  }else if(name==='display'){
   paintSurface(ctx,'display');
  }

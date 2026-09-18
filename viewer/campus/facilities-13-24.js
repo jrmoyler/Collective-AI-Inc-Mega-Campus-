@@ -41,12 +41,7 @@ function wing(b,x,z,w,d,h,levels=2,{base=0,r=2,skin='dark',roof=true,fins=false}
   }
   for(const side of [-1,1]){
    b.box('warm',x,y+fh-.68,z+side*(d*.5-1.1),w*.8,.035,.08);
-   for(let q=-w*.3;q<w*.3;q+=6){
-    b.box('stone',x+q,y+.8,z+side*(d*.5-2),2,.1,.9);
-    b.box('steel',x+q,y+.4,z+side*(d*.5-2),.12,.8,.6);
-    b.box('dark',x+q,y+.53,z+side*(d*.5-3),.62,.12,.62);
-    b.box('dark',x+q,y+.89,z+side*(d*.5-3.27),.62,.7,.09);
-   }
+
   }
  }
  if(roof){
@@ -61,6 +56,21 @@ function wing(b,x,z,w,d,h,levels=2,{base=0,r=2,skin='dark',roof=true,fins=false}
  }
  return {x,z,w,d,h,base};
 }
+
+// Swept rectangular metal fascia with finite vertical construction depth.
+function ribbonFascia(b,points,height,depth){
+ const curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)),false,'centripetal');
+ const p=[],idx=[],steps=40;
+ for(let i=0;i<=steps;i++){
+  const c=curve.getPoint(i/steps),t=curve.getTangent(i/steps),n=new T.Vector3(-t.z,0,t.x).normalize();
+  for(const [vertical,lateral] of [[-1,-1],[-1,1],[1,1],[1,-1]])p.push(c.x+n.x*lateral*depth/2,c.y+vertical*height/2,c.z+n.z*lateral*depth/2);
+  if(i<steps)for(let face=0;face<4;face++){const a=i*4+face,d=i*4+(face+1)%4;idx.push(a,d,a+4,d,d+4,a+4);}
+ }
+ idx.push(0,2,1,0,3,2);const end=steps*4;idx.push(end,end+1,end+2,end,end+2,end+3);
+ for(let i=0;i<idx.length;i+=3)[idx[i+1],idx[i+2]]=[idx[i+2],idx[i+1]];
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setIndex(idx);g.computeVertexNormals();b.add(g,'steel');g.dispose();
+}
+
 function entry(b,x,z,w=7){
  slab(b,'stone',x,.03,z,w+2,3,.18,.7);b.box('steel',x,3.35,z-.1,w,.15,2.7);
  for(const side of [-1,1]){b.box(referenceGlazing,x+side*w*.23,1.6,z-1.2,w*.44,3.1,.04);b.box('steel',x+side*w*.46,1.6,z-1.2,.1,3.2,.16);b.box('steel',x+side*.13,1.35,z-1.1,.04,.7,.05);}
@@ -129,6 +139,13 @@ function occupiedDetails(b,wing,id,floor,index){
  occupiedBays(b,outline(w,d,wing.r).map(([px,pz])=>[x+px,z+pz]),y,h/levels-.32);
  // Small rooftop booths deliberately receive one compact work setting only.
  if(w<8||d<10){if(w>3.5&&d>3.5){const zz=z+d*.26;desk(b,x,y,zz,.95);monitor(b,x,y+.8,zz-.2,.50);}return;}
+ if(id===13&&w>20&&d>18){
+  for(let xx=x-w*.34;xx<=x+w*.35;xx+=5.2)for(let zz=z-d*.27;zz<=z+d*.16;zz+=5.4){
+   desk(b,xx,y,zz,2.6);monitor(b,xx+.65,y+.8,zz-.2);
+   b.box('white',xx-.65,y+1.1,zz,.64,.54,.60);screen(b,xx-.65,y+1.13,zz+.31,.42,.30);
+   for(let vial=0;vial<4;vial++)cylinder(b,'blueGlass',xx-.25+vial*.15,y+.91,zz+.32,.04,.22,.04,8);
+  }
+ }
  const n=Math.min(4,Math.max(1,Math.floor((w-8)/8)));
  for(let k=0;k<n;k++){
   const px=x+(k-(n-1)/2)*Math.min(7.4,(w-8)/n),pz=z+d*.5-4.0;
@@ -196,28 +213,78 @@ function nearDetailFactory(id,wingRecords){
 export function createFacility13to24(f,{deferDetails=false}={}){
  if(f.id<13||f.id>24)return null;
  const {w,d,h,id}=f,b=new Batch(),root=new T.Group();root.name=`CF-${id}-individual-reference-architecture`;
- if(id===13){ // Eon Core: low garden shoulder and flowing high-to-low research frontage.
-  wing(b,0,-d*.03,w*.97,d*.75,h*.55,2,{r:d*.17,skin:'dark',fins:true});
-  wing(b,-w*.20,-d*.16,w*.57,d*.45,h*.45,1,{base:h*.55,r:2});
-  wing(b,w*.30,d*.17,w*.31,d*.38,h*.32,1,{r:d*.06});
-  terrace(b,w*.23,h*.55,d*.015,w*.39,d*.43);
-  terrace(b,w*.30,h*.32,d*.17,w*.31,d*.38);
-  // Real curved roof-edge ribbons descend around the research shoulder.
-  // Both ends terminate in real roof collector beams: the upper rear pavilion
-  // and lower garden wing. No open ribbon tip projects unsupported into space.
-  b.box('steel',-w*.43,h+.18,-d*.16,.50,.40,d*.43);
-  b.box('steel',w*.44,h*.32+.18,d*.17,.50,.40,d*.30);
-  for(const side of [-1,1])line(b,'steel',[
-   [-w*.43,h+.18,-d*.16+side*d*.215],
-   [-w*.18,h*.94,side*d*.32],
-   [w*.06,h*.68,side*d*.34],
-   [w*.29,h*.36,d*.17+side*d*.18],
-   [w*.44,h*.32+.18,d*.17+side*d*.15],
-  ],.48);
-  pergola(b,-w*.22,h+.3,-d*.16,w*.32,d*.24);solar(b,-w*.22,h+3.4,-d*.16,w*.33,d*.25);
-  b.box('blueGlass',w*.45,h*.17,d*.10,w*.065,h*.31,.15);b.box('water',w*.43,.42,d*.16,w*.13,.04,d*.30);
-  entry(b,-w*.12,d*.36,w*.17);
- }else if(id===14){ // Cognara: asymmetric rounded interview wing and research-booth roof court.
+ if(id===13){ // Eon: connected perimeter sections, not independent roof ribbons.
+  const deck=h*.56,low=h*.32;
+  // The front garden shoulder drops at the right; the occupied upper pavilion
+  // sits behind it. Closed soffit/roof strips share the facade's exact section.
+  const p=outline(w*.97,d*.78,d*.12).map(([x,z])=>[x,z-d*.015]);
+  const shoulder=x=>deck-(deck-low)*T.MathUtils.smoothstep(x,-w*.02,w*.32);
+  const top=(x,z)=>T.MathUtils.lerp(shoulder(x),deck,T.MathUtils.smoothstep(-z,-d*.04,d*.24));
+  slab(b,'stone',0,0,-d*.015,w*.97,d*.78,.32,d*.12);
+  // A continuous weather roof and glass envelope with a real changing section.
+  // Each strip is attached to its perimeter, never lofted across occupied rooms.
+  for(let j=0;j<p.length;j++){
+   const a=p[j],c=p[(j+1)%p.length],len=Math.hypot(c[0]-a[0],c[1]-a[1]),n=Math.max(1,Math.ceil(len/1.9));
+   for(let q=0;q<n;q++){
+    const ax=T.MathUtils.lerp(a[0],c[0],q/n),az=T.MathUtils.lerp(a[1],c[1],q/n),cx=T.MathUtils.lerp(a[0],c[0],(q+1)/n),cz=T.MathUtils.lerp(a[1],c[1],(q+1)/n);
+    const ay=top(ax,az),cy=top(cx,cz),dx=cx-ax,dz=cz-az,L=Math.hypot(dx,dz),nx=-dz/L,nz=dx/L;
+    const vertices=[ax,.32,az,cx,.32,cz,cx,cy-.35,cz,ax,ay-.35,az];
+    const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(vertices,3));g.setIndex([0,1,2,0,2,3]);g.computeVertexNormals();b.add(g,referenceGlazing);g.dispose();
+    line(b,'copper',[[ax,.32,az],[ax,ay-.3,az]],.065);
+    // Closed quadrilateral annulus section: exterior fascia, soffit and coping.
+    const strip=new T.BufferGeometry(),v=[];
+    for(const [x,y,z] of [[ax,ay-.55,az],[cx,cy-.55,cz],[cx+nx*1.15,cy-.55,cz+nz*1.15],[ax+nx*1.15,ay-.55,az+nz*1.15],[ax,ay+.55,az],[cx,cy+.55,cz],[cx+nx*1.15,cy+.55,cz+nz*1.15],[ax+nx*1.15,ay+.55,az+nz*1.15]])v.push(x,y,z);
+    strip.setAttribute('position',new T.Float32BufferAttribute(v,3));strip.setIndex([0,2,1,0,3,2,4,5,6,4,6,7,0,1,5,0,5,4,1,2,6,1,6,5,2,3,7,2,7,6,3,0,4,3,4,7]);const flat=strip.toNonIndexed();flat.computeVertexNormals();b.add(flat,'steel');flat.dispose();strip.dispose();
+    line(b,'dark',[[ax,ay-.6,az],[cx,cy-.6,cz]],.075);
+   }
+  }
+  // Front shoulder roof is a shallow continuous surface closing the lower
+  // occupied lobby, following the same section as the outer facade.
+  const roof=new T.BufferGeometry(),v=[0,top(0,-d*.015)-.10,-d*.015],ix=[];
+  // Concentric rings close the entire convex footprint; no open rear strip.
+  const roofRings=12;
+  for(let ring=1;ring<=roofRings;ring++)for(const [px,pz] of p){
+   const t=ring/roofRings,x=px*t,z=-d*.015+(pz+d*.015)*t;v.push(x,top(x,z)-.10,z);
+  }
+  for(let j=0;j<p.length;j++)ix.push(0,1+(j+1)%p.length,1+j);
+  for(let ring=1;ring<roofRings;ring++)for(let j=0;j<p.length;j++){
+   const a=1+(ring-1)*p.length+j,c=1+(ring-1)*p.length+(j+1)%p.length,b=a+p.length,e=c+p.length;ix.push(a,c,b,c,e,b);
+  }
+  roof.setAttribute('position',new T.Float32BufferAttribute(v,3));roof.setIndex(ix);roof.computeVertexNormals();b.add(roof,'dark');roof.dispose();
+  // Planted shoulder follows the descending fascia as individual level beds.
+  for(let x=-w*.39;x<=w*.40;x+=3.0){
+   const z=d*.295,y=top(x,z)+.04;
+   planter(b,x,y,z,2.9,3.3);roofTree(b,x,y+.86,z,1.85);
+  }
+  // Upper laboratories and clinical review occupy one inset pavilion, with
+  // a full roof and a lower right room, not three colliding glazed boxes.
+  wing(b,-w*.15,-d*.14,w*.63,d*.45,h-deck,1,{base:deck,r:d*.04,skin:'dark',fins:false});
+  wing(b,w*.315,-d*.12,w*.28,d*.42,deck-low,1,{base:low,r:d*.025,skin:'dark'});
+  wing(b,-w*.17,-d*.135,w*.57,d*.43,deck,2,{r:1,roof:false});
+  // Two usable front laboratory terraces; their horizontal slabs terminate
+  // before the sloping shoulder and never slice through the perimeter fascia.
+  terrace(b,-w*.19,deck,d*.16,w*.47,d*.12);
+  terrace(b,w*.315,low,d*.16,w*.27,d*.12);
+  solar(b,-w*.15,h+.53,-d*.16,w*.48,d*.30);
+  for(const [gx,gz,gw,gd,gy] of [[-w*.15,-d*.34,w*.48,2.3,h+.46],[-w*.18,d*.205,w*.45,2.0,deck+.33],[w*.32,d*.205,w*.23,2.0,low+.33]]){
+   planter(b,gx,gy,gz,gw,gd);for(let tx=-gw*.4;tx<=gw*.4;tx+=3.4)roofTree(b,gx+tx,gy+.86,gz,1.45);
+  }
+  // Front-left graphite sign pier and dense bronze louvres are source identity.
+  b.box('dark',-w*.27,deck*.48,d*.379,w*.18,deck*.96,.65);
+  for(const edge of [-1,1])b.box('steel',-w*.27+edge*w*.09,deck*.48,d*.385,.12,deck*.96,.72);
+  ring(b,'gold',-w*.27,deck*.72,d*.392,1.3,.14,0);
+  root.userData.signAnchor={text:'EON CORE',width:w*.155,height:1.5,position:[-w*.27,deck*.43,d*.379+.335]};
+  for(let x=-w*.15;x<w*.08;x+=.72){const y=shoulder(x);b.box('copper',x,y*.55,d*.377,.12,y*.76,.55);}
+  // Water flows along the right elevation into a contained reflecting basin.
+  const wx=w*.486,wz=-d*.055,waterLength=d*.53;
+  b.box('dark',wx,low*.48,wz,.75,low*.96,waterLength);
+  b.box('water',wx+.42,low*.46,wz,.05,low*.84,waterLength-.8);
+  for(let z=wz-waterLength*.47;z<wz+waterLength*.48;z+=.28)line(b,'blueGlass',[[wx+.47,low*.89,z],[wx+.62,.64,z]],.028);
+  b.box('stone',wx+1.45,.15,wz,2.8,.30,waterLength+1.4);
+  b.box('water',wx+1.45,.32,wz,2.2,.055,waterLength+.6);
+  for(const z of [wz-waterLength/2-.5,wz+waterLength/2+.5])b.box('stone',wx+1.45,.44,z,2.8,.6,.35);
+  b.box('stone',wx+2.68,.44,wz,.35,.6,waterLength+1.4);
+  entry(b,w*.18,d*.38,w*.17); }else if(id===14){ // Cognara: asymmetric rounded interview wing and research-booth roof court.
   wing(b,0,0,w,d*.89,h*.34,1,{r:d*.28,fins:true});
   wing(b,w*.23,d*.065,w*.52,d*.75,h*.33,1,{base:h*.34,r:d*.20,fins:true});
   wing(b,-w*.26,-d*.20,w*.47,d*.40,h*.66,2,{base:h*.34,r:1.4});

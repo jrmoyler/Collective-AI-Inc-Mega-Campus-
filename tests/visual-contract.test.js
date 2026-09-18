@@ -13,7 +13,7 @@ test('furniture contains structural supports, five casters, input devices and se
  for(const m of root.children){assert.equal(m.userData.collision,true);for(const v of m.geometry.attributes.position.array)assert.ok(Number.isFinite(v));m.geometry.dispose();}
 });
 test('reference room fixtures stay differentiated by program',()=>{
- assert.equal(roomKind('Visitor demonstration'),'demo');assert.equal(roomKind('Identity operations'),'office');assert.equal(roomKind('Credential lab'),'lab');assert.equal(roomKind('Consent review'),'meeting');assert.equal(roomKind('Segmented data networks'),'servers');assert.equal(roomKind('Knowledge keeper records'),'library');
+ assert.equal(roomKind('Visitor demonstration'),'demo');assert.equal(roomKind('Identity operations'),'identity');assert.equal(roomKind('Credential lab'),'identity');assert.equal(roomKind('Consent review'),'meeting');assert.equal(roomKind('Segmented data networks'),'servers');assert.equal(roomKind('Knowledge keeper records'),'library');
 });
 
 import * as T from 'three';
@@ -21,6 +21,6 @@ import {FACILITIES} from '../viewer/campus/data.js';
 import {createInteriorGeometry} from '../viewer/campus/interior-architecture.js';
 test('Trust Vault guided room arrival paths remain open at visitor eye height',()=>{
  const {root,layout}=createInteriorGeometry(FACILITIES.find(f=>f.id===30),0);root.updateMatrixWorld(true);
- for(const r of layout.rooms){const side=Math.sign(r.z),from=new T.Vector3(r.doorX,1.67,0),to=new T.Vector3(r.doorX,1.67,side*(layout.corridor/2+Math.min(2,r.d*.24))),delta=to.clone().sub(from);const ray=new T.Raycaster(from,delta.clone().normalize(),0,delta.length());assert.equal(ray.intersectObject(root,true).length,0,r.name+' arrival blocked');}
+ for(const r of layout.rooms)for(let i=1;i<r.route.length;i++){const from=new T.Vector3(r.route[i-1][0],1.67,r.route[i-1][1]),to=new T.Vector3(r.route[i][0],1.67,r.route[i][1]),delta=to.clone().sub(from);if(delta.length()<.001)continue;const ray=new T.Raycaster(from,delta.clone().normalize(),0,delta.length());assert.equal(ray.intersectObject(root,true).length,0,r.name+' arrival blocked');}
  root.traverse(o=>o.geometry?.dispose());
 });

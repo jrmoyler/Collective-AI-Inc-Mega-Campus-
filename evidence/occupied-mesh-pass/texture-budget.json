@@ -1,0 +1,116 @@
+{
+  "variants": 3,
+  "materialSlots": 27,
+  "textureCount": 15,
+  "textureTransferBytes": 8863540,
+  "rgbaBytes": 31457280,
+  "rgbaBytesWithMipmaps": 41943040.0,
+  "scope": "Unique character textures only; excludes renderer, shadows, existing scene assets and transient decoding",
+  "textures": [
+    {
+      "url": "/assets/occupants/19b899b89ca9d536b875.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 331624,
+      "rgbaBytes": 1048576
+    },
+    {
+      "url": "/assets/occupants/1b1f509b428528a42a49.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 100186,
+      "rgbaBytes": 1048576
+    },
+    {
+      "url": "/assets/occupants/2c3e3bae72b3b6a523dd.png",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 1089649,
+      "rgbaBytes": 4194304
+    },
+    {
+      "url": "/assets/occupants/331bebf941ea02af33d1.png",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 1278648,
+      "rgbaBytes": 4194304
+    },
+    {
+      "url": "/assets/occupants/392c6e5a4ba1af5f126a.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 395881,
+      "rgbaBytes": 1048576
+    },
+    {
+      "url": "/assets/occupants/54f21906723711222aba.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 269262,
+      "rgbaBytes": 1048576
+    },
+    {
+      "url": "/assets/occupants/76043876726e8ff4122e.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 356848,
+      "rgbaBytes": 1048576
+    },
+    {
+      "url": "/assets/occupants/85409c6965d8ee36bb69.png",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 1261857,
+      "rgbaBytes": 4194304
+    },
+    {
+      "url": "/assets/occupants/93d414a15595c669c0e2.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 340564,
+      "rgbaBytes": 1048576
+    },
+    {
+      "url": "/assets/occupants/b2726f1219731f6f6a3f.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 263679,
+      "rgbaBytes": 1048576
+    },
+    {
+      "url": "/assets/occupants/c40c9a61da6fedae0182.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 246739,
+      "rgbaBytes": 1048576
+    },
+    {
+      "url": "/assets/occupants/c6e39f920372ccfdaf0a.png",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 1115093,
+      "rgbaBytes": 4194304
+    },
+    {
+      "url": "/assets/occupants/df96059fffbecfbc786a.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 216811,
+      "rgbaBytes": 1048576
+    },
+    {
+      "url": "/assets/occupants/febf968157a398c6e571.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 420819,
+      "rgbaBytes": 1048576
+    },
+    {
+      "url": "/assets/occupants/ffee1368be400afc2d45.png",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 1175880,
+      "rgbaBytes": 4194304
+    }
+  ]
+}

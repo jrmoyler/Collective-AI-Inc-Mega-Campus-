@@ -1,0 +1,29 @@
+{
+  "baseCommit": "e4864ff8f7912efaa9ff48dd68f6fa3d8486cc58",
+  "decision": "refine further",
+  "exactReferenceAccepted": false,
+  "bespokeEveryHiddenRoomAccepted": false,
+  "photorealOccupiedAccepted": false,
+  "changedExterior": [
+    "CF-02"
+  ],
+  "unchangedExteriorCount": 34,
+  "characterVariants": 3,
+  "occupiedRooms": 279,
+  "occupants": 472,
+  "roomPrograms": 444,
+  "characterGeometry": "Textured CC0 MakeHuman continuous body and garment meshes; static seated poses",
+  "renderer": "Blender 4.5.1 CPU Cycles, not browser GPU equivalence",
+  "rejections": [
+    "CF-02-rejected-floating-console.jpg",
+    "CF-02-rejected-obscured-lettering.jpg",
+    "interior-28-rejected-sample-scale.jpg",
+    "rejected-budget-test.log",
+    "../topology-pass/CF-13-rejected-roof.jpg"
+  ],
+  "remaining": [
+    "All-facility architectural proportions and full-reference matching",
+    "Individually authored furnishing designs for every hidden room",
+    "Complete photoreal materials, natural activities and occupied-scene validation"
+  ]
+}

@@ -14,8 +14,12 @@ export function createFacility(f,options={}){
  root.name=f.key;root.position.set(f.x,0,f.z);
  root.userData.referenceSource=`CF-${String(f.id).padStart(2,'0')}_Facility_Infographic.png`;
  root.userData.referenceInterpretation='Observed facade reconstruction; hidden elevations and dimensions inferred';
- const label=sign(f.key+'  '+f.name.toUpperCase(),Math.min(f.w*.52,25),1.35);
- label.position.set(0,Math.min(height*.65,12),f.d/2+.7);root.add(label);
+ // Facility names already appear in the directory and selection UI. The old
+ // campus-wide billboard floated beyond each different facade and contradicted
+ // the atlas. Add signage only where the authored shell supplies a real anchor.
+ const anchor=root.userData.signAnchor;
+ if(anchor){const label=sign(anchor.text,anchor.width,anchor.height,'#f0efdf',{architectural:true});label.name='anchored architectural nameplate';label.position.fromArray(anchor.position);label.rotation.y=anchor.yaw||0;root.add(label);}
+
  root.traverse(o=>{o.userData.facility=f.id;});
  root.userData.sculptRuntime={parts:root.children.map(c=>c.name),clickable:true};
  return root;

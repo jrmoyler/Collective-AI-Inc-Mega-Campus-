@@ -30,7 +30,8 @@ for f in manifest:
  scene.view_settings.view_transform='AgX'
  bpy.ops.object.light_add(type='SUN');sun=bpy.context.object;sun.rotation_euler=(.35,-.5,-.6);sun.data.energy=2;sun.data.angle=.12
  bpy.ops.object.camera_add();camera=bpy.context.object;scene.camera=camera;camera.data.type='ORTHO';camera.data.clip_end=max(1000,span*20)
- camera.location=center+Vector((1,-1.45,float(os.environ.get('CAMPUS_FACILITY_ELEVATION','.95')))).normalized()*span*3
+ azimuth=float(os.environ.get('CAMPUS_FACILITY_AZIMUTH','34.59'))*math.pi/180
+ camera.location=center+Vector((math.sin(azimuth),-math.cos(azimuth),float(os.environ.get('CAMPUS_FACILITY_ELEVATION','.95'))/1.7614)).normalized()*span*3
  camera.rotation_euler=(center-camera.location).to_track_quat('-Z','Y').to_euler()
  # Project all bounding corners to camera coordinates, fitting both image axes.
  inverse=camera.rotation_euler.to_matrix().transposed()

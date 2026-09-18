@@ -1,6 +1,8 @@
+import {domainKind,furnishDomain} from './interior-domain-equipment.js';
 // Program-driven equipment in metres. Hidden fittings are inferred from the
 // supplied room schedule, not claimed as surveyed/as-built equipment.
 export function specialistKind(name){
+ const domain=domainKind(name);if(domain)return domain;
  const n=name.toLowerCase();
  if(/kitchen|food processing/.test(n))return 'kitchen';
  if(/patient intake/.test(n))return 'reception';
@@ -20,6 +22,7 @@ export function specialistKind(name){
  return null;
 }
 export function furnishSpecialist(k,r,kit){
+ const domain=furnishDomain(k,r,kit);if(domain)return domain;
  const kind=specialistKind(r.name);if(!kind)return false;
  const {taskChair,desk,sofa,shelving}=kit,{x,z,w,d}=r,side=Math.sign(z);
  const dense=['kitchen','clinical','electrical','process','fabrication','maintenance','storage','retail','support','reception'].includes(kind);

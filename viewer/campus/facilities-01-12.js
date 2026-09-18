@@ -1,6 +1,6 @@
 // Individual atlas reconstructions. Dimensions are schematic envelope fits, not surveys.
 import * as T from 'three';
-import {Batch,cylinder,ring,materials} from './geometry.js';
+import {Batch,cylinder,ring,line,materials} from './geometry.js';
 
 import {facadeEdge,roofCoping,roofTree,occupiedBays} from './facade-craft.js';
 
@@ -21,10 +21,11 @@ function perimeter(b,p,y,height,{skin='dark',bay=3.2,opaque=[]}={}){
   for(let j=0;j<n;j++)b.box('steel',a[0]+dx*j/n,y+height/2,a[1]+dz*j/n,.10,height,.10);
  }
 }
-function shell(b,p,y,h,levels,{skin='dark',bay=3.2,opaque=[]}={}){
+function shell(b,p,y,h,levels,{skin='dark',bay=3.2,opaque=[],roof=true}={}){
  const fh=h/levels;
  (b.occupiedLevels ||= []).push({points:p,y,height:h,levels});
  for(let i=0;i<levels;i++){plate(b,p,y+i*fh,.26);perimeter(b,p,y+i*fh+.26,fh-.26,{skin,bay,opaque});}
+ if(!roof)return;
  plate(b,p,y+h,.32,skin);
  const center=p.reduce((v,q)=>[v[0]+q[0]/p.length,v[1]+q[1]/p.length],[0,0]);
  roofCoping(b,p,y+h+.32,{center,skin});
@@ -43,7 +44,7 @@ function beam(b,a,c,r=.12,mat='steel'){
 function solar(b,x,y,z,w,d){b.box('solar',x,y,z,w,.14,d);for(let i=-w/2;i<=w/2;i+=2)b.box('steel',x+i,y+.08,z,.03,.018,d);for(let j=-d/2;j<=d/2;j+=2)b.box('steel',x,y+.08,z+j,w,.018,.025);}
 function garden(b,x,y,z,w,d){b.box('stone',x,y+.18,z,w,.36,d);b.box('leaf',x,y+.40,z,w-.35,.18,d-.35);for(let i=0;i<Math.min(7,Math.floor(w/3));i++){const px=x-w*.38+i*w*.76/Math.max(1,Math.min(7,Math.floor(w/3))-1);roofTree(b,px,y+.50,z,1.4);}}
 function office(b,x,y,z,cols=3){for(let i=0;i<cols;i++){const px=x+(i-(cols-1)/2)*3.2;b.box('stone',px,y+.85,z,2.2,.09,1);for(const dx of [-.85,.85])b.box('steel',px+dx,y+.42,z,.07,.8,.72);b.box('dark',px,y+1.28,z-.2,.78,.48,.07);b.box('dark',px,y+.52,z+.8,.5,.12,.5);b.box('dark',px,y+.86,z+1,.52,.6,.08);}}
-function racks(b,x,y,z,n=5){for(let i=0;i<n;i++){const px=x+i*2;b.box('dark',px,y+1.45,z,1.2,2.9,1.1);for(let j=0;j<8;j++){b.box('steel',px,y+.3+j*.32,z+.565,1,.22,.025);b.box('cyan',px-.35,y+.3+j*.32,z+.59,.06,.05,.018);}}}
+function racks(b,x,y,z,n=5,scale=1){for(let i=0;i<n;i++){const px=x+i*2*scale;b.box('dark',px,y+1.45*scale,z,1.2*scale,2.9*scale,1.1*scale);for(let j=0;j<8;j++){b.pane('steel',px,y+(.3+j*.32)*scale,z+.58*scale,scale,.22*scale);b.pane('cyan',px-.35*scale,y+(.3+j*.32)*scale,z+.60*scale,.06*scale,.05*scale);}}}
 function machinery(b,x,y,z){b.box('white',x,y+1.1,z,2.7,2.2,2.1);b.box('glazing',x,y+1.25,z+1.06,1.8,1.4,.04);b.box('dark',x+1.05,y+1.6,z+1.1,.4,.65,.05);b.box('steel',x,y+.65,z+.3,1.4,.2,1);}
 function entry(b,x,z,w,y=0){b.box('steel',x,y+3.1,z+.9,w,.12,2);for(const s of [-1,1]){b.box('steel',x+s*w/2,y+1.5,z,.10,3,.13);b.box('glazing',x+s*.7,y+1.45,z,1.35,2.85,.07);b.box('gold',x+s*.1,y+1.2,z+.08,.035,.6,.04);}b.box('path',x,y+.08,z+1.2,w+1,.16,2.8);}
 function cylinderShell(b,x,z,r,h,levels=3,y=0){const n=48,p=Array.from({length:n},(_,i)=>[x+Math.cos(i*Math.PI*2/n)*r,z+Math.sin(i*Math.PI*2/n)*r]);shell(b,p,y,h,levels,{bay:4});return p;}
@@ -66,13 +67,59 @@ const builders={
  shell(b,rect(0,d*.2,w*.95,d*.6),0,5,1);entry(b,0,d*.505,w*.3);
 },
 2(b,{w,d,h}){
- shell(b,rect(0,0,w*.90,d*.84),0,h*.83,3,{skin:'dark',opaque:[0]});
- shell(b,rect(-w*.15,-d*.04,w*.4,d*.45),h*.83,h*.17,1);office(b,-w*.15,h*.83,-d*.03,5);
- for(const x of [-w*.45,w*.34]){const p=[[x-2,-d*.4],[x+3,-d*.4],[x+7,d*.4],[x-1,d*.4]];plate(b,p,0,h*.87,'dark');}
- for(let j=0;j<3;j++)racks(b,0,h*.55,-d*.22+j*4,Math.floor(w*.34/2));
- for(let i=-2;i<=2;i++){cylinder(b,'steel',w*.30+i*2,2,-d*.36,.5,4,.5,12);beam(b,[w*.30+i*2,4,-d*.36],[w*.30+i*2,h*.75,-d*.36],.15,'cyan');}
- for(const x of [-w*.36,w*.36]){water(b,x,.3,d*.45,w*.16,5);b.box('water',x,2.1,d*.41,w*.12,3.3,.06);}
- plantRoof(b,0,h*.84,-d*.05,w*.78,d*.7);entry(b,-w*.10,d*.43,w*.27);office(b,-w*.20,h*.29,d*.18,4);
+ // The atlas exposes the upper compute hall. The previous complete roof and
+ // extra rooftop office concealed that defining program and added a fourth tier.
+ const lower=h*.56,upper=h*.34,front=d*.42;
+ shell(b,rect(0,0,w*.90,d*.84),0,lower,2,{skin:'dark',opaque:[0]});
+ shell(b,rect(w*.22,-d*.025,w*.46,d*.79),lower,upper,1,{skin:'dark',opaque:[0],roof:false});
+ const control=rounded(-w*.225,-d*.065,w*.42,d*.47,2.2);
+ shell(b,control,lower,upper,1,{skin:'dark',bay:2.2,roof:false});
+ // Rear weather roof, stepped plant enclosure and service access remain built.
+ plate(b,rect(0,-d*.305,w*.90,d*.23),h*.90,.42,'dark');
+ for(const [x,z,pw,pd,y,ph] of [[-.25,-.32,.30,.17,.90,.065],[.10,-.34,.33,.13,.90,.04],[-.07,-.385,.36,.095,.965,.035]]){
+  b.box('dark',x*w,(y+ph/2)*h,z*d,pw*w,ph*h,pd*d);
+  for(let xx=x*w-pw*w*.42;xx<x*w+pw*w*.43;xx+=2.4){b.box('steel',xx,(y+ph)*h+.04,z*d,1.6,.075,pd*d*.75);for(let q=0;q<5;q++)b.box('dark',xx-.62+q*.31,(y+ph)*h+.09,z*d,.13,.025,pd*d*.64);}
+ }
+ // Splayed concrete portal legs have an elevation taper, not a plan-only skew.
+ function portalLeg(x,z,width,height,lean){
+  const verts=[];for(const xx of [x-width/2,x+width/2])for(const [yy,zz] of [[0,z+1.0],[height,z-lean],[height,z-lean-1.7],[0,z-.7]])verts.push(xx,yy,zz);
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(verts,3));g.setIndex([0,2,1,0,3,2,4,5,6,4,6,7,0,1,5,0,5,4,1,2,6,1,6,5,2,3,7,2,7,6,3,0,4,3,4,7]);const flat=g.toNonIndexed();flat.computeVertexNormals();b.add(flat,'dark');flat.dispose();g.dispose();
+ }
+ for(const x of [-w*.43,w*.02])portalLeg(x,front,3.2,h*.64,3.3);
+ for(const x of [-w*.44,w*.44])portalLeg(x,-d*.18,3.0,h*.90,2.5);
+ b.box('dark',-w*.205,h*.60,front-1.45,w*.47,h*.13,2.1);
+ b.box('copper',-w*.205,h*.532,front-.34,w*.43,.065,.09);
+ // Curved mission-control display and its tiered operator consoles.
+ for(let i=0;i<9;i++){
+  const angle=(i-4)*.14,xx=-w*.225+Math.sin(angle)*w*.18,zz=-d*.06-Math.cos(angle)*d*.14;
+  b.box('dark',xx,lower+upper*.50,zz,w*.036,upper*.54,.15,-angle);
+  b.box('blueGlass',xx,lower+upper*.50,zz+.095,w*.032,upper*.47,.025,-angle);
+ }
+ for(const dz of [-.04,.11])office(b,-w*.225,lower,d*dz,4);
+ // Open upper GPU banks with paired supply/return manifolds and service aisles.
+ for(let row=0;row<4;row++){
+  const z=-d*.17+row*d*.145,rackScale=upper/4.8;racks(b,w*.065,lower,z,Math.max(4,Math.floor(w*.32/(2*rackScale))),rackScale);
+  for(const [offset,mat] of [[-.26,'cyan'],[.26,'steel']]){
+   const pipeY=lower+3.2*rackScale;
+   const pts=[[w*.06,lower+.4,z+offset],[w*.06,pipeY-.3,z+offset],[w*.065+.3,pipeY,z+offset],[w*.37,pipeY,z+offset],[w*.38,pipeY-.3,z+offset],[w*.38,lower+.4,z+offset]];
+   const tube=new T.TubeGeometry(new T.CatmullRomCurve3(pts.map(p=>new T.Vector3(...p))),20,.065,6,false);b.add(tube,mat);tube.dispose();
+  }
+ }
+ // Rack glimpses and the secure operations gallery remain within the lower shell.
+ for(let row=0;row<2;row++)racks(b,w*.07,.3,-d*.05+row*4,6);
+ office(b,w*.22,h*.28,d*.29,5);
+ for(let i=0;i<5;i++){const x=w*.07+i*w*.065;b.box('blueGlass',x,h*.28+2.4,d*.08,w*.055,2.2,.07);}
+ // Raised entrance landing, direct-cooling cascade and contained pool.
+ const landing=lower/2,steps=Math.ceil(landing/.18),run=steps*.30;
+ for(let i=0;i<steps;i++)b.box('stone',-w*.20,(i+1)*landing/steps/2,front+run-i*.30,w*.25,(i+1)*landing/steps,.31);
+ entry(b,-w*.20,front,w*.28,landing);
+ for(const x of [-w*.39,w*.02]){
+  b.box('dark',x,landing/2,front+1.5,w*.14,landing,3);
+  b.box('water',x,landing/2,front+3.02,w*.13,landing-.25,.035);
+  for(let q=0;q<16;q++){const px=x-w*.06+q*w*.12/15;line(b,'blueGlass',[[px,landing-.2,front+3.08],[px,.3,front+3.25]],.024);}
+  water(b,x,.13,front+4.1,w*.17,4.4);
+ }
+ for(const [x,z,gw,gd,y] of [[-.225,-.31,.36,.045,h*.91],[-.20,.35,.39,.05,lower+.34],[.40,.1,.045,.46,lower+.34]])garden(b,x*w,y,z*d,gw*w,gd*d);
 },
 3(b,{w,d,h}){
  // Only the entrance pavilion sits above ground. The atlas's large central
@@ -217,8 +264,11 @@ function occupiedDetails(b,f){const {id,w,d,h}=f;const tags=[];
   for(let level=1;level<11;level+=2)office(b,-w*.20,level*h*.88/12+.28,d*.28,5);
   break;
  case 2:
-  for(let row=0;row<2;row++){const z=d*.17-row*5;racks(b,-w*.20,h*.83/3+.28,z,5);pipe(b,[[-w*.23,h*.83/3+3.5,z],[w*.02,h*.83/3+3.5,z],[w*.02,h*.83/3+.5,z]]);}
-  meeting(b,-w*.15,h*.83+.28,-d*.03,6);for(let i=-1;i<=1;i++)display(b,-w*.15+i*2.6,h*.83+2.7,-d*.23+1,2.3,1.3);tags.push('liquid-cooled rack manifolds','mission-control consoles');break;
+  // The upper hall is authored in the shell's exposed section. Detail remains
+  // on its real slabs; the obsolete rooftop meeting suite has been removed.
+  for(const z of [-d*.04,d*.11])for(let i=-1;i<=1;i++)chair(b,-w*.225+i*3.2,h*.56+.28,z+.8,Math.PI);
+  for(let row=0;row<2;row++){const z=d*.17-row*5;racks(b,-w*.20,.28,z,5);pipe(b,[[-w*.23,3.5,z],[w*.02,3.5,z],[w*.02,.5,z]]);}
+  tags.push('liquid-cooled rack manifolds','mission-control consoles');break;
  case 3:
   for(const side of [-1,1]){office(b,side*w*.265,.28,0,2);display(b,side*w*.265,2.7,-d*.17,3.5,1.4);}
   for(const side of [-1,1]){b.box('steel',side*1.45,.65,d*.13,.22,1.3,.7);display(b,side*1.45,1.28,d*.13+.38,.15,.20);b.box('glazing',side*.9,.65,d*.13,1,1.05,.035);}tags.push('biometric entry lanes','secure reception');break;
@@ -261,7 +311,6 @@ function occupiedDetails(b,f){const {id,w,d,h}=f;const tags=[];
 }
 function facadeIdentity(b,f){const {id,w,d,h}=f;
  if(id===1){for(let i=0;i<6;i++){const x=-w*.43+i*w*.105;b.box('steel',x,h*.44,d*.398,.09,h*.88,.30);if(i%2===0)b.box('warm',x+.06,h*.44,d*.40,.025,h*.84,.035);}}
- if(id===2){for(const x of [-w*.45,w*.34])for(let y=2;y<h*.83;y+=2.5)b.box('steel',x+3,y,d*.40,4,.045,.13);}
  if(id===4){for(let i=0;i<16;i++){const a=i*Math.PI/8;beam(b,[Math.cos(a)*w*.064,1,-d*.08+Math.sin(a)*w*.064],[Math.cos(a)*w*.064,h*.87,-d*.08+Math.sin(a)*w*.064],.055,'gold');}}
  if(id===5){for(let i=-2;i<=2;i++){const x=-w*.22+i*w*.09;beam(b,[x,h*.40,-d*.10],[x,h*.97,-d*.10],.085);}}
  if(id===7){for(let i=0;i<20;i++){const x=-w*.44+i*w*.043;b.box('copper',x,h*.38,d*.466,.09,h*.69,.5);}}
@@ -289,6 +338,7 @@ export function createFacility01to12(f,{deferDetails=false}={}){
  const build=builders[f.id];if(!build)return null;
  const b=new Batch();b.box('path',0,.10,0,f.w+8,.2,f.d+8);build(b,f);facadeIdentity(b,f);
  const root=b.finish(`${f.key}-atlas-shell`);
+ if(f.id===2)root.userData.signAnchor={text:'COLLECTIVE AI',width:f.w*.34,height:f.h*.034,position:[-f.w*.205,f.h*.628,f.d*.42-.39]};
  const createNearDetail=nearDetailFactory(f,b.occupiedLevels||[]);
  if(deferDetails)root.userData.createNearDetail=createNearDetail;else root.add(createNearDetail());
  root.userData.facility=f.id;root.userData.referenceSource=`CF-${String(f.id).padStart(2,'0')}_Facility_Infographic.png`;

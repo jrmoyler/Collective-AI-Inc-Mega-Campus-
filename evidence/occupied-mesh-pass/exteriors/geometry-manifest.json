@@ -1,0 +1,20 @@
+[
+  {
+    "id": 2,
+    "key": "CF-02",
+    "name": "The Neural Block",
+    "meshes": 21,
+    "vertices": 34002,
+    "min": [
+      -38,
+      -0.019999999552965164,
+      -31
+    ],
+    "max": [
+      38,
+      27.311677932739258,
+      35.73500061035156
+    ],
+    "source": "viewer/campus/buildings.js createFacility"
+  }
+]

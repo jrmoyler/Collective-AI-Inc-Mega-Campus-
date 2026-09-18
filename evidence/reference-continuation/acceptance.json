@@ -1,0 +1,234 @@
+{
+  "baseCommit": "daa6c0c0571e4358a3cab521ea5a67beb3dd6dde",
+  "decision": "refine further",
+  "exactReferenceAccepted": false,
+  "bespokeEveryHiddenRoomAccepted": false,
+  "photorealOccupiedAccepted": false,
+  "renderer": "Blender 4.5.1 CPU Cycles; not browser-equivalence evidence",
+  "allFacilityReview": [
+    {
+      "facility": "CF-01",
+      "render": "exteriors/CF-01.jpg",
+      "accepted": false,
+      "remaining": "Oculus crown, asymmetrical wing proportions and facade depth remain simplified."
+    },
+    {
+      "facility": "CF-02",
+      "render": "exteriors/CF-02.jpg",
+      "accepted": false,
+      "remaining": "Roof equipment courts and stepped communications frontage remain simplified."
+    },
+    {
+      "facility": "CF-03",
+      "render": "exteriors/CF-03.jpg",
+      "accepted": false,
+      "remaining": "Vault drum heights, approach sequence and fortified facade articulation remain simplified."
+    },
+    {
+      "facility": "CF-04",
+      "render": "exteriors/CF-04.jpg",
+      "accepted": false,
+      "remaining": "Knowledge-core crown, terraces and connected library volumes remain simplified."
+    },
+    {
+      "facility": "CF-05",
+      "render": "exteriors/CF-05.jpg",
+      "accepted": false,
+      "remaining": "Production cutaway volumes, roof structure and facade composition remain simplified."
+    },
+    {
+      "facility": "CF-06",
+      "render": "exteriors/CF-06.jpg",
+      "accepted": false,
+      "remaining": "Angled launch frontage, setbacks and occupied facade rhythm remain simplified."
+    },
+    {
+      "facility": "CF-07",
+      "render": "exteriors/CF-07.jpg",
+      "accepted": false,
+      "remaining": "Factory sawtooth/roof courts and production-bay composition remain simplified."
+    },
+    {
+      "facility": "CF-08",
+      "render": "exteriors/CF-08.jpg",
+      "accepted": false,
+      "remaining": "Manufacturing portal, overhead structure and occupied hall density remain simplified."
+    },
+    {
+      "facility": "CF-09",
+      "render": "exteriors/CF-09.jpg",
+      "accepted": false,
+      "remaining": "Circular logistics organization, roof pads and terminal envelope remain simplified."
+    },
+    {
+      "facility": "CF-10",
+      "render": "exteriors/CF-10.jpg",
+      "accepted": false,
+      "remaining": "Warehouse fascia, loading-front proportions and equipment density remain simplified."
+    },
+    {
+      "facility": "CF-11",
+      "render": "exteriors/CF-11.jpg",
+      "accepted": false,
+      "remaining": "Growing-tower composition, planted curves and facade articulation remain simplified."
+    },
+    {
+      "facility": "CF-12",
+      "render": "exteriors/CF-12.jpg",
+      "accepted": false,
+      "remaining": "Clinic curved perimeter, courtyards and visible pod arrangement remain simplified."
+    },
+    {
+      "facility": "CF-13",
+      "render": "exteriors/CF-13.jpg",
+      "accepted": false,
+      "remaining": "Upper pavilion remains box-like; planted shoulder, fascia curvature and waterfall appearance are below reference."
+    },
+    {
+      "facility": "CF-14",
+      "render": "exteriors/CF-14.jpg",
+      "accepted": false,
+      "remaining": "Curved research frontage, roof booths and setbacks remain approximate."
+    },
+    {
+      "facility": "CF-15",
+      "render": "exteriors/CF-15.jpg",
+      "accepted": false,
+      "remaining": "Track enclosure interpretation and motion pavilion proportions remain approximate."
+    },
+    {
+      "facility": "CF-16",
+      "render": "exteriors/CF-16.jpg",
+      "accepted": false,
+      "remaining": "Sweeping public canopy and public-room massing remain approximate."
+    },
+    {
+      "facility": "CF-17",
+      "render": "exteriors/CF-17.jpg",
+      "accepted": false,
+      "remaining": "Testing-yard composition, prototype homes and roof structure remain approximate."
+    },
+    {
+      "facility": "CF-18",
+      "render": "exteriors/CF-18.jpg",
+      "accepted": false,
+      "remaining": "Deployment frontage and connected mobility-suite composition remain approximate."
+    },
+    {
+      "facility": "CF-19",
+      "render": "exteriors/CF-19.jpg",
+      "accepted": false,
+      "remaining": "Regulatory spine, stepped suite layout and facade depth remain approximate."
+    },
+    {
+      "facility": "CF-20",
+      "render": "exteriors/CF-20.jpg",
+      "accepted": false,
+      "remaining": "Spire taper, antenna crown and communications-room arrangement remain approximate."
+    },
+    {
+      "facility": "CF-21",
+      "render": "exteriors/CF-21.jpg",
+      "accepted": false,
+      "remaining": "Process equipment density, turbine connections and plant enclosure remain approximate."
+    },
+    {
+      "facility": "CF-22",
+      "render": "exteriors/CF-22.jpg",
+      "accepted": false,
+      "remaining": "Bent arrival facade, theatre and command-suite composition remain approximate."
+    },
+    {
+      "facility": "CF-23",
+      "render": "exteriors/CF-23.jpg",
+      "accepted": false,
+      "remaining": "Forum/courtyard form and occupied commons wings remain approximate."
+    },
+    {
+      "facility": "CF-24",
+      "render": "exteriors/CF-24.jpg",
+      "accepted": false,
+      "remaining": "Rounded control facade and inset decks remain approximate; source area and siting uncertainty is unresolved."
+    },
+    {
+      "facility": "CF-25",
+      "render": "exteriors/CF-25.jpg",
+      "accepted": false,
+      "remaining": "Bio-energy central core, roof gardens and research wings remain approximate; source-area uncertainty is retained."
+    },
+    {
+      "facility": "CF-26",
+      "render": "exteriors/CF-26.jpg",
+      "accepted": false,
+      "remaining": "Assembly-hall roof structure, portal and occupied equipment arrangement remain approximate."
+    },
+    {
+      "facility": "CF-27",
+      "render": "exteriors/CF-27.jpg",
+      "accepted": false,
+      "remaining": "Materials pilot courts, roof services and stepped frontage remain approximate."
+    },
+    {
+      "facility": "CF-28",
+      "render": "exteriors/CF-28.jpg",
+      "accepted": false,
+      "remaining": "Water-system terraces, shaped piers and research frontage remain approximate."
+    },
+    {
+      "facility": "CF-29",
+      "render": "exteriors/CF-29.jpg",
+      "accepted": false,
+      "remaining": "Food-processing volumes and nutrition-suite facade proportions remain approximate."
+    },
+    {
+      "facility": "CF-30",
+      "render": "exteriors/CF-30.jpg",
+      "accepted": false,
+      "remaining": "Credential core, frontage fins and stepped research wings remain approximate."
+    },
+    {
+      "facility": "CF-31",
+      "render": "exteriors/CF-31.jpg",
+      "accepted": false,
+      "remaining": "Resilience courtyard, inset decks and office-wing proportions remain approximate."
+    },
+    {
+      "facility": "CF-32",
+      "render": "exteriors/CF-32.jpg",
+      "accepted": false,
+      "remaining": "Marketplace hall, canopy and retail frontage remain approximate."
+    },
+    {
+      "facility": "CF-33",
+      "render": "exteriors/CF-33.jpg",
+      "accepted": false,
+      "remaining": "Learning courtyards and organizational-research terraces remain approximate."
+    },
+    {
+      "facility": "CF-34",
+      "render": "exteriors/CF-34.jpg",
+      "accepted": false,
+      "remaining": "Energy demonstration frontage and utility/control volumes remain approximate."
+    },
+    {
+      "facility": "CF-35",
+      "render": "exteriors/CF-35.jpg",
+      "accepted": false,
+      "remaining": "Care courtyards, low roof composition and domestic-scale frontage remain approximate."
+    }
+  ],
+  "retainedCorrections": [
+    "Eon perimeter reconstruction",
+    "all-facility floating nameboard removal",
+    "71 room-specific research-equipment selections",
+    "seat-anchored occupants with corrected world rotations"
+  ],
+  "rejectedHistory": [
+    "../topology-pass/CF-13-rejected-roof.jpg",
+    "rejected-occupant-chair-orientation.jpg",
+    "rejected-water-room-chair-orientation.jpg",
+    "rejected-occupant-local-limb-rotation.jpg",
+    "rejected-water-room-local-limb-rotation.jpg"
+  ],
+  "remainingCharacterWork": "Anatomy, garment continuity, skin/hair material detail and natural activity; current static figures are visibly procedural."
+}

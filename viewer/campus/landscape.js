@@ -43,17 +43,35 @@ export function outerTerrainHeight(x,z){
  return fade*(8+5*Math.sin(x*.006+z*.002)+3*Math.cos(z*.009-x*.002));
 }
 
+// Individual landscape basins retain canonical siting and their clearance envelope.
+// Different coves and shoulders replace scaled copies of one elliptical shoreline.
+export function shoreRadius(index,angle){
+ const phase=index*1.618,frequency=2+index%3;
+ return .91+.065*Math.sin(angle*frequency+phase)+.035*Math.cos(angle*(5+index%2)-phase);
+}
+
 export function createLandscape(){
  const root=new T.Group();root.name='landscape';const b=new Batch();const random=seeded(22035);
  const kineticMats=[];
- const treeInner=1200,treeOuter=650,skylineCount=70,lampEvery=28;
+ const treeInner=1200,treeOuter=650,lampEvery=28;
  const wind={value:0};
 
- const terrain=new T.PlaneGeometry(2800,2500,140,125);terrain.rotateX(-Math.PI/2);
+ const terrain=new T.PlaneGeometry(18000,18000,160,160);terrain.rotateX(-Math.PI/2);
  const terrainPositions=terrain.attributes.position;
- for(let i=0;i<terrainPositions.count;i++)terrainPositions.setY(i,outerTerrainHeight(terrainPositions.getX(i),terrainPositions.getZ(i)));
+ // Preserve ~20m sampling around the forest; use only the outer 20% of grid
+ // intervals for the distant apron. Uniform 112m cells made trees float above
+ // the analytic hills used for root placement.
+ const terrainAxis=(value,central)=>{const u=Math.abs(value)/9000;return Math.sign(value)*(u<=.8?u/.8*central:central+(u-.8)/.2*(9000-central));};
+ for(let i=0;i<terrainPositions.count;i++){
+  const x=terrainAxis(terrainPositions.getX(i),1400),z=terrainAxis(terrainPositions.getZ(i),1250);
+  terrainPositions.setXYZ(i,x,outerTerrainHeight(x,z),z);
+ }
  terrain.computeVertexNormals();
- const ground=new T.Mesh(terrain,materials.grass);
+ // A continuous receiving surface extends beyond the far fog plane. The old
+ // 2.8 km rectangle exposed a hard purple horizon in the opening camera.
+ const terrainMaterial=materials.grass.clone();terrainMaterial.map=textures.grass.clone();
+ terrainMaterial.map.repeat.set(750,750);terrainMaterial.emissiveIntensity=0;
+ const ground=new T.Mesh(terrain,terrainMaterial);
 ground.receiveShadow=true;ground.name='forest-floor';root.add(ground);
 
  const oval=new T.Shape();oval.absellipse(0,0,SITE.width*.52,SITE.depth*.52,0,Math.PI*2,false,0);
@@ -92,10 +110,10 @@ ground.receiveShadow=true;ground.name='forest-floor';root.add(ground);
  road([[-468,111],[-336,117],[-239,111],[-177,136],[-113,121],[13,115],[130,119],[229,139],[432,167]],11);
 
  const waters=[];
- for(const [x,z,rx,rz] of LAKES){
+ for(const [lakeIndex,[x,z,rx,rz]] of LAKES.entries()){
   const s=new T.Shape();
   for(let i=0;i<=64;i++){
-   const a=i/64*Math.PI*2,r=1+.07*Math.sin(a*3)+.03*Math.cos(a*5);
+   const a=i/64*Math.PI*2,r=shoreRadius(lakeIndex,a);
    const xx=Math.cos(a)*rx*r,zz=Math.sin(a)*rz*r;
    if(i===0)s.moveTo(xx,zz);else s.lineTo(xx,zz);
   }
@@ -111,8 +129,8 @@ ground.receiveShadow=true;ground.name='forest-floor';root.add(ground);
     '#include <begin_vertex>\n vec3 waterPosition=(modelMatrix*vec4(position,1.0)).xyz; transformed.y += sin(waterPosition.x*.45+uTime*1.1)*.11 + cos(waterPosition.z*.6+uTime*.9)*.08;');
   };
   const m=new T.Mesh(g,mat);m.position.set(x,.38,z);m.name='lake';root.add(m);
-  const pts=[];for(let i=0;i<=48;i++){const a=i/48*6.283,r=1+.07*Math.sin(a*3);pts.push([x+Math.cos(a)*(rx+2.4)*r,.5,z-Math.sin(a)*(rz+2.4)*r]);}
-  line(b,'path',pts,1.6);line(b,'kinetic',pts.map(([px,py,pz])=>[px,py+.04,pz]),.14);
+  const pts=[];for(let i=0;i<=48;i++){const a=i/48*6.283,r=shoreRadius(lakeIndex,a);pts.push([x+Math.cos(a)*(rx+2.4)*r,.5,z-Math.sin(a)*(rz+2.4)*r]);}
+  line(b,'path',pts,1.1); // A stone walking bank, not an identical luminous oval.
   ring(b,'stone',x,.42,z,2.4,.18);
   for(let j=0;j<9;j++){
    const a=j/9*Math.PI*2;
@@ -122,7 +140,7 @@ ground.receiveShadow=true;ground.name='forest-floor';root.add(ground);
   }
   // Emergent reeds grow beyond the paved bank, leaving the water unobstructed.
   for(let j=0;j<90;j++){
-   const a=random()*Math.PI*2,r=1+.07*Math.sin(a*3)+.03*Math.cos(a*5);
+   const a=random()*Math.PI*2,r=shoreRadius(lakeIndex,-a);
    const px=x+Math.cos(a)*(rx+4.8)*r,pz=z+Math.sin(a)*(rz+4.8)*r;
    for(let k=0;k<3;k++){
     const h=.6+random()*.85,dx=(random()-.5)*.8,dz=(random()-.5)*.8;
@@ -165,8 +183,8 @@ ground.receiveShadow=true;ground.name='forest-floor';root.add(ground);
  const free=(x,z,s)=>{
   const setback=3+s*.25;
   for(const f of FACILITIES)if(Math.abs(x-f.x)<f.w*.5+setback&&Math.abs(z-f.z)<f.d*.5+setback)return false;
-  for(const [lx,lz,rx,rz] of LAKES){
-   const a=Math.atan2((z-lz)/rz,(x-lx)/rx),r=1+.07*Math.sin(-a*3)+.03*Math.cos(a*5);
+  for(const [lakeIndex,[lx,lz,rx,rz]] of LAKES.entries()){
+   const a=Math.atan2((z-lz)/rz,(x-lx)/rx),r=shoreRadius(lakeIndex,-a);
    if(((x-lx)/(rx*r+setback))**2+((z-lz)/(rz*r+setback))**2<1)return false;
   }
   for(const seg of segments.get(key(x,z))||[]){
@@ -241,29 +259,8 @@ ground.receiveShadow=true;ground.name='forest-floor';root.add(ground);
   }
  }
 
- const skyRand=seeded(614);
- // A distant urban district reads as coherent blocks, with stepped upper floors,
- // continuous glazing bands and parapets instead of isolated random dark boxes.
- const skylineStone=new T.MeshStandardMaterial({color:0x9ca5a5,roughness:.72,metalness:.08});
- const skylineGlass=new T.MeshStandardMaterial({color:0x66858c,roughness:.32,metalness:.32});
- for(let i=0;i<skylineCount;i++){
-  const block=i%14,row=Math.floor(i/14),x=(block-6.5)*72+(skyRand()-.5)*12,z=-960-row*67;
-  const central=1-Math.min(1,Math.abs(x)/500),h=22+skyRand()*22+central*central*76;
-  const terrainY=outerTerrainHeight(x,z),bw=32+skyRand()*19,bd=29+skyRand()*18;
-  b.box(skylineStone,x,terrainY+5,z,bw+12,10,bd+10);
-  for(let tier=0;tier<3;tier++){
-   const th=h*(tier===0?.52:tier===1?.30:.18),base=terrainY+10+h*(tier===0?0:tier===1?.52:.82);
-   const w=bw*(1-tier*.13),d=bd*(1-tier*.12),tx=x+tier*1.3;
-   b.box(skylineStone,tx,base+th*.5,z,w,th,d);
-   for(let y=base+2.6;y<base+th-1;y+=4){
-    b.box(skylineGlass,tx,y,z+d*.5+.08,w*.94,2.35,.13);
-    b.box(skylineGlass,tx+w*.5+.08,y,z,.13,2.35,d*.94);
-    b.box(skylineStone,tx,y+1.32,z+d*.5+.22,w+1,.25,.7);
-   }
-   b.box(skylineStone,tx,base+th+.35,z,w+1.2,.7,d+1.2);
-  }
-  b.box(skylineStone,x+3,terrainY+10+h+1.8,z,bw*.22,3.6,bd*.30);
- }
+ // The references specify a forest buffer. Remove the invented 70-building
+ // background district: repeating stepped towers confused the campus identity.
 
  root.add(b.finish('roads-gardens-street-furniture'));
  return {
