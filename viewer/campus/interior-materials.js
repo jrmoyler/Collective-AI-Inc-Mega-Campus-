@@ -8,8 +8,8 @@ import {FINISHES} from './interior-kit.js';
 
 // Primary architectural surfaces get denser texels at high quality; small parts stay light.
 const HERO=new Set(['plank','floorStone','terrazzo','oak','walnut','plaster','stone','slate','fabric','linen','leather']);
-function surface(scene,name,base,quality='balanced'){
- const size=name==='display'?1024:quality==='high'&&HERO.has(name)?1024:512;
+function surface(scene,name,base,quality='balanced',scale=1){
+ const size=Math.round((name==='display'?1024:quality==='high'&&HERO.has(name)?1024:512)*scale);
  const tex=new DynamicTexture(name+'-surface',{width:size,height:size},scene,true);
  paintFinish(tex.getContext(),name,base,size);
  tex.update();tex.wrapU=tex.wrapV=Texture.WRAP_ADDRESSMODE;tex.anisotropicFilteringLevel=quality==='high'?16:8;return tex;
@@ -24,35 +24,35 @@ function derive(kind,name,albedo,compute){
  if(!derived.has(key))derived.set(key,compute(albedo.getContext().getImageData(0,0,size,size).data,size));
  return derived.get(key);
 }
-function mapTexture(scene,label,albedo,pixels){
+function mapTexture(scene,label,albedo,length,expand){
  const size=albedo.getSize().width,tex=new DynamicTexture(label,{width:size,height:size},scene,true),ctx=tex.getContext(),image=ctx.createImageData(size,size);
- image.data.set(pixels);ctx.putImageData(image,0,0);tex.update();tex.gammaSpace=false;
+ for(let i=0,j=0;j<length;i++,j+=4)expand(image.data,j,i);ctx.putImageData(image,0,0);tex.update();tex.gammaSpace=false;
  tex.wrapU=tex.wrapV=Texture.WRAP_ADDRESSMODE;tex.uScale=albedo.uScale;tex.vScale=albedo.vScale;tex.anisotropicFilteringLevel=albedo.anisotropicFilteringLevel;return tex;
 }
 function finishNormal(scene,name,albedo){
  const pixels=derive('normal',name,albedo,(source,size)=>{
-  const out=new Uint8ClampedArray(size*size*4);
+  const out=new Uint8ClampedArray(size*size*2);
   const height=(x,y)=>{const i=(((y+size)%size)*size+(x+size)%size)*4;return (source[i]+source[i+1]+source[i+2])/765;};
   const strength=(RELIEF[name]||.7)*size/384;
   for(let y=0;y<size;y++)for(let x=0;x<size;x++){
    const dx=(height(x-1,y)-height(x+1,y))*strength,dy=(height(x,y-1)-height(x,y+1))*strength;
-   const length=Math.hypot(dx,dy,1),i=(y*size+x)*4;
-   out[i]=(dx/length*.5+.5)*255;out[i+1]=(dy/length*.5+.5)*255;out[i+2]=(1/length*.5+.5)*255;out[i+3]=255;
+   const length=Math.hypot(dx,dy,1),i=(y*size+x)*2;
+   out[i]=(dx/length*.5+.5)*255;out[i+1]=(dy/length*.5+.5)*255;
   }
   return out;
  });
- return mapTexture(scene,name+'-micro-normal',albedo,pixels);
+ return mapTexture(scene,name+'-micro-normal',albedo,pixels.length*2,(rgba,j,i)=>{const x=pixels[i*2]/127.5-1,y=pixels[i*2+1]/127.5-1;rgba[j]=pixels[i*2];rgba[j+1]=pixels[i*2+1];rgba[j+2]=(Math.sqrt(Math.max(0,1-x*x-y*y))*.5+.5)*255;rgba[j+3]=255;});
 }
 // Roughness breakup: darker grain, grout and pores read slightly rougher, so specular
 // highlights break across a floor the way real honed stone and lacquered timber do.
 function finishRoughness(scene,name,albedo,spread){
  const pixels=derive('roughness',name,albedo,source=>{
   let mean=0;for(let i=0;i<source.length;i+=4)mean+=source[i]+source[i+1]+source[i+2];mean/=source.length/4*765;
-  const out=new Uint8ClampedArray(source.length);
-  for(let i=0;i<source.length;i+=4){const l=(source[i]+source[i+1]+source[i+2])/765,g=Math.max(0,Math.min(1,.8+(mean-l)*spread));out[i]=255;out[i+1]=g*255;out[i+2]=255;out[i+3]=255;}
+  const out=new Uint8ClampedArray(source.length/4);
+  for(let i=0;i<source.length;i+=4){const l=(source[i]+source[i+1]+source[i+2])/765;out[i/4]=Math.max(0,Math.min(1,.8+(mean-l)*spread))*255;}
   return out;
  });
- return mapTexture(scene,name+'-roughness',albedo,pixels);
+ return mapTexture(scene,name+'-roughness',albedo,pixels.length*4,(rgba,j,i)=>{rgba[j]=255;rgba[j+1]=pixels[i];rgba[j+2]=255;rgba[j+3]=255;});
 }
 const BREAKUP={plank:1.6,floorStone:2.2,terrazzo:1.4,stone:1.4,slate:1.2,oak:1.2,walnut:1.2,porcelain:.8,leather:1,graphite:.8,steel:.8,brass:.8};
 function contactTexture(scene){
@@ -64,11 +64,12 @@ function contactTexture(scene){
  ctx.putImageData(img,0,0);tex.update();tex.hasAlpha=true;tex.wrapU=tex.wrapV=Texture.CLAMP_ADDRESSMODE;return tex;
 }
 export function finishTexture(scene,name){const p=FINISHES[name]||FINISHES.stone;return surface(scene,name,p.color||0xffffff);}
-export function createInteriorMaterials(scene,usedOccupantNames=null,{quality='balanced'}={}){const result={};for(const [name,p] of Object.entries(FINISHES)){
+// textureScale < 1 is for headless construction tests, where texel density is irrelevant.
+export function createInteriorMaterials(scene,usedOccupantNames=null,{quality='balanced',textureScale=1}={}){const result={};for(const [name,p] of Object.entries(FINISHES)){
  const m=new PBRMaterial(name,scene);m.albedoColor=Color3.White();
  // Surface pixels already contain the finish color.
  m.metallic=p.metalness||0;m.roughness=Math.max(.06,p.roughness??.5);m.environmentIntensity=1;m.specularIntensity=1;
- const tex=name==='contact'?contactTexture(scene):surface(scene,name,p.color||0xffffff,quality);m.albedoTexture=tex;const tile=name==='fabric'||name==='leather'?3:name==='plank'||name==='floorStone'||name==='terrazzo'?.5:1;m.albedoTexture.uScale=m.albedoTexture.vScale=tile;
+ const tex=name==='contact'?contactTexture(scene):surface(scene,name,p.color||0xffffff,quality,textureScale);m.albedoTexture=tex;const tile=name==='fabric'||name==='leather'?3:name==='plank'||name==='floorStone'||name==='terrazzo'?.5:1;m.albedoTexture.uScale=m.albedoTexture.vScale=tile;
  if(RELIEF[name])m.bumpTexture=finishNormal(scene,name,tex);
  if(BREAKUP[name]){
   // The texture green channel multiplies roughness, averaging 0.8 around the authored value.

@@ -106,20 +106,6 @@ function wing(b,x,z,w,d,h,levels=2,{base=0,r=2,skin='dark',deck='dark',roof=true
 }
 const roofTop=(base,h)=>base+h+.48;
 
-// Swept rectangular metal fascia with finite vertical construction depth.
-function ribbonFascia(b,points,height,depth,mat='steel'){
- const curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)),false,'centripetal');
- const p=[],idx=[],steps=40;
- for(let i=0;i<=steps;i++){
-  const c=curve.getPoint(i/steps),t=curve.getTangent(i/steps),n=new T.Vector3(-t.z,0,t.x).normalize();
-  for(const [vertical,lateral] of [[-1,-1],[-1,1],[1,1],[1,-1]])p.push(c.x+n.x*lateral*depth/2,c.y+vertical*height/2,c.z+n.z*lateral*depth/2);
-  if(i<steps)for(let face=0;face<4;face++){const a=i*4+face,d=i*4+(face+1)%4;idx.push(a,d,a+4,d,d+4,a+4);}
- }
- idx.push(0,2,1,0,3,2);const end=steps*4;idx.push(end,end+1,end+2,end,end+2,end+3);
- for(let i=0;i<idx.length;i+=3)[idx[i+1],idx[i+2]]=[idx[i+2],idx[i+1]];
- const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setIndex(idx);const flat=g.toNonIndexed();flat.computeVertexNormals();b.add(flat,mat);flat.dispose();g.dispose();
-}
-
 // Glazed entrance: stone apron, cantilevered canopy with lit soffit, doors.
 function entry(b,x,z,w=7){
  slab(b,'stone',x,.03,z,w+2,3,.18,.7);

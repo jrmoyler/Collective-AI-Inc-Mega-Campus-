@@ -33,7 +33,7 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
   flight?.pause();flight=null;held.clear();post?.dispose();post=null;shadow?.dispose();shadow=null;scene?.dispose();level=l;currentRoom=null;layout=assembly.layout;scene=new Scene(engine);scene.useRightHandedSystem=true;scene.clearColor=new Color4(.27,.35,.40,1);scene.collisionsEnabled=true;
   scene.imageProcessingConfiguration.toneMappingEnabled=true;scene.imageProcessingConfiguration.toneMappingType=1;scene.imageProcessingConfiguration.exposure=1.1;scene.imageProcessingConfiguration.contrast=1.1;
   if(!engineOverride)createInteriorEnvironment(scene,engine);
-  const finishes=createInteriorMaterials(scene,new Set(assembly.root.children.flatMap(g=>g.children.map(m=>m.material.name))),{quality,prefiltered:!engineOverride});for(const m of Object.values(finishes))m.maxSimultaneousLights=8;
+  const finishes=createInteriorMaterials(scene,new Set(assembly.root.children.flatMap(g=>g.children.map(m=>m.material.name))),{quality,textureScale:engineOverride?.25:1});for(const m of Object.values(finishes))m.maxSimultaneousLights=8;
   for(const source of assembly.root.children.flatMap(g=>g.children)){
    const mesh=new Mesh(source.name,scene),data=new VertexData(),g=source.geometry;
    data.positions=g.attributes.position.array;data.normals=g.attributes.normal.array;data.uvs=g.attributes.uv.array;if(g.attributes.color)data.colors=g.attributes.color.array;data.indices=g.index?.array||Uint32Array.from({length:g.attributes.position.count},(_,i)=>i);data.applyToMesh(mesh);
