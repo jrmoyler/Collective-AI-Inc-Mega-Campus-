@@ -32,7 +32,8 @@ export function facadeEdge(batch,a,c,y,height,{center=[0,0],skin='dark'}={}){
  profile(batch,'stone',x,y+height-.46,z,length,yaw+(nx*Math.sin(yaw)+nz*Math.cos(yaw)<0?Math.PI:0),[[-.045,-1.35],[-.045,0],[.045,0],[.045,-1.35]]);
  // Horizontal diffuser faces downward; glazing remains genuinely transparent.
  const light=new T.PlaneGeometry(length,.065);light.rotateX(Math.PI/2);
- batch.add(light,'warm',x-nx*.84,y+height-.515,z-nz*.84,1,1,1,yaw);light.dispose();
+ // Hung 2.5 cm below the soffit: layers closer than that z-fight at aerial range.
+ batch.add(light,'warm',x-nx*.84,y+height-.53,z-nz*.84,1,1,1,yaw);light.dispose();
 
 }
 
@@ -46,9 +47,10 @@ export function roofCoping(batch,points,y,{center=[0,0],skin='dark'}={}){
   profile(batch,skin,x,y,z,length,yaw,[[0,.16],[.42,.16],[.42,-.16],[0,-.16]]);
   profile(batch,'steel',x,y+.435,z,length,yaw,[[-.0225,.21],[.0225,.21],[.0225,-.21],[-.0225,-.21]]);
   // Coping expansion joints at a plausible fabrication interval, not a texture.
-  for(let t=4.8;t<length;t+=4.8){const joint=new T.PlaneGeometry(.018,.43);joint.rotateX(-Math.PI/2);batch.add(joint,'dark',a[0]+dx*t/length,y+.461,a[1]+dz*t/length,1,1,1,yaw);joint.dispose();}
+  // Joint covers stand 2 cm proud of the 0.4575 m cap so they never share its depth.
+  for(let t=4.8;t<length;t+=4.8){const joint=new T.PlaneGeometry(.018,.43);joint.rotateX(-Math.PI/2);batch.add(joint,'dark',a[0]+dx*t/length,y+.478,a[1]+dz*t/length,1,1,1,yaw);joint.dispose();}
   if(length>12){
-   batch.pane('dark',x+nx*.177,y+.14,z+nz*.177,.36,.12,yaw+(nx*Math.sin(yaw)+nz*Math.cos(yaw)<0?Math.PI:0));
+   batch.pane('dark',x+nx*.185,y+.14,z+nz*.185,.36,.12,yaw+(nx*Math.sin(yaw)+nz*Math.cos(yaw)<0?Math.PI:0));
    batch.box('steel',x+nx*.26,y+.07,z+nz*.26,.42,.03,.20,yaw);
   }
  }
@@ -96,14 +98,15 @@ export function occupiedBays(batch,points,y,height){
    const x=a[0]+tx*width*j,z=a[1]+tz*width*j;
    if(!inside(x+nx*5.4,z+nz*5.4))continue;
    // Perpendicular room division, bottom plinth and a structural column.
-   batch.pane('glazing',x+nx*2.9,y+partitionH/2,z+nz*2.9,4.8,partitionH,yaw+Math.PI/2);
+   // Glass spans only between plinth and head rail; overlapping them z-fought.
+   batch.pane('glazing',x+nx*2.9,y+(.24+partitionH-.0325)/2,z+nz*2.9,4.8,partitionH-.0325-.24,yaw+Math.PI/2);
    batch.pane('dark',x+nx*2.9,y+.12,z+nz*2.9,4.8,.24,yaw+Math.PI/2);
    batch.box('steel',x+nx*.65,y+height/2,z+nz*.65,.20,height-.25,.20);
    batch.box('steel',x+nx*5.25,y+partitionH/2,z+nz*5.25,.065,partitionH,.065);
    batch.pane('steel',x+nx*2.9,y+partitionH,z+nz*2.9,4.8,.065,yaw+Math.PI/2);
    // Ceiling services belong to the bay, with a clear floor-level entrance.
    profile(batch,'stone',x+nx*3+tx*width*.45,y+partitionH+.22,z+nz*3+tz*width*.45,width*.68,yaw,[[-.05,-1.9],[-.05,1.9],[.05,1.9]]);
-   const lamp=new T.PlaneGeometry(width*.54,.09);lamp.rotateX(Math.PI/2);batch.add(lamp,'warm',x+nx*3+tx*width*.45,y+partitionH+.155,z+nz*3+tz*width*.45,1,1,1,yaw);lamp.dispose();
+   const lamp=new T.PlaneGeometry(width*.54,.09);lamp.rotateX(Math.PI/2);batch.add(lamp,'warm',x+nx*3+tx*width*.45,y+partitionH+.145,z+nz*3+tz*width*.45,1,1,1,yaw);lamp.dispose();
   }
  }
 }

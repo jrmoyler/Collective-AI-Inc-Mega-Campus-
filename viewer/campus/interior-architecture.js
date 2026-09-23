@@ -1,12 +1,30 @@
 import * as T from 'three';
 import {furnishOccupants} from './room-occupants.js';
 import {floorLayout} from './data.js';
-import {InteriorKit,furnishRoom,planter} from './interior-kit.js';
+import {InteriorKit,furnishRoom,planter,server,robot} from './interior-kit.js';
 import {roomIdentity,furnishRoomIdentity} from './room-identity.js';
 // Bake oriented room vertices: Babylon and offline glTF consume the same buffers.
 function place(group,r){
  const matrix=new T.Matrix4().makeRotationY(r.angle);matrix.setPosition(r.doorX,0,r.doorZ);
  group.traverse(o=>{if(o.geometry){o.geometry.applyMatrix4(matrix);o.geometry.computeBoundingBox();o.geometry.computeBoundingSphere();}});
+}
+// Very large technical halls read as empty warehouses with a handful of props.
+// Tile production cells (or rack rows for compute) over the free floor, leaving the
+// arrival zone, the centre aisle and every authored fixture's footprint clear.
+function populateHall(k,r,kind){
+ if(!r.fitout?.technical||r.w*r.d<500)return;
+ const taken=[],box=new T.Box3();
+ for(const m of k.parts){if(!m.geometry.boundingBox)m.geometry.computeBoundingBox();m.updateMatrix();box.copy(m.geometry.boundingBox).applyMatrix4(m.matrix);if(box.min.y<2.2)taken.push([box.min.x-.9,box.max.x+.9,box.min.z-.9,box.max.z+.9]);}
+ const free=(x0,x1,z0,z1)=>!taken.some(([a,b,c,d])=>x1>a&&x0<b&&z1>c&&z0<d);
+ const servers=kind==='servers',px=servers?3.2:6.5,pz=servers?1.13:6.5;
+ for(let z=7+pz/2;z<r.d-2;z+=pz)for(let x=-r.w/2+2+px/2;x<r.w/2-2;x+=px){
+  if(Math.abs(x)<2.6)continue;
+  const hx=servers?.5:1.9,hz=servers?.5:1.9;if(!free(x-hx,x+hx,z-hz,z+hz))continue;
+  if(servers){server(k,x,z);}
+  else{k.box('production cell base','graphite',x,.43,z,1.3,.85,.95,.025);k.box('production cell top','steel',x,.9,z,1.45,.09,1.1,.015);robot(k,x,z);
+   for(const s of [-1,1]){for(const dz of [-1.25,0,1.25])k.box('cell guard post','brass',x+s*1.6,.55,z+dz,.05,1.1,.05,.01);for(const y of [.55,1.05])k.box('cell guard rail','brass',x+s*1.6,y,z,.04,.04,2.6,.01);}k.box('cell floor marking','brass',x,.062,z+1.55,3.2,.004,.08,0);}
+  taken.push([x-hx,x+hx,z-hz,z+hz]);
+ }
 }
 export function createInteriorGeometry(f,level=0){
  const layout=floorLayout(f,level),root=new T.Group();root.name=`${f.key} floor ${level+1}`;
@@ -20,7 +38,8 @@ export function createInteriorGeometry(f,level=0){
   // A perimeter room receives daylight; an internal room has a solid back wall.
   const bx=source.doorX+Math.sin(source.angle)*source.localDepth,bz=source.doorZ+Math.cos(source.angle)*source.localDepth;
   const exterior=Math.abs(Math.abs(bz)-d/2)<.01;
-  if(exterior&&!r.fitout.privateRoom&&!/LED volume|Soundstage|Audio booths|Motion capture|Podcast/i.test(r.name)){
+  const glazed=exterior&&!r.fitout.privateRoom&&!/LED volume|Soundstage|Audio booths|Motion capture|Podcast/i.test(r.name);
+  if(glazed){
    k.box('perimeter sill','stone',0,.32,r.d,r.w,.64,.16,.01);
    k.box('clear exterior glazing','glass',0,(r.height+.64)/2,r.d,r.w,r.height-.64,.016,0);
    for(let x=-r.w/2+.1;x<r.w/2;x+=1.8)k.box('window mullion','graphite',x,r.height/2,r.d,.065,r.height,.14,.005);
@@ -51,11 +70,27 @@ export function createInteriorGeometry(f,level=0){
     k.box('sealed opal diffuser','warm',r.x+offset*r.w,h-0.53,r.z,.24,.02,r.d*.64,.004);
    }
    k.box('rectangular supply duct','steel',r.x,h-0.17,r.z,.55,.25,r.d*.89,.012);
+   if(r.w*r.d>250){
+    // Large technical halls expose their long-span structure: steel girders, deck ribs
+    // and warm high-bay pendants on a 6 m grid instead of a flat plaster lid.
+    for(let zz=r.z-r.d/2+3.75;zz<r.z+r.d/2-1;zz+=7.5){
+     k.box('steel girder web','graphite',r.x,h-.34,zz,r.w-.14,.52,.018,0);
+     for(const dy of [-.25,.25])k.box('steel girder flange','graphite',r.x,h-.34+dy,zz,r.w-.14,.022,.2,0);
+    }
+    for(let xx=left+.75;xx<right-.4;xx+=1.5)k.box('deck rib','plaster',xx,h-.07,r.z,.09,.1,r.d-.1,0);
+    const nx=Math.max(1,Math.round(r.w/6)),nz=Math.max(1,Math.round(r.d/6));
+    for(let a=0;a<nx;a++)for(let b=0;b<nz;b++){
+     const px=left+(a+.5)*r.w/nx,pz=r.z-r.d/2+(b+.5)*r.d/nz,y=Math.max(3.2,h-1.6);
+     k.bar('high-bay suspension','steel',[px,h-.6,pz],[px,y+.3,pz],.008);
+     k.cylinder('high-bay reflector','graphite',px,y+.14,pz,.29,.28,.1);
+     k.cylinder('high-bay lens','warm',px,y-.005,pz,.25,.012);
+    }
+   }
   }else if(profile.ceiling==='acoustic'){
-   for(let xx=left+.6;xx<right-.4;xx+=.6)k.box('library acoustic fin','fabric',xx,h-0.18,r.z,.08,.22,r.d*.68,.009);
+   for(let xx=left+.6;xx<right-.4;xx+=.6)k.box('library acoustic fin','oak',xx,h-0.18,r.z,.08,.22,r.d*.68,.009);
    for(const dz of [-.27,.27]){k.box('reading room pendant body','brass',r.x,h-0.48,r.z+dz*r.d,r.w*.66,.06,.09,.012);k.box('reading room pendant lens','warm',r.x,h-0.518,r.z+dz*r.d,r.w*.64,.015,.065,.003);}
   }else{
-   for(const offset of [-.26,.26]){k.box('acoustic ceiling raft','fabric',r.x+offset*r.w,h-0.13,r.z,r.w*.35,.10,r.d*.53,.015);k.box('room light diffuser','warm',r.x+offset*r.w,h-0.235,r.z,.08,.025,r.d*.5,.006);}
+   for(const offset of [-.26,.26]){k.box('acoustic ceiling raft','linen',r.x+offset*r.w,h-0.13,r.z,r.w*.35,.10,r.d*.53,.015);k.box('room light diffuser','warm',r.x+offset*r.w,h-0.235,r.z,.08,.025,r.d*.5,.006);}
   }
   // Timber belongs to the solid room partition, never suspended in exterior glass.
   const panelW=Math.max(.7,Math.min(1.4,r.d/6));
@@ -77,14 +112,14 @@ export function createInteriorGeometry(f,level=0){
   k.cylinder('sprinkler head','brass',r.x+.75,h-0.125,r.z,.014,.07);
   k.box('room thermostat','porcelain',dr+.28,1.42,edge+side*.12,.085,.11,.026,.008);
   k.box('thermostat display','display',dr+.28,1.44,edge+side*.139,.057,.035,.004,.001);
-  const furniture=new InteriorKit(`room-${i+1}: ${r.name}`);const kind=furnishRoom(furniture,r);const authored=furnishRoomIdentity(furniture,r,i);if(!profile.technical&&r.w>7&&r.d>6){if(authored.seed&1)planter(furniture,r.x-r.w*.34,r.z-side*r.d*.31,.36);if(authored.seed&2)planter(furniture,r.x+r.w*.34,r.z-side*r.d*.31,.36);}const occupants=new InteriorKit(`occupants room ${i+1}`),occupiedSeats=furnishOccupants(occupants,furniture,r,authored);const people=occupants.finish(false);people.userData.occupiedSeats=occupiedSeats;people.userData.identityKey=authored.key;place(people,source);root.add(people);const room=furniture.finish(true);room.userData.kind=kind;room.userData.fitout=profile;room.userData.identityKey=authored.key;room.userData.geometrySignature=authored.geometrySignature;place(room,source);root.add(room);
-  const shell=k.finish(true);shell.userData.identityKey=identity.key;place(shell,source);root.add(shell);
+  const furniture=new InteriorKit(`room-${i+1}: ${r.name}`);const kind=furnishRoom(furniture,r);const authored=furnishRoomIdentity(furniture,r,i);populateHall(furniture,r,kind);if(!profile.technical&&r.w>7&&r.d>6){if(authored.seed&1)planter(furniture,r.x-r.w*.34,r.z-side*r.d*.31,.36);if(authored.seed&2)planter(furniture,r.x+r.w*.34,r.z-side*r.d*.31,.36);}const occupants=new InteriorKit(`occupants room ${i+1}`),occupiedSeats=furnishOccupants(occupants,furniture,r,authored);const people=occupants.finish(false);people.userData.occupiedSeats=occupiedSeats;people.userData.identityKey=authored.key;place(people,source);root.add(people);const room=furniture.finish(true);room.userData.kind=kind;room.userData.fitout=profile;room.userData.identityKey=authored.key;room.userData.geometrySignature=authored.geometrySignature;place(room,source);root.add(room);
+  const shell=k.finish(true);shell.userData.identityKey=identity.key;shell.userData.daylight=glazed;place(shell,source);root.add(shell);
  }
  const k=new InteriorKit('architecture circulation');
  k.box('structural floor','stone',0,-.15,0,w,.3,d,0);
- k.box('raised finish floor','stone',0,.015,0,w,.03,d,0);
+ k.box('raised finish floor','floorStone',0,.015,0,w,.03,d,0);
  for(const c of layout.circulation){
-  k.box('circulation stone inlay','stone',c.x,.04,c.z,c.w,.025,c.d,0);
+  k.box('circulation stone inlay','floorStone',c.x,.04,c.z,c.w,.025,c.d,0);
   k.box('circulation acoustic ceiling','plaster',c.x,3.64,c.z,c.w,.12,c.d,0);
   const length=c.axis==='H'?c.w:c.d;
   for(let t=-length/2+1;t<length/2-.3;t+=2.4){

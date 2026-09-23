@@ -47,3 +47,41 @@ test('lecture hall uses fixed seats with a clear central aisle inside its room',
   assert.ok(Math.abs(seat.position.z-room.z)<room.d/2-.3);
  }
 });
+
+test('Babylon receives three.js triangles reversed so boxes show their outer faces',async()=>{
+ const {frontFacing}=await import('../viewer/campus/interior.js');
+ const src=Uint16Array.from([0,1,2,2,3,0]),out=frontFacing(src);
+ assert.ok(out instanceof Uint16Array);assert.deepEqual(Array.from(out),[0,2,1,2,0,3]);
+ assert.deepEqual(Array.from(src),[0,1,2,2,3,0],'shared three.js buffers are never mutated');
+});
+
+test('interior environment is lit from the ceiling and bounces warm from the floor',async()=>{
+ const {interiorRadiance,interiorEnvironmentFaces}=await import('../viewer/campus/interior-lighting.js');
+ const lum=c=>c[0]*.2126+c[1]*.7152+c[2]*.0722;
+ assert.ok(lum(interiorRadiance(.05,1,.02))>lum(interiorRadiance(0,-1,0))*1.3,'ceiling hemisphere brighter than floor bounce');
+ const floor=interiorRadiance(0,-1,0);assert.ok(floor[0]>floor[2],'warm bounce');
+ const faces=interiorEnvironmentFaces(8);assert.equal(faces.length,6);
+ for(const f of faces)for(const v of f)assert.ok(Number.isFinite(v)&&v>=0);
+});
+
+test('furniture rooms receive non-colliding contact occlusion under floor-standing parts',()=>{
+ const kit=new InteriorKit('room-1: Contact review');desk(kit,0,0);sofa(kit,3,0);
+ const root=kit.finish(true),contact=root.children.find(m=>m.name.endsWith('/contact'));
+ assert.ok(contact,'contact footprint mesh');assert.equal(contact.userData.collision,false);
+ const pos=contact.geometry.attributes.position;assert.ok(pos.count>=8&&pos.count%4===0);
+ for(let i=0;i<pos.count;i++){assert.ok(pos.getY(i)>.057&&pos.getY(i)<.07,'above every floor finish');}
+ const alpha=contact.geometry.attributes.color;for(let i=0;i<alpha.count;i++)assert.ok(alpha.getW(i)>0&&alpha.getW(i)<.7);
+ const plain=new InteriorKit('fixture');desk(plain,0,0);assert.ok(!plain.finish(true).children.some(m=>m.name.endsWith('/contact')),'only room kits');
+});
+
+test('procedural finishes tile seamlessly at the one-metre repeat',async()=>{
+ const {createCanvas}=await import('@napi-rs/canvas');const {paintFinish}=await import('../viewer/campus/surface-textures.js');
+ for(const name of ['plaster','stone','slate','fabric','leather','oak','plank','terrazzo']){
+  const size=128,c=createCanvas(size,size),ctx=c.getContext('2d');paintFinish(ctx,name,0xa08060,size);
+  const d=ctx.getImageData(0,0,size,size).data,px=(x,y)=>(d[(y*size+x)*4]+d[(y*size+x)*4+1]+d[(y*size+x)*4+2])/3;
+  let wrap=0,inner=0;for(let y=0;y<size;y++){wrap+=Math.abs(px(0,y)-px(size-1,y));inner+=Math.abs(px(size/2,y)-px(size/2-1,y));}
+  assert.ok(wrap<=inner*2.5+size*2,name+' horizontal seam');
+  let variance=0;const mean=Array.from({length:size},(_,x)=>px(x,40)).reduce((a,b)=>a+b)/size;for(let x=0;x<size;x++)variance+=(px(x,40)-mean)**2;
+  assert.ok(variance/size>.5,name+' is not a flat fill');
+ }
+});

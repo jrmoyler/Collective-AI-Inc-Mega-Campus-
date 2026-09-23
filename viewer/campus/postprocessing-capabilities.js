@@ -1,13 +1,15 @@
 import {withRendererState} from './render-lifecycle.js';
 
-// MAX_SAMPLES is global. RGBA16F and DEPTH_COMPONENT24 may support fewer counts,
+// MAX_SAMPLES is global. RGBA16F and the depth format may support fewer counts,
 // and a mismatched pair produces an incomplete framebuffer without a JS throw.
-export function getPostprocessingSamples(renderer,requested=4){
+// floatDepth selects the DEPTH_COMPONENT32F attachment used with reversed depth.
+export function getPostprocessingSamples(renderer,requested=4,{floatDepth=false}={}){
  if(!renderer.extensions.has('EXT_color_buffer_float')&&!renderer.extensions.has('EXT_color_buffer_half_float'))return null;
  const gl=renderer.getContext(),limit=Math.min(requested,renderer.capabilities.maxSamples);
  try{
   const color=Array.from(gl.getInternalformatParameter(gl.RENDERBUFFER,gl.RGBA16F,gl.SAMPLES)||[]);
-  const depth=Array.from(gl.getInternalformatParameter(gl.RENDERBUFFER,gl.DEPTH_COMPONENT24,gl.SAMPLES)||[]);
+  const depthFormat=floatDepth?(gl.DEPTH_COMPONENT32F??36012):gl.DEPTH_COMPONENT24;
+  const depth=Array.from(gl.getInternalformatParameter(gl.RENDERBUFFER,depthFormat,gl.SAMPLES)||[]);
   return Math.max(0,...color.filter(n=>n>0&&n<=limit&&depth.includes(n)));
  }catch{return 0;}
 }
