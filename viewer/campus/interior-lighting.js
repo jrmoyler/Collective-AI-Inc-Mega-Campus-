@@ -9,7 +9,6 @@ import {ImageProcessingConfiguration} from '@babylonjs/core/Materials/imageProce
 import {DefaultRenderingPipeline} from '@babylonjs/core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.js';
 import '@babylonjs/core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent.js';
 import {Color4} from '@babylonjs/core/Maths/math.color.js';
-import {Matrix} from '@babylonjs/core/Maths/math.vector.js';
 
 const smooth=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
 // Linear-light radiance of an idealised premium workplace seen from eye height.
@@ -58,8 +57,6 @@ export function createInteriorEnvironment(scene,engine,{size=48}={}){
   texture=new RawCubeTexture(scene,data,size,Engine.TEXTUREFORMAT_RGBA,Engine.TEXTURETYPE_UNSIGNED_BYTE,true);
  }
  texture.gammaSpace=false;
- // Babylon samples cube maps with Y mirrored in right-handed scenes; keep the ceiling overhead.
- if(scene.useRightHandedSystem)texture.setReflectionTextureMatrix(Matrix.Scaling(1,-1,1));
  texture.sphericalPolynomial=CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial({size,right:faces[0],left:faces[1],up:faces[2],down:faces[3],front:faces[4],back:faces[5],format:Engine.TEXTUREFORMAT_RGBA,type:Engine.TEXTURETYPE_FLOAT,gammaSpace:false});
  scene.environmentTexture=texture;
  // Convolve for GGX roughness so polished stone shows soft luminaire streaks.
@@ -111,7 +108,8 @@ export function createExteriorBackdrop(scene,layout,level,{CreateCylinder,Standa
  const storey=4.2,ground=-level*storey,top=60,bottom=ground-40,radius=Math.max(layout.w,layout.d)*.5+55;
  const tex=new DynamicTexture('exterior view',{width:2048,height:512},scene,true);
  paintExteriorView(tex.getContext(),2048,512,{top,bottom,ground});tex.update();tex.uScale=3;tex.wrapU=1;
- const m=new StandardMaterial('exterior view',scene);m.disableLighting=true;m.emissiveTexture=tex;m.emissiveColor=new Color3(1.15,1.12,1.08);m.backFaceCulling=false;m.fogEnabled=false;
+ const m=new StandardMaterial('exterior view',scene);// StandardMaterial adds (not multiplies) emissive texture and diffuse under disableLighting.
+ m.disableLighting=true;m.diffuseColor=Color3.Black();m.specularColor=Color3.Black();m.emissiveColor=Color3.Black();m.emissiveTexture=tex;tex.level=1;m.backFaceCulling=false;m.fogEnabled=false;
  const view=CreateCylinder('exterior view',{height:top-bottom,diameter:radius*2,tessellation:64,cap:0,sideOrientation:Mesh.BACKSIDE},scene);
  view.position.y=(top+bottom)/2;view.material=m;view.isPickable=false;view.checkCollisions=false;view.applyFog=false;
  return view;

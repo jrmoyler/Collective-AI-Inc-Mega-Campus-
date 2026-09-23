@@ -36,8 +36,8 @@ TEX.cloth.repeat.set(6,6);
 const phys=p=>new T.MeshPhysicalMaterial({envMapIntensity:1.15,...p});
 const std=p=>new T.MeshStandardMaterial({envMapIntensity:1,...p});
 export const FLEET_MATERIALS={
- paint:phys({name:'pearl white clearcoat',color:0xeef0ec,roughness:.3,clearcoat:1,clearcoatRoughness:.05}),
- cabPaint:phys({name:'graphite clearcoat',color:0x30363c,roughness:.34,metalness:.35,clearcoat:1,clearcoatRoughness:.08}),
+ paint:phys({name:'pearl white clearcoat',color:0xd9dcd8,roughness:.36,clearcoat:1,clearcoatRoughness:.05}),
+ cabPaint:phys({name:'graphite clearcoat',color:0x2c3237,roughness:.38,metalness:.08,clearcoat:1,clearcoatRoughness:.08}),
  glass:phys({name:'tinted laminated glass',color:0x0b141a,roughness:.035,metalness:.25,clearcoat:1,clearcoatRoughness:.02,envMapIntensity:2.3}),
  trim:std({name:'satin black trim',color:0x15181b,roughness:.55,metalness:.15}),
  sensor:phys({name:'sensor glass',color:0x07090b,roughness:.1,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.8}),

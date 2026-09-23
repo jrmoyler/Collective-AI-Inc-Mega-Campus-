@@ -21,6 +21,10 @@ import {createInteriorMaterials} from './interior-materials.js';
 import {createInteriorEnvironment,createInteriorPipeline,createExteriorBackdrop} from './interior-lighting.js';
 import {CreateCylinder} from '@babylonjs/core/Meshes/Builders/cylinderBuilder.js';
 import {interiorPixelRatio} from './quality.js';
+// three.js authors counter-clockwise front faces; Babylon's right-handed mode culls the
+// opposite winding. Without reversal every box renders its far (inside) faces, so floors
+// shade with downward normals and lights/IBL appear to come from below.
+export function frontFacing(indices){const out=new indices.constructor(indices.length);for(let i=0;i<indices.length;i+=3){out[i]=indices[i];out[i+1]=indices[i+2];out[i+2]=indices[i+1];}return out;}
 export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOverride=null,quality='balanced',onFrame=()=>{},onLifecycle=()=>{},onError=error=>console.error(error)}){
  const engine=engineOverride||new Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true});
  const scale=()=>engine.setHardwareScalingLevel(1/interiorPixelRatio(globalThis.devicePixelRatio||1,quality));
@@ -36,7 +40,7 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
   const finishes=createInteriorMaterials(scene,new Set(assembly.root.children.flatMap(g=>g.children.map(m=>m.material.name))),{quality,textureScale:engineOverride?.25:1});for(const m of Object.values(finishes))m.maxSimultaneousLights=8;
   for(const source of assembly.root.children.flatMap(g=>g.children)){
    const mesh=new Mesh(source.name,scene),data=new VertexData(),g=source.geometry;
-   data.positions=g.attributes.position.array;data.normals=g.attributes.normal.array;data.uvs=g.attributes.uv.array;if(g.attributes.color)data.colors=g.attributes.color.array;data.indices=g.index?.array||Uint32Array.from({length:g.attributes.position.count},(_,i)=>i);data.applyToMesh(mesh);
+   data.positions=g.attributes.position.array;data.normals=g.attributes.normal.array;data.uvs=g.attributes.uv.array;if(g.attributes.color)data.colors=g.attributes.color.array;data.indices=frontFacing(g.index?.array||Uint32Array.from({length:g.attributes.position.count},(_,i)=>i));data.applyToMesh(mesh);
    mesh.material=finishes[source.material.name];if(g.attributes.color){mesh.hasVertexAlpha=true;mesh.isPickable=false;}mesh.checkCollisions=!!source.userData.collision;mesh.receiveShadows=true;mesh.metadata={components:source.userData.components};
   }
   camera=new FreeCamera('visitor',new Vector3(layout.entry[0],1.67,layout.entry[1]),scene);camera.minZ=.06;camera.maxZ=160;camera.fov=.9;camera.speed=.26;camera.angularSensibility=3200;camera.inertia=.5;camera.checkCollisions=true;camera.applyGravity=false;camera.ellipsoid=new Vector3(.26,.76,.26);camera.keysUp=[87,38];camera.keysDown=[83,40];camera.keysLeft=[65,37];camera.keysRight=[68,39];camera.setTarget(new Vector3(layout.circulation[0].x,1.67,layout.circulation[0].z));camera.attachControl(canvas,true);
@@ -54,14 +58,14 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
    for(let a=0;a<nx;a++)for(let b=0;b<nz;b++){
     const lat=nx===1?0:(a?1:-1)*r.localWidth*.26,dep=(b+.5)/nz*r.localDepth;
     const lamp=new SpotLight('room luminaire '+i+'.'+(a*nz+b),new Vector3(r.doorX+fx*dep+lx*lat,r.height-.3,r.doorZ+fz*dep+lz*lat),new Vector3(0,-1,0),2.4,1.6,scene);lamp.innerAngle=1.3;
-    const area=r.localWidth*r.localDepth/(nx*nz);lamp.intensity=(technical?62:50)*Math.min(1.5,.75+area/40)*((r.height-.3)/3.6)**2;lamp.range=r.height*3.2;
+    const area=r.localWidth*r.localDepth/(nx*nz);lamp.intensity=(technical?38:30)*Math.min(1.5,.75+area/40)*((r.height-.3)/3.6)**2;lamp.range=r.height*3.2;
     lamp.diffuse=technical?new Color3(.95,.97,1):new Color3(1,.84,.66);lamp.specular=lamp.diffuse.scale(.85);lamp.includedOnlyMeshes=roomMeshes[i];lights.push(lamp);
    }
   });
   // Corridor downlights: warm pools under the suspended linear luminaires.
   const corridorSpots=[];for(const c of layout.circulation){const length=c.axis==='H'?c.w:c.d;for(let t=-length/2+2.2;t<length/2-1;t+=7.2)corridorSpots.push([c.x+(c.axis==='H'?t:0),c.z+(c.axis==='V'?t:0)]);}
   corridorSpots.sort((a,b)=>Math.hypot(a[0]-layout.entry[0],a[1]-layout.entry[1])-Math.hypot(b[0]-layout.entry[0],b[1]-layout.entry[1]));
-  for(const [x,z] of corridorSpots.slice(0,6)){const lamp=new SpotLight('corridor downlight',new Vector3(x,3.4,z),new Vector3(0,-1,0),2.2,1.8,scene);lamp.intensity=34;lamp.range=11;lamp.diffuse=new Color3(1,.83,.64);lamp.includedOnlyMeshes=circulationMeshes;lights.push(lamp);}
+  for(const [x,z] of corridorSpots.slice(0,6)){const lamp=new SpotLight('corridor downlight',new Vector3(x,3.4,z),new Vector3(0,-1,0),2.2,1.8,scene);lamp.intensity=20;lamp.range=11;lamp.diffuse=new Color3(1,.83,.64);lamp.includedOnlyMeshes=circulationMeshes;lights.push(lamp);}
   // The visited room receives a shadowed key: sunlight through glazing, or a soft overhead key in internal rooms.
   const key=new DirectionalLight('room key light',new Vector3(0,-1,0),scene);key.intensity=0;key.includedOnlyMeshes=[];shadowLight=key;
   function assignShadow(index){
@@ -70,7 +74,7 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
    const fx=Math.sin(r.angle),fz=Math.cos(r.angle),lx=Math.cos(r.angle),lz=-Math.sin(r.angle);
    const dir=daylight?new Vector3(-fx*.62+lx*.32,-.72,-fz*.62+lz*.32):new Vector3(lx*.22+fx*.3,-1,lz*.22+fz*.3);dir.normalize();
    key.direction=dir;key.position=new Vector3(r.x,r.height,r.z).subtract(dir.scale(30));
-   key.intensity=daylight?5.5:1.3;key.diffuse=daylight?new Color3(1,.9,.76):new Color3(1,.88,.74);key.specular=key.diffuse.clone();
+   key.intensity=daylight?4.5:.9;key.diffuse=daylight?new Color3(1,.9,.76):new Color3(1,.88,.74);key.specular=key.diffuse.clone();
    key.includedOnlyMeshes=meshes;key.shadowMinZ=1;key.shadowMaxZ=70;
    if(engineOverride)return;
    if(!shadow){
