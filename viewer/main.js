@@ -104,8 +104,11 @@ function setDay(day){
  scene.background.set(day?0xa9c3d8:0x111a33);scene.fog.color.set(day?0xa9c3d8:0x1a2442);
  // Keep the complete campus in clear air at the default ~1.2 km aerial.
  scene.fog.near=day?2300:1700;scene.fog.far=day?7200:6200;
- setDuskMaterials(!day);
- if(bloom){bloom.strength=day?.06:.3;bloom.radius=day?.4:.55;bloom.threshold=day?1.25:1.05;}
+ setDuskMaterials(!day);streetFurniture?.userData.setDusk?.(!day);
+ // Daylight needs no glow: HDR sky, animated guidance strips and sunlit white
+ // shuttles spread the low bloom mips into a milky veil. Dusk keeps a tight glow
+ // for luminaires and lit glazing only.
+ if(bloom){bloom.enabled=!day;bloom.strength=.26;bloom.radius=.3;bloom.threshold=1.1;}
  renderer.toneMappingExposure=day?.9:1.12;
  if(ambient)ambient.intensity=day?.04:.03;
  // Reflections come from the same outdoor sky, not an indoor showroom.
@@ -204,7 +207,7 @@ async function boot(){
  let last=performance.now(),frames=0;const projected=new T.Vector3(),viewPoint=new T.Vector3();
  function render(now){
   const dt=Math.min((now-last)/1000,.05);last=now;if(interior||entering||document.hidden||!graphicsReady)return;if(!reduced)clock+=dt;
-  landscape?.update(clock);infrastructure?.update(clock);fleets?.update(clock);
+  landscape?.update(clock);infrastructure?.update(clock);fleets?.update(clock,camera.position);
   if(flyover&&!reduced){camera.position.set(Math.sin(clock*.032)*1100,720,Math.cos(clock*.032)*1100);controls.target.set(0,12,-40);}
   controls.update();streetFurniture?.userData.update(camera.position);for(const building of buildings)building.userData.updateDetails?.(camera.position);sky.position.copy(camera.position);sky.material.uniforms.time.value=clock;
   const orbitDistance=camera.position.distanceTo(controls.target);if(!legacyDepth)depthRange(camera,orbitDistance);
@@ -235,7 +238,7 @@ async function boot(){
  infrastructure=createInfrastructure();scene.add(infrastructure.root);
  fleets=createFleets(landscape.roads);scene.add(fleets.root);
  new GLTFLoader().load(`${import.meta.env.BASE_URL}models/synergy-node.glb`,g=>{if(!renderer){disposeSceneResources(g.scene);return;}for(const [x,z] of SPIRES){const node=g.scene.clone(true);node.position.set(x+13,0,z);node.name='Blender physical synergy node';scene.add(node);}},undefined,e=>{console.warn('Synergy node detail unavailable',e);message('Some node detail failed to load; mesh towers remain available.');});
- new GLTFLoader().load(`${import.meta.env.BASE_URL}models/campus-street-furniture.glb`,g=>{if(!renderer){disposeSceneResources(g.scene);return;}streetFurniture=createStreetFurniture(g.scene);streetFurniture.userData.update(camera.position);scene.add(streetFurniture);},undefined,e=>console.warn('Street furniture detail unavailable',e));
+ new GLTFLoader().load(`${import.meta.env.BASE_URL}models/campus-street-furniture.glb`,g=>{if(!renderer){disposeSceneResources(g.scene);return;}streetFurniture=createStreetFurniture(g.scene);streetFurniture.userData.update(camera.position);streetFurniture.userData.setDusk?.($('#day')?.getAttribute('aria-pressed')!=='true');scene.add(streetFurniture);},undefined,e=>console.warn('Street furniture detail unavailable',e));
  const ray=new T.Raycaster(),pointer=new T.Vector2();let start=null;renderer.domElement.addEventListener('pointerdown',e=>{start=[e.clientX,e.clientY];});renderer.domElement.addEventListener('pointerup',e=>{if(!start||Math.hypot(e.clientX-start[0],e.clientY-start[1])>7)return;pointer.set(e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2);ray.setFromCamera(pointer,camera);const hit=ray.intersectObjects(buildings,true)[0];if(hit)select(hit.object.userData.facility);start=null;});
  renderer.domElement.addEventListener('webglcontextrestored',async event=>{
   if(!renderer||renderer.domElement!==event.currentTarget)return;
