@@ -80,7 +80,7 @@ export function createInteriorPipeline(scene,camera,quality='balanced'){
   p.samples=webgl2?(high?4:mobile?2:4):1;p.fxaaEnabled=!webgl2||mobile;
   p.bloomEnabled=true;p.bloomThreshold=.82;p.bloomWeight=high?.32:.24;p.bloomKernel=high?64:32;p.bloomScale=.5;
   p.imageProcessingEnabled=true;const pp=p.imageProcessing;
-  pp.toneMappingEnabled=true;pp.toneMappingType=ImageProcessingConfiguration.TONEMAPPING_ACES;pp.exposure=1.18;pp.contrast=1.08;
+  pp.toneMappingEnabled=true;pp.toneMappingType=ImageProcessingConfiguration.TONEMAPPING_ACES;pp.exposure=1.06;pp.contrast=1.1;
   pp.vignetteEnabled=true;pp.vignetteWeight=1.6;pp.vignetteStretch=.2;pp.vignetteCameraFov=camera.fov;pp.vignetteColor=new Color4(.08,.05,.03,0);
   if(high){p.sharpenEnabled=true;p.sharpen.edgeAmount=.18;}
   p.grainEnabled=!mobile;p.grain.intensity=high?4:3;p.grain.animated=false;
@@ -98,11 +98,21 @@ export function paintExteriorView(ctx,width,height,{top,bottom,ground}){
  ctx.globalAlpha=.35;for(let i=0;i<40;i++){const x=r()*width,y=g*(.15+r()*.55),w=60+r()*220;ctx.fillStyle='#f4f6f6';ctx.beginPath();ctx.ellipse(x,y,w,w*.12,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(x-width,y,w,w*.12,0,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;
  const px=height/(top-bottom);
  // Distant pavilions (haze-blended), then two canopy bands, then lawn and paths.
- for(let i=0;i<14;i++){const x=r()*width,w=(40+r()*120)*px/2,h=(8+r()*22)*px;ctx.fillStyle=`rgb(${168+r()*20|0},${178+r()*16|0},${184+r()*14|0})`;ctx.fillRect(x,g-h,w,h);ctx.fillStyle='rgba(120,150,170,.35)';for(let y=g-h+px*1.5;y<g-px;y+=px*3.8)ctx.fillRect(x+2,y,w-4,px*1.3);}
- const canopy=(base,amp,color,step)=>{ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(0,g+2);for(let x=0;x<=width;x+=step){const t=x/width*Math.PI*2;const h=base+amp*(.5+.25*Math.sin(t*7)+.15*Math.sin(t*23+1)+.1*Math.sin(t*61))+r()*amp*.25;ctx.lineTo(x,g-h*px);}ctx.lineTo(width,g+2);ctx.closePath();ctx.fill();};
- canopy(6,9,'#8fa08a',6);canopy(3,8,'#5f7a55',4);canopy(1,5,'#4a6443',3);
+ for(let i=0;i<9;i++){const x=r()*width,w=(30+r()*80)*px/2,h=(6+r()*12)*px;ctx.fillStyle=`rgb(${168+r()*20|0},${178+r()*16|0},${184+r()*14|0})`;ctx.fillRect(x,g-h,w,h);ctx.fillStyle='rgba(120,150,170,.35)';for(let y=g-h+px*1.5;y<g-px;y+=px*3.8)ctx.fillRect(x+2,y,w-4,px*1.3);}
+ // Tree crowns: clustered, self-shaded spheres in three receding rows with aerial haze.
+ const rows=[[16,8,[122,142,118],.5,1.1],[12,7,[84,112,74],.22,1.5],[8,5,[62,92,52],0,2]];
+ for(const [height,crown,[cr,cg,cb],haze,scale] of rows){
+  const count=Math.round(width/(crown*px*.9*scale));
+  for(let i=0;i<count;i++){
+   const x=(i+r()*.8)/count*width,h=(height*(.7+r()*.5))*px*scale,rad=crown*px*scale*(.45+r()*.35),y=g-h+rad*.9;
+   ctx.fillStyle=`rgb(${cr*.55|0},${cg*.5|0},${cb*.45|0})`;ctx.fillRect(x-rad*.06,y,rad*.12,g-y);
+   for(let k=0;k<7;k++){const ox=(r()-.5)*rad*1.1,oy=(r()-.6)*rad*.9,rr=rad*(.45+r()*.4),shade=.78+(-(oy/rad)+(-ox/rad)*.4)*.25+r()*.1;
+    const mix=c=>Math.round(c*shade*(1-haze)+226*haze);
+    for(const dx of [0,-width,width]){ctx.fillStyle=`rgb(${mix(cr)},${mix(cg)},${mix(cb)})`;ctx.beginPath();ctx.arc(x+ox+dx,y+oy,rr,0,Math.PI*2);ctx.fill();}}
+  }
+ }
  const lawn=ctx.createLinearGradient(0,g,0,height);lawn.addColorStop(0,'#6d8458');lawn.addColorStop(1,'#56703f');ctx.fillStyle=lawn;ctx.fillRect(0,g,width,height-g);
- ctx.fillStyle='#b9b4a6';for(let i=0;i<6;i++){const y=g+(height-g)*(.2+i*.14);ctx.fillRect(0,y,width,Math.max(2,(y-g)*.05));}
+ ctx.globalAlpha=.12;for(let i=0;i<500;i++){ctx.fillStyle=r()>.5?'#8aa070':'#4d6537';ctx.beginPath();ctx.ellipse(r()*width,g+(height-g)*r(),20+r()*60,3+r()*8,0,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;
 }
 export function createExteriorBackdrop(scene,layout,level,{CreateCylinder,StandardMaterial,DynamicTexture,Color3,Mesh}){
  const storey=4.2,ground=-level*storey,top=60,bottom=ground-40,radius=Math.max(layout.w,layout.d)*.5+55;

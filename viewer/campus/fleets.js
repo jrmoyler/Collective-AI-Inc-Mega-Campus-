@@ -61,7 +61,7 @@ export const FLEET_MATERIALS={
  navGreen:std({name:'starboard nav light',color:0x002a08,emissive:0x19ff5a,emissiveIntensity:3}),
  strobe:std({name:'anti-collision strobe',color:0xffffff,emissive:0xffffff,emissiveIntensity:4}),
  kraft:std({name:'corrugated parcel',color:0xffffff,map:TEX.kraft,roughness:.92}),
- androidShell:phys({name:'android white shell',color:0xffffff,map:TEX.seams,roughness:.3,clearcoat:.55,clearcoatRoughness:.12}),
+ androidShell:phys({name:'android white shell',color:0xe4e6e3,map:TEX.seams,roughness:.3,clearcoat:.55,clearcoatRoughness:.12}),
  androidJoint:std({name:'android graphite joint',color:0x2b3036,metalness:.6,roughness:.36}),
  visor:phys({name:'android visor',color:0x040608,roughness:.05,metalness:.2,clearcoat:1,clearcoatRoughness:.02,envMapIntensity:2.2}),
  rubber:std({name:'elastomer',color:0x1a1c1e,roughness:.75}),
