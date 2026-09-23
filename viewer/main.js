@@ -89,8 +89,9 @@ function createAtmosphere(){
 let environmentTarget=null;
 function setDay(day){
  if(!sky||!sun||!hemi||!rim)return;
- // Dusk: sun just above the horizon for a long warm rake under a navy sky.
- const direction=new T.Vector3().setFromSphericalCoords(1,T.MathUtils.degToRad(day?48:85),T.MathUtils.degToRad(208));
+ // Dusk: sun low behind the default aerial camera, so facades facing the viewer
+ // take a warm rake while the northern sky ahead stays deep navy.
+ const direction=new T.Vector3().setFromSphericalCoords(1,T.MathUtils.degToRad(day?48:85),T.MathUtils.degToRad(day?208:35));
  sun.userData.direction=direction;
  sun.position.copy(direction).multiplyScalar(1400);
  sky.material.uniforms.sunPosition.value.copy(direction);
@@ -98,18 +99,18 @@ function setDay(day){
  $('#day')?.setAttribute('aria-pressed',String(day));
  // The sky PMREM already carries most skylight; a strong hemisphere on top of it
  // flattened every facade to a milky white. Keep fill low and let the sun model.
- hemi.intensity=day?.7:.62;hemi.color.set(day?0xd6e6f2:0x4f64a0);hemi.groundColor.set(day?0x5a5644:0x2e2619);
+ hemi.intensity=day?.7:1;hemi.color.set(day?0xd6e6f2:0x4f64a0);hemi.groundColor.set(day?0x5a5644:0x2e2619);
  sun.intensity=day?2.9:1.9;sun.color.set(day?0xfff1dc:0xffae6a);
  rim.intensity=day?.18:.22;rim.color.set(day?0xc4dbed:0x6f82c8);
  scene.background.set(day?0xa9c3d8:0x111a33);scene.fog.color.set(day?0xa9c3d8:0x1a2442);
  // Keep the complete campus in clear air at the default ~1.2 km aerial.
- scene.fog.near=day?2300:1700;scene.fog.far=day?7200:6200;
+ scene.fog.near=day?2300:1400;scene.fog.far=day?7200:6200;
  setDuskMaterials(!day);streetFurniture?.userData.setDusk?.(!day);
  // Daylight needs no glow: HDR sky, animated guidance strips and sunlit white
  // shuttles spread the low bloom mips into a milky veil. Dusk keeps a tight glow
  // for luminaires and lit glazing only.
  if(bloom){bloom.enabled=!day;bloom.strength=.26;bloom.radius=.3;bloom.threshold=1.1;}
- renderer.toneMappingExposure=day?.9:1.12;
+ renderer.toneMappingExposure=day?.9:1.25;
  if(ambient)ambient.intensity=day?.04:.03;
  // Reflections come from the same outdoor sky, not an indoor showroom.
  if(getPostprocessingSamples(renderer)===null){scene.environment=null;environmentTarget?.dispose();environmentTarget=null;return;}
@@ -121,7 +122,7 @@ function setDay(day){
   next=withRendererState(renderer,()=>pmrem.fromScene(envScene,.04,.1,10000));validateRenderTargets(renderer,[next]);scene.environment=next.texture;
   environmentTarget?.dispose();environmentTarget=next;
   // Sky radiance is unscaled physical output; at 0.85 it veiled the scene.
-  scene.environmentIntensity=day?.3:.24;
+  scene.environmentIntensity=day?.3:.35;
  }catch(e){if(next!==environmentTarget)next?.dispose();console.warn('Atmosphere reflections unavailable',e);}
  finally{pmrem?.dispose();if(envSky?.material!==sky.material)envSky?.material.dispose();}
 }
