@@ -20,7 +20,8 @@ export function createInteriorGeometry(f,level=0){
   // A perimeter room receives daylight; an internal room has a solid back wall.
   const bx=source.doorX+Math.sin(source.angle)*source.localDepth,bz=source.doorZ+Math.cos(source.angle)*source.localDepth;
   const exterior=Math.abs(Math.abs(bz)-d/2)<.01;
-  if(exterior&&!r.fitout.privateRoom&&!/LED volume|Soundstage|Audio booths|Motion capture|Podcast/i.test(r.name)){
+  const glazed=exterior&&!r.fitout.privateRoom&&!/LED volume|Soundstage|Audio booths|Motion capture|Podcast/i.test(r.name);
+  if(glazed){
    k.box('perimeter sill','stone',0,.32,r.d,r.w,.64,.16,.01);
    k.box('clear exterior glazing','glass',0,(r.height+.64)/2,r.d,r.w,r.height-.64,.016,0);
    for(let x=-r.w/2+.1;x<r.w/2;x+=1.8)k.box('window mullion','graphite',x,r.height/2,r.d,.065,r.height,.14,.005);
@@ -52,10 +53,10 @@ export function createInteriorGeometry(f,level=0){
    }
    k.box('rectangular supply duct','steel',r.x,h-0.17,r.z,.55,.25,r.d*.89,.012);
   }else if(profile.ceiling==='acoustic'){
-   for(let xx=left+.6;xx<right-.4;xx+=.6)k.box('library acoustic fin','fabric',xx,h-0.18,r.z,.08,.22,r.d*.68,.009);
+   for(let xx=left+.6;xx<right-.4;xx+=.6)k.box('library acoustic fin','oak',xx,h-0.18,r.z,.08,.22,r.d*.68,.009);
    for(const dz of [-.27,.27]){k.box('reading room pendant body','brass',r.x,h-0.48,r.z+dz*r.d,r.w*.66,.06,.09,.012);k.box('reading room pendant lens','warm',r.x,h-0.518,r.z+dz*r.d,r.w*.64,.015,.065,.003);}
   }else{
-   for(const offset of [-.26,.26]){k.box('acoustic ceiling raft','fabric',r.x+offset*r.w,h-0.13,r.z,r.w*.35,.10,r.d*.53,.015);k.box('room light diffuser','warm',r.x+offset*r.w,h-0.235,r.z,.08,.025,r.d*.5,.006);}
+   for(const offset of [-.26,.26]){k.box('acoustic ceiling raft','linen',r.x+offset*r.w,h-0.13,r.z,r.w*.35,.10,r.d*.53,.015);k.box('room light diffuser','warm',r.x+offset*r.w,h-0.235,r.z,.08,.025,r.d*.5,.006);}
   }
   // Timber belongs to the solid room partition, never suspended in exterior glass.
   const panelW=Math.max(.7,Math.min(1.4,r.d/6));
@@ -78,13 +79,13 @@ export function createInteriorGeometry(f,level=0){
   k.box('room thermostat','porcelain',dr+.28,1.42,edge+side*.12,.085,.11,.026,.008);
   k.box('thermostat display','display',dr+.28,1.44,edge+side*.139,.057,.035,.004,.001);
   const furniture=new InteriorKit(`room-${i+1}: ${r.name}`);const kind=furnishRoom(furniture,r);const authored=furnishRoomIdentity(furniture,r,i);if(!profile.technical&&r.w>7&&r.d>6){if(authored.seed&1)planter(furniture,r.x-r.w*.34,r.z-side*r.d*.31,.36);if(authored.seed&2)planter(furniture,r.x+r.w*.34,r.z-side*r.d*.31,.36);}const occupants=new InteriorKit(`occupants room ${i+1}`),occupiedSeats=furnishOccupants(occupants,furniture,r,authored);const people=occupants.finish(false);people.userData.occupiedSeats=occupiedSeats;people.userData.identityKey=authored.key;place(people,source);root.add(people);const room=furniture.finish(true);room.userData.kind=kind;room.userData.fitout=profile;room.userData.identityKey=authored.key;room.userData.geometrySignature=authored.geometrySignature;place(room,source);root.add(room);
-  const shell=k.finish(true);shell.userData.identityKey=identity.key;place(shell,source);root.add(shell);
+  const shell=k.finish(true);shell.userData.identityKey=identity.key;shell.userData.daylight=glazed;place(shell,source);root.add(shell);
  }
  const k=new InteriorKit('architecture circulation');
  k.box('structural floor','stone',0,-.15,0,w,.3,d,0);
- k.box('raised finish floor','stone',0,.015,0,w,.03,d,0);
+ k.box('raised finish floor','floorStone',0,.015,0,w,.03,d,0);
  for(const c of layout.circulation){
-  k.box('circulation stone inlay','stone',c.x,.04,c.z,c.w,.025,c.d,0);
+  k.box('circulation stone inlay','floorStone',c.x,.04,c.z,c.w,.025,c.d,0);
   k.box('circulation acoustic ceiling','plaster',c.x,3.64,c.z,c.w,.12,c.d,0);
   const length=c.axis==='H'?c.w:c.d;
   for(let t=-length/2+1;t<length/2-.3;t+=2.4){

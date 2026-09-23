@@ -4,6 +4,7 @@ import {createFacility25to35} from './facilities-25-35.js';
 import {createReferenceFidelityDetail} from './reference-fidelity.js';
 import {Box3,Group} from 'three';
 import {sign} from './geometry.js';
+import {orderTransparentDetail,SHELL_GLASS_ORDER} from './facility-details.js';
 
 // Every record has an individually reconstructed envelope. Unknown IDs fail
 // explicitly instead of quietly receiving a generic family building.
@@ -36,6 +37,10 @@ export function createFacility(f,options={}){
  }else root.add(createReferenceFidelityDetail(f));
 
  root.traverse(o=>{o.userData.facility=f.id;});
+ // Stable transparent order: shell glazing after any fine interior glass.
+ const nearDetails=[];root.traverse(o=>{if(o.userData.nearDetail===true)nearDetails.push(o);});
+ root.traverse(o=>{if(o.isMesh&&[].concat(o.material).some(m=>m?.transparent))o.renderOrder=SHELL_GLASS_ORDER;});
+ nearDetails.forEach(orderTransparentDetail);
  root.userData.sculptRuntime={parts:root.children.map(c=>c.name),clickable:true};
  return root;
 }

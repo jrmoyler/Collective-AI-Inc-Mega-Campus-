@@ -7,8 +7,9 @@ import {furnishSpecialist,specialistKind} from './interior-equipment.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 export const FINISHES={
- stone:{color:0xc6c5bd,roughness:.68}, plaster:{color:0xdedbd1,roughness:.83},
- graphite:{color:0x263039,metalness:.55,roughness:.31}, brass:{color:0xb49a65,metalness:.88,roughness:.22},
+ stone:{color:0xc6c5bd,roughness:.5}, plaster:{color:0xe2ddd2,roughness:.88},
+ floorStone:{color:0xcdc6b8,roughness:.3}, plank:{color:0x9b7552,roughness:.4},
+ graphite:{color:0x2b343c,metalness:.18,roughness:.4}, brass:{color:0xb49a65,metalness:.88,roughness:.22},
  oak:{color:0x937252,roughness:.43}, fabric:{color:0x36464b,roughness:.92}, leather:{color:0x6b5141,roughness:.48},
  porcelain:{color:0xe3e5df,roughness:.22}, steel:{color:0x929da1,metalness:.92,roughness:.22},
  glass:{color:0xa9ccd0,metalness:.05,roughness:.08,transparent:true,opacity:.17,depthWrite:false,side:T.DoubleSide},
@@ -20,8 +21,10 @@ export const FINISHES={
  display:{color:0xffffff,emissive:0xffffff,emissiveIntensity:.38,roughness:.28},
  rubber:{color:0x171e21,roughness:.88}, book:{color:0x826e47,roughness:.76},
  walnut:{color:0x5b4031,roughness:.46}, linen:{color:0xb9aa90,roughness:.90},
- terrazzo:{color:0xb8b4aa,roughness:.72}, slate:{color:0x46535a,roughness:.68},
+ terrazzo:{color:0xc2bdb2,roughness:.34}, slate:{color:0x4a5358,roughness:.55},
  sage:{color:0x78907a,roughness:.78}, clay:{color:0xa66f55,roughness:.70},
+ // Soft ambient-occlusion footprint beneath furniture (runtime: unlit alpha gradient).
+ contact:{color:0x000000,roughness:1,transparent:true,opacity:.45,depthWrite:false},
 };
 const mats=Object.fromEntries(Object.entries(FINISHES).map(([k,p])=>[k,new T.MeshStandardMaterial({...p,name:k,envMapIntensity:1.05})]));
 const cache=new Map();
@@ -83,7 +86,26 @@ export class InteriorKit{
  }
  bar(name,finish,a,b,r=.018){const mid=new T.Vector3(...a).lerp(new T.Vector3(...b),.5);const delta=new T.Vector3(...b).sub(new T.Vector3(...a));const m=this.cylinder(name,finish,mid.x,mid.y,mid.z,r,delta.length());m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),delta.normalize());return m;}
  ring(name,finish,x,y,z,r,t=.018,rx=Math.PI/2){return this.add(name,geo(`r:${r}:${t}`,()=>new T.TorusGeometry(r,t,10,64)),finish,x,y,z,rx);}
- finish(collision=false){const buckets=new Map();for(const m of this.parts){m.updateMatrix();let g=m.geometry.clone().applyMatrix4(m.matrix);if(!buckets.has(m.material))buckets.set(m.material,[]);buckets.get(m.material).push(g);}for(const [mat,gs] of buckets){const mesh=new T.Mesh(mergeGeometries(gs,false),mat);mesh.name=this.name+'/'+mat.name;mesh.userData={collision,components:this.parts.filter(p=>p.material===mat).map(p=>p.name)};mesh.castShadow=!['glass','warm','blue','display'].includes(mat.name);mesh.receiveShadow=true;this.root.add(mesh);gs.forEach(g=>g.dispose());}this.root.userData.sculptRuntime={parts:this.parts.map(m=>m.name),clickable:true};return this.root;}
+ // Contact occlusion: soft footprints under floor-standing parts and broad low surfaces.
+ // Screen-space AO haloes at depth edges; these quads ground furniture at any quality.
+ contactShadows(){
+  const quads=[],box=new T.Box3();
+  for(const m of this.parts){
+   if(['glass','warm','display','contact','leaf','soil'].includes(m.material.name))continue;
+   if(!m.geometry.boundingBox)m.geometry.computeBoundingBox();m.updateMatrix();box.copy(m.geometry.boundingBox).applyMatrix4(m.matrix);
+   const w=box.max.x-box.min.x,d=box.max.z-box.min.z,b=Math.max(0,box.min.y),area=w*d;
+   if(b>.9||area>7||area<.0012||box.max.y-box.min.y<.004)continue;
+   const touching=b<.14;if(!touching&&area<.35)continue;
+   const margin=touching?.05+Math.min(w,d)*.18:.12+b*.3,strength=touching?.62:.32*(1-b/.9)+.08;
+   quads.push([(box.min.x+box.max.x)/2,(box.min.z+box.max.z)/2,w/2+margin,d/2+margin,strength]);
+  }
+  if(!quads.length)return null;
+  const pos=[],uv=[],nor=[],col=[],idx=[];
+  quads.forEach(([x,z,hx,hz,a],i)=>{const y=.0615+i%7*.00012;for(const [sx,sz] of [[-1,-1],[1,-1],[1,1],[-1,1]]){pos.push(x+sx*hx,y,z+sz*hz);uv.push((sx+1)/2,(sz+1)/2);nor.push(0,1,0);col.push(0,0,0,a);}idx.push(i*4,i*4+2,i*4+1,i*4,i*4+3,i*4+2);});
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('normal',new T.Float32BufferAttribute(nor,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setAttribute('color',new T.Float32BufferAttribute(col,4));g.setIndex(idx);
+  const mesh=new T.Mesh(g,mats.contact);mesh.name=this.name+'/contact';mesh.userData={collision:false,components:['contact occlusion']};mesh.castShadow=false;mesh.receiveShadow=false;return mesh;
+ }
+ finish(collision=false){const contact=this.name.startsWith('room-')?this.contactShadows():null;const buckets=new Map();for(const m of this.parts){m.updateMatrix();let g=m.geometry.clone().applyMatrix4(m.matrix);if(!buckets.has(m.material))buckets.set(m.material,[]);buckets.get(m.material).push(g);}for(const [mat,gs] of buckets){const mesh=new T.Mesh(mergeGeometries(gs,false),mat);mesh.name=this.name+'/'+mat.name;mesh.userData={collision,components:this.parts.filter(p=>p.material===mat).map(p=>p.name)};mesh.castShadow=!['glass','warm','blue','display'].includes(mat.name);mesh.receiveShadow=true;this.root.add(mesh);gs.forEach(g=>g.dispose());}if(contact)this.root.add(contact);this.root.userData.sculptRuntime={parts:this.parts.map(m=>m.name),clickable:true};return this.root;}
 }
 export function taskChair(k,x,z,angle=0){const s=k.parts.length;k.cylinder('chair gas lift','steel',x,.29,z,.035,.36);k.cylinder('chair column shroud','graphite',x,.22,z,.055,.2);for(let i=0;i<5;i++){const a=i*Math.PI*2/5;const xx=x+Math.sin(a)*.31,zz=z+Math.cos(a)*.31;k.bar('five-star base','steel',[x,.14,z],[xx,.10,zz],.026);k.cylinder('caster','rubber',xx,.065,zz,.045,.065,.045,Math.PI/2);}k.cushion('upholstered seat','fabric',x,.49,z,.52,.12,.49);k.box('lumbar shell','graphite',x,.78,z+.22,.49,.56,.065,.04);k.cushion('mesh back cushion','fabric',x,.79,z+.18,.45,.51,.065,true);for(const side of [-1,1]){k.bar('armrest support','graphite',[x+side*.23,.47,z],[x+side*.28,.71,z],.018);k.box('armrest pad','rubber',x+side*.28,.72,z-.04,.075,.055,.26,.025);}if(angle)for(const m of k.parts.slice(s)){m.position.sub(new T.Vector3(x,0,z)).applyAxisAngle(new T.Vector3(0,1,0),angle).add(new T.Vector3(x,0,z));m.rotateOnWorldAxis({x:0,y:1,z:0},angle);}}
 export function monitor(k,x,z,y=.81){k.box('monitor foot','graphite',x,y+.018,z,.25,.035,.18,.025);k.bar('monitor stand','steel',[x,y+.03,z],[x,y+.23,z+.06],.021);k.box('monitor bezel','graphite',x,y+.40,z+.065,.66,.40,.035,.018);k.box('desktop display','display',x,y+.40,z+.044,.615,.355,.007,.002);k.box('keyboard','graphite',x,y+.018,z-.36,.42,.03,.14,.012);for(let i=0;i<11;i++)for(let j=0;j<3;j++)k.box('keycap','stone',x-.185+i*.037,y+.035,z-.407+j*.041,.028,.008,.025,.001);k.box('mouse','rubber',x+.34,y+.025,z-.34,.055,.035,.10,.014);k.cylinder('ceramic cup','porcelain',x-.52,y+.056,z-.18,.039,.10);k.ring('cup rolled lip','porcelain',x-.52,y+.11,z-.18,.035,.004);k.cylinder('coffee surface','soil',x-.52,y+.107,z-.18,.031,.001);k.ring('cup handle','porcelain',x-.57,y+.07,z-.18,.025,.008,0);}

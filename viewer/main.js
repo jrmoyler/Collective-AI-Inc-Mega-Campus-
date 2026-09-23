@@ -20,11 +20,15 @@ import {getPostprocessingSamples,validatePostprocessingTargets,disablePostproces
 import {createLandscape,createInfrastructure} from './campus/landscape.js';
 import {createFleets} from './campus/fleets.js';
 import {createStreetFurniture} from './campus/street-furniture.js';
-import {setDuskMaterials} from './campus/geometry.js';
+import {setDuskMaterials,applyDepthConvention} from './campus/geometry.js';
+import {createDepthRange,skyDepthVertexShader} from './campus/depth-precision.js';
 import {createCampusMap,createPlanViewer} from './campus/plans.js';
 const $=s=>document.querySelector(s);const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;let renderer,scene,camera,controls,composer,landscape,infrastructure,fleets,streetFurniture,interior=null,selected=null,flight=null,flyover=false,showLabels=true,entering=false,clock=0;
 let quality='balanced';const performanceReport=createPerformanceReport({metadata:()=>({build:__CAMPUS_BUILD__,userAgent:navigator.userAgent,viewport:[innerWidth,innerHeight],devicePixelRatio})});let acceptancePanel=null,pendingReadyEvent=null;
 const buildings=[],markers=[];const mobile=matchMedia('(max-width:760px)').matches;let sun,hemi,rim,sky,bloom,ambient;let graphicsReady=false;const planViewer=createPlanViewer();
+// ?legacyDepth reproduces the previous fixed 0.5 m / 24-bit depth setup for A/B review on devices.
+const legacyDepth=typeof location!=='undefined'&&new URLSearchParams(location.search).has('legacyDepth');
+let reversedDepth=false;const depthRange=createDepthRange();
 let booted=false,frameLoop=null,tourRequest=0,resizeHandler=null,graphicsGeneration=0;
 function message(text){const el=$('#status');if(el)el.textContent=text;}
 function sheet(){document.body.classList.toggle('sheet-open',!$('#detail')?.hidden||!$('#directory')?.hidden);}
@@ -44,7 +48,7 @@ function disposePostprocessing(){
 function checkPostprocessing(){
  if(!composer||!renderer||renderer.getContext().isContextLost())return;
  try{
-  const samples=getPostprocessingSamples(renderer);
+  const samples=getPostprocessingSamples(renderer,4,{floatDepth:reversedDepth});
   if(samples===null)throw new Error('HDR effects targets are unavailable');
   for(const target of [composer.renderTarget1,composer.renderTarget2])if(target.samples!==samples){target.samples=samples;target.dispose();}
   try{validatePostprocessingTargets(renderer,composer);}
@@ -75,6 +79,8 @@ function renderFailure(error){
 }
 function createAtmosphere(){
  const dome=new Sky();dome.name='physical-daylight-atmosphere';dome.scale.setScalar(8000);
+ // Draw first and stay on the far plane under either depth convention.
+ dome.material.vertexShader=skyDepthVertexShader(dome.material.vertexShader);dome.renderOrder=-1;dome.frustumCulled=false;
  const u=dome.material.uniforms;
  u.turbidity.value=1.6;u.rayleigh.value=1.8;u.mieCoefficient.value=.0025;u.mieDirectionalG.value=.78;
  u.cloudCoverage.value=.25;u.cloudDensity.value=.22;u.cloudElevation.value=.42;
@@ -83,22 +89,25 @@ function createAtmosphere(){
 let environmentTarget=null;
 function setDay(day){
  if(!sky||!sun||!hemi||!rim)return;
- const direction=new T.Vector3().setFromSphericalCoords(1,T.MathUtils.degToRad(day?48:83),T.MathUtils.degToRad(208));
+ // Dusk: sun just above the horizon for a long warm rake under a navy sky.
+ const direction=new T.Vector3().setFromSphericalCoords(1,T.MathUtils.degToRad(day?48:85),T.MathUtils.degToRad(208));
  sun.userData.direction=direction;
  sun.position.copy(direction).multiplyScalar(1400);
  sky.material.uniforms.sunPosition.value.copy(direction);
- sky.material.uniforms.turbidity.value=day?1.6:2.6;
+ sky.material.uniforms.turbidity.value=day?1.6:2.2;
  $('#day')?.setAttribute('aria-pressed',String(day));
- hemi.intensity=day?1.25:.8;hemi.color.set(day?0xdcebf4:0xb5bdd6);hemi.groundColor.set(0x64604e);
- sun.intensity=day?2.6:1.45;sun.color.set(day?0xfff3df:0xffd1a2);
- rim.intensity=day?.22:.3;rim.color.set(0xc4dbed);
- scene.background.set(day?0xb2ccdf:0x9496b0);scene.fog.color.set(day?0xb2ccdf:0x9496b0);
+ // The sky PMREM already carries most skylight; a strong hemisphere on top of it
+ // flattened every facade to a milky white. Keep fill low and let the sun model.
+ hemi.intensity=day?.7:.62;hemi.color.set(day?0xd6e6f2:0x4f64a0);hemi.groundColor.set(day?0x5a5644:0x2e2619);
+ sun.intensity=day?2.9:1.9;sun.color.set(day?0xfff1dc:0xffae6a);
+ rim.intensity=day?.18:.22;rim.color.set(day?0xc4dbed:0x6f82c8);
+ scene.background.set(day?0xa9c3d8:0x111a33);scene.fog.color.set(day?0xa9c3d8:0x1a2442);
  // Keep the complete campus in clear air at the default ~1.2 km aerial.
- scene.fog.near=day?2300:1800;scene.fog.far=day?7200:5600;
+ scene.fog.near=day?2300:1700;scene.fog.far=day?7200:6200;
  setDuskMaterials(!day);
- if(bloom){bloom.strength=day?.08:.22;bloom.threshold=1.15;}
- renderer.toneMappingExposure=day?.85:.78;
- if(ambient)ambient.intensity=day?.1:.15;
+ if(bloom){bloom.strength=day?.06:.3;bloom.radius=day?.4:.55;bloom.threshold=day?1.25:1.05;}
+ renderer.toneMappingExposure=day?.9:1.12;
+ if(ambient)ambient.intensity=day?.04:.03;
  // Reflections come from the same outdoor sky, not an indoor showroom.
  if(getPostprocessingSamples(renderer)===null){scene.environment=null;environmentTarget?.dispose();environmentTarget=null;return;}
  let pmrem,envSky,next;
@@ -108,7 +117,8 @@ function setDay(day){
   envSky.position.set(0,0,0);envScene.add(envSky);
   next=withRendererState(renderer,()=>pmrem.fromScene(envScene,.04,.1,10000));validateRenderTargets(renderer,[next]);scene.environment=next.texture;
   environmentTarget?.dispose();environmentTarget=next;
-  scene.environmentIntensity=day?.85:.6;
+  // Sky radiance is unscaled physical output; at 0.85 it veiled the scene.
+  scene.environmentIntensity=day?.3:.24;
  }catch(e){if(next!==environmentTarget)next?.dispose();console.warn('Atmosphere reflections unavailable',e);}
  finally{pmrem?.dispose();if(envSky?.material!==sky.material)envSky?.material.dispose();}
 }
@@ -161,7 +171,9 @@ async function boot(){
  try{
  bind();
  const canvas=document.createElement('canvas');canvas.addEventListener('webglcontextcreationerror',event=>performanceReport.event('context-creation-error',{message:event.statusMessage}));
- renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance',preserveDrawingBuffer:false,alpha:false});renderer.debug.onShaderError=(gl,program)=>{throw new Error('WebGL shader compilation failed: '+gl.getProgramInfoLog(program));};renderer.setPixelRatio(exteriorPixelRatio(devicePixelRatio,quality,mobile));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;attachCanvas();
+ // Reversed float depth removes the metre-scale depth steps that made layered
+ // facades, copings and bands z-fight at the ~1.2 km aerial distance.
+ renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance',preserveDrawingBuffer:false,alpha:false,reversedDepthBuffer:!legacyDepth});reversedDepth=renderer.capabilities.reversedDepthBuffer===true;renderer.debug.onShaderError=(gl,program)=>{throw new Error('WebGL shader compilation failed: '+gl.getProgramInfoLog(program));};renderer.setPixelRatio(exteriorPixelRatio(devicePixelRatio,quality,mobile));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;attachCanvas();
  {const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');performanceReport.event('graphics-capabilities',{api:gl.getParameter(gl.VERSION),vendor:gl.getParameter(debug?debug.UNMASKED_VENDOR_WEBGL:gl.VENDOR),renderer:gl.getParameter(debug?debug.UNMASKED_RENDERER_WEBGL:gl.RENDERER),maxTextureSize:gl.getParameter(gl.MAX_TEXTURE_SIZE)});}
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();performanceReport.event('exterior-context-lost');performanceReport.pause('exterior-context-lost');flight?.pause();flyover=false;graphicsGeneration++;graphicsReady=false;frameLoop?.stop();environmentTarget?.dispose();environmentTarget=null;if(scene)scene.environment=null;exit();message('Graphics paused · waiting for the browser to restore them');});
  scene=new T.Scene();scene.background=new T.Color(0x6a2848);scene.fog=new T.Fog(0xe88870,1700,4000);sky=createAtmosphere();scene.add(sky);camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.5,9000);camera.position.set(40,mobile?720:680,mobile?980:920);controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,10,-40);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.02;controls.minDistance=8;controls.maxDistance=2300;controls.update();controls.addEventListener('start',()=>{document.body.classList.add('exploring');flight?.pause();flight=null;flyover=false;$('#tour')?.classList.remove('active');});
@@ -173,9 +185,10 @@ async function boot(){
  if($('#load-message'))$('#load-message').textContent='Sculpting the living campus…';
  landscape=createLandscape();scene.add(landscape.root);
  try{
-  const samples=mobile?null:getPostprocessingSamples(renderer);
+  const samples=mobile?null:getPostprocessingSamples(renderer,4,{floatDepth:reversedDepth});
   if(samples!==null){
-   const target=new T.WebGLRenderTarget(innerWidth,innerHeight,{type:T.HalfFloatType,samples});
+   // A 32-bit float depth attachment is what gives reversed depth its precision.
+   const target=new T.WebGLRenderTarget(innerWidth,innerHeight,{type:T.HalfFloatType,samples,depthTexture:reversedDepth?new T.DepthTexture(innerWidth,innerHeight,T.FloatType):null});target.resolveDepthBuffer=false;
    composer=new EffectComposer(renderer,target);
    composer.setPixelRatio(renderer.getPixelRatio());
    composer.setSize(innerWidth,innerHeight);
@@ -188,21 +201,24 @@ async function boot(){
  }catch(error){console.warn('Postprocessing initialization failed',error);disposePostprocessing();}
  setDay(true);
  scene.add(sun.target);const fitSunShadow=createSunShadowFitter(sun);renderer.info.autoReset=false;
- let last=performance.now(),frames=0;const projected=new T.Vector3();
+ let last=performance.now(),frames=0;const projected=new T.Vector3(),viewPoint=new T.Vector3();
  function render(now){
   const dt=Math.min((now-last)/1000,.05);last=now;if(interior||entering||document.hidden||!graphicsReady)return;if(!reduced)clock+=dt;
   landscape?.update(clock);infrastructure?.update(clock);fleets?.update(clock);
   if(flyover&&!reduced){camera.position.set(Math.sin(clock*.032)*1100,720,Math.cos(clock*.032)*1100);controls.target.set(0,12,-40);}
   controls.update();streetFurniture?.userData.update(camera.position);for(const building of buildings)building.userData.updateDetails?.(camera.position);sky.position.copy(camera.position);sky.material.uniforms.time.value=clock;
-  fitSunShadow(controls.target,camera.position.distanceTo(controls.target),sun.userData.direction);
+  const orbitDistance=camera.position.distanceTo(controls.target);if(!legacyDepth)depthRange(camera,orbitDistance);
+  fitSunShadow(controls.target,orbitDistance,sun.userData.direction);
   renderer.info.autoReset=false;renderer.info.reset();
   if(composer)composer.render();else renderer.render(scene,camera);
   if(pendingReadyEvent){performanceReport.event(pendingReadyEvent,{effects:!!composer,width:renderer.domElement.width,height:renderer.domElement.height});if(pendingReadyEvent==='exterior-context-restored')message('Graphics restored');pendingReadyEvent=null;reveal();}
   acceptancePanel?.frame(renderer.domElement,{engine:'Three.js',facility:selected?.key||'campus',quality,camera:camera.position.toArray(),target:controls.target.toArray()});
   if(performanceReport.active){let meshes=0;scene.traverseVisible(object=>{if(object.isMesh)meshes++;});performanceReport.record({engine:'Three.js',quality,width:renderer.domElement.width,height:renderer.domElement.height,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,meshes});}
-  if(++frames%3===0&&showLabels){const far=camera.position.length()>800;const occupied=[];const host=document.getElementById('markers');for(const {el,f} of markers){if(!el.isConnected&&host)host.append(el);projected.set(f.x,facilityHeight(f)+8,f.z).project(camera);const x=(projected.x*.5+.5)*innerWidth,y=(-projected.y*.5+.5)*innerHeight;let visible=projected.z<1&&projected.z>-1&&x>10&&x<innerWidth-10&&y>90&&y<innerHeight-135;if(mobile&&far&&f.id%2===0)visible=false;if(visible&&occupied.some(p=>Math.hypot(p[0]-x,p[1]-y)<28))visible=false;if(visible)occupied.push([x,y]);el.hidden=!visible;el.style.left=x+'px';el.style.top=y+'px';}}
+  if(++frames%3===0&&showLabels){const far=camera.position.length()>800;const occupied=[];const host=document.getElementById('markers');for(const {el,f} of markers){if(!el.isConnected&&host)host.append(el);projected.set(f.x,facilityHeight(f)+8,f.z);const ahead=viewPoint.copy(projected).applyMatrix4(camera.matrixWorldInverse).z<-camera.near;projected.project(camera);const x=(projected.x*.5+.5)*innerWidth,y=(-projected.y*.5+.5)*innerHeight;let visible=ahead&&viewPoint.z>-camera.far&&x>10&&x<innerWidth-10&&y>90&&y<innerHeight-135;if(mobile&&far&&f.id%2===0)visible=false;if(visible&&occupied.some(p=>Math.hypot(p[0]-x,p[1]-y)<28))visible=false;if(visible)occupied.push([x,y]);el.hidden=!visible;el.style.left=x+'px';el.style.top=y+'px';}}
  }
  frameLoop=createFrameLoop(render,{onError:renderFailure});
+ // Inspection hook for automated visual review only (?debug); not used by the UI.
+ if(new URLSearchParams(location.search).has('debug'))window.__campus={get renderer(){return renderer;},get scene(){return scene;},get camera(){return camera;},get controls(){return controls;},get composer(){return composer;},get bloom(){return bloom;},get sun(){return sun;},get hemi(){return hemi;},get ambient(){return ambient;},get sky(){return sky;},reversedDepth:()=>reversedDepth,setDay};
  resizeHandler=()=>{if(!renderer||!camera)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer?.setSize(innerWidth,innerHeight);composer?.setPixelRatio(renderer.getPixelRatio());composer?.setSize(innerWidth,innerHeight);checkPostprocessing();};
  window.addEventListener('resize',resizeHandler);
 
@@ -211,7 +227,7 @@ async function boot(){
  const markerHost=document.getElementById('markers');
  for(let i=0;i<FACILITIES.length;i++){
   const f=FACILITIES[i];
-  const group=createFacility(f,{deferDetails:true});group.userData.updateDetails=configureFacilityDetails(group);buildings.push(group);scene.add(group);
+  const group=createFacility(f,{deferDetails:true});applyDepthConvention(group,reversedDepth);group.userData.updateDetails=configureFacilityDetails(group,{onCreate:detail=>applyDepthConvention(detail,reversedDepth)});buildings.push(group);scene.add(group);
   const el=document.createElement('button');el.className='marker';el.textContent=String(f.id).padStart(2,'0');el.setAttribute('aria-label',`${f.key} ${f.name}`);el.onclick=()=>select(f.id);
   if(markerHost)markerHost.append(el);markers.push({el,f});
   if(i%5===4)await yieldFrame();
@@ -228,6 +244,7 @@ async function boot(){
   catch(error){if(generation===graphicsGeneration&&renderer===restoringRenderer)failGraphics(error);}
  });
  if($('#load-message'))$('#load-message').textContent='Preparing materials and lighting…';
+ applyDepthConvention(scene,reversedDepth);
  const startupRenderer=renderer,startupGeneration=graphicsGeneration;
  if(startupRenderer.getContext().isContextLost()){reveal();return;}
  await startupRenderer.compileAsync(scene,camera);

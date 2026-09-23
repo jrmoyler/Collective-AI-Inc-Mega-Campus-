@@ -58,6 +58,30 @@ export const materials={
  kinetic:std({color:0x00e8d4,emissive:0x00fff0,emissiveIntensity:5.2,roughness:.14}),
 };
 
+// Clear glazing is routinely authored flush with slab edges, spandrels and
+// frames. Recede it by a slope-scaled depth offset so coincident opaque faces
+// always win instead of flickering through the transparent tint. The tag is
+// copied by Material.clone(), so facility-specific glass variants inherit it.
+export const DEPTH_OFFSET_UNITS=2,REVERSED_DEPTH_OFFSET_UNITS=8;
+export function recedeBehindCoplanar(material,layer=1){
+ material.polygonOffset=true;material.polygonOffsetFactor=layer;material.polygonOffsetUnits=layer*DEPTH_OFFSET_UNITS;
+ material.userData.depthOffsetLayer=layer;return material;
+}
+recedeBehindCoplanar(materials.glazing);recedeBehindCoplanar(materials.blueGlass);
+// three negates polygonOffsetFactor for a reversed depth buffer but not the
+// units term, so flip units for every tagged material once the renderer is known.
+export function applyDepthConvention(root,reversed){
+ const seen=new Set();
+ root?.traverse?.(object=>{
+  for(const material of Array.isArray(object.material)?object.material:[object.material]){
+   const layer=material?.userData?.depthOffsetLayer;if(!layer||seen.has(material))continue;seen.add(material);
+   material.polygonOffset=true;material.polygonOffsetFactor=layer;
+   material.polygonOffsetUnits=reversed?-layer*REVERSED_DEPTH_OFFSET_UNITS:layer*DEPTH_OFFSET_UNITS;
+  }
+ });
+ return seen.size;
+}
+
 // Albedo maps contain the material color; do not multiply it a second time.
 for(const name of ['steel','stone','dark','grass','road','path','white','leaf','pink','trunk','civic','copper','night']){
  materials[name].color.set(0xffffff);
