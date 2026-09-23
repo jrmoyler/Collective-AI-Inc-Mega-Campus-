@@ -80,7 +80,8 @@ function wing(b,x,z,w,d,h,levels=2,{base=0,r=2,skin='dark',deck='dark',roof=true
    }
   });
   // Linear ceiling luminaires parallel to the glass.
-  edges(p,x,z,e=>{if(e.len>3&&inset>2.4)for(const o of inset>4.5?[1.3,3.5]:[1.3])b.box('warm',e.mx-e.nx*o,y+fh-.1,e.mz-e.nz*o,e.len*.84,.04,.16,e.rot);});
+  // Open-roofed halls have no ceiling on their top storey, so no luminaires there.
+  if(roof||floor<levels-1)edges(p,x,z,e=>{if(e.len>3&&inset>2.4)for(const o of inset>4.5?[1.3,3.5]:[1.3])b.box('warm',e.mx-e.nx*o,y+fh-.1,e.mz-e.nz*o,e.len*.84,.04,.16,e.rot);});
   // Warm room back walls are what the dusk cutaways show behind every pane.
   if(liner)edges(liner,x,z,e=>b.pane(litInterior,e.mx,y+.3+(fh-.34)/2,e.mz,e.len+.02,fh-.34,e.rot));
  }
@@ -338,14 +339,14 @@ export function createFacility13to24(f,{deferDetails=false}={}){
   // a full roof and a lower right room, not three colliding glazed boxes.
   wing(b,-w*.15,-d*.14,w*.63,d*.45,h-deck,1,{base:deck,r:d*.04,skin:'dark',fins:false,planters:false});
   wing(b,w*.315,-d*.12,w*.28,d*.42,deck-low,1,{base:low,r:d*.025,skin:'dark'});
-  wing(b,-w*.17,-d*.03,w*.57,d*.62,deck-.35,2,{r:1,roof:false,facade:false});
+  wing(b,-w*.2375,-d*.03,w*.435,d*.62,deck-.35,2,{r:1,roof:false,facade:false});
   wing(b,w*.28,-d*.03,w*.32,d*.60,low-.35,1,{r:1,roof:false,facade:false});
   // Two usable front laboratory terraces; their horizontal slabs terminate
   // before the sloping shoulder and never slice through the perimeter fascia.
-  terrace(b,-w*.19,deck,d*.16,w*.47,d*.12);
+  terrace(b,-w*.2225,deck,d*.16,w*.405,d*.12);
   terrace(b,w*.315,low,d*.16,w*.27,d*.12);
   solar(b,-w*.15,roofTop(deck,h-deck)+.35,-d*.16,w*.48,d*.30);
-  for(const [gx,gz,gw,gd,gy] of [[-w*.15,-d*.34,w*.48,2.3,roofTop(deck,h-deck)+.02],[-w*.18,d*.205,w*.45,2.0,deck+.33],[w*.32,d*.20,w*.23,2.0,low+.33]]){
+  for(const [gx,gz,gw,gd,gy] of [[-w*.15,-d*.34,w*.48,2.3,roofTop(deck,h-deck)+.02],[-w*.2225,d*.205,w*.38,2.0,deck+.33],[w*.32,d*.20,w*.23,2.0,low+.33]]){
    planter(b,gx,gy,gz,gw,gd);for(let tx=-gw*.4;tx<=gw*.4;tx+=3.4)roofTree(b,gx+tx,gy+.86,gz,1.45);
   }
   // Front-left graphite sign pier and dense bronze louvres are source identity.
@@ -554,19 +555,20 @@ export function createFacility13to24(f,{deferDetails=false}={}){
   const mainH=M.mainH;
   wing(b,0,-d*.14,w*.96,d*.60,mainH,2,{r:1.5,fins:true});
   const front=-d*.14+d*.30;
-  const hall=wing(b,-w*.06,d*.26,w*.50,d*.26,mainH*.55,1,{r:d*.12});
+  const hall=wing(b,-w*.085,d*.26,w*.73,d*.26,mainH*.55,1,{r:d*.12,planters:false});
   const theatre=wing(b,w*.22,-d*.20,w*.34,d*.40,h-mainH-1.2,1,{base:mainH,r:1});
   const command=wing(b,-w*.26,-d*.22,w*.30,d*.36,h-mainH-1.2,1,{base:mainH,r:1,planters:false});
   auditorium(b,w*.22,mainH+.62,-d*.30,w*.22,d*.22);
   screen(b,-w*.26,mainH+3.4,-d*.22+d*.18-1.4,w*.22,2.6);
   solar(b,command.x,command.top+.35,command.z,command.w*.8,command.d*.7);
-  terrace(b,-w*.06,hall.top+.02,d*.26,w*.30,d*.12);
+  terrace(b,-w*.2,hall.top+.02,d*.26,w*.30,d*.12);
+  for(let x=w*.0;x<=w*.2;x+=w*.1)planter(b,x,hall.top+.02,d*.30,w*.07,2);
   // Tall graphite identity panel at the right arrival corner.
-  signPanel(b,root,{x:w*.43,y:mainH*.5,z:front+1.0,w:w*.10,h:mainH*.9,depth:.9,text:'VISITOR CENTER'});
+  signPanel(b,root,{x:w*.43,y:(mainH+4)/2,z:front+1.0,w:w*.11,h:mainH+4,depth:.9,text:'VISITOR CENTER'});
   // Drop-off canopy with lit soffit on slender columns.
-  b.box('dark',w*.27,4.7,d*.38,w*.24,.36,d*.18);b.box('warm',w*.27,4.5,d*.38,w*.2,.04,d*.12);b.box('gold',w*.27,4.7,d*.38+d*.09+.03,w*.24,.07,.07);
-  for(const sx of [-1,1])cylinder(b,'steel',w*.27+sx*w*.1,2.26,d*.44,.14,4.52,.14,10);
-  entry(b,-w*.06,d*.39+1.4,w*.26);
+  b.box('dark',w*.39,4.7,d*.38,w*.18,.36,d*.18);b.box('warm',w*.39,4.5,d*.38,w*.15,.04,d*.12);b.box('gold',w*.39,4.7,d*.38+d*.09+.03,w*.18,.07,.07);
+  for(const sx of [-1,1])cylinder(b,'steel',w*.39+sx*w*.075,2.26,d*.44,.14,4.52,.14,10);
+  entry(b,-w*.085,d*.39+1.4,w*.26);
   for(const side of [-1,1]){cylinder(b,'steel',side*w*.16,1.05,d*.47,.13,2.1,.13,8);b.box(referenceGlazing,side*w*.12,1.05,d*.47,w*.075,1.35,.04);}
  }else if(id===23){ // Commons: three inhabited wings around a genuine central forum/courtyard.
   wing(b,-w*.34,0,w*.30,d*.93,h,3,{r:1,fins:true});
