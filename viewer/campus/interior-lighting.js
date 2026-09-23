@@ -111,7 +111,7 @@ export function createExteriorBackdrop(scene,layout,level,{CreateCylinder,Standa
  const storey=4.2,ground=-level*storey,top=60,bottom=ground-40,radius=Math.max(layout.w,layout.d)*.5+55;
  const tex=new DynamicTexture('exterior view',{width:2048,height:512},scene,true);
  paintExteriorView(tex.getContext(),2048,512,{top,bottom,ground});tex.update();tex.uScale=3;tex.wrapU=1;
- const m=new StandardMaterial('exterior view',scene);m.disableLighting=true;m.emissiveTexture=tex;m.emissiveColor=new Color3(1.9,1.85,1.75);m.backFaceCulling=false;m.fogEnabled=false;
+ const m=new StandardMaterial('exterior view',scene);m.disableLighting=true;m.emissiveTexture=tex;m.emissiveColor=new Color3(1.15,1.12,1.08);m.backFaceCulling=false;m.fogEnabled=false;
  const view=CreateCylinder('exterior view',{height:top-bottom,diameter:radius*2,tessellation:64,cap:0,sideOrientation:Mesh.BACKSIDE},scene);
  view.position.y=(top+bottom)/2;view.material=m;view.isPickable=false;view.checkCollisions=false;view.applyFog=false;
  return view;

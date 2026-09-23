@@ -52,6 +52,22 @@ export function createInteriorGeometry(f,level=0){
     k.box('sealed opal diffuser','warm',r.x+offset*r.w,h-0.53,r.z,.24,.02,r.d*.64,.004);
    }
    k.box('rectangular supply duct','steel',r.x,h-0.17,r.z,.55,.25,r.d*.89,.012);
+   if(r.w*r.d>250){
+    // Large technical halls expose their long-span structure: steel girders, deck ribs
+    // and warm high-bay pendants on a 6 m grid instead of a flat plaster lid.
+    for(let zz=r.z-r.d/2+3.75;zz<r.z+r.d/2-1;zz+=7.5){
+     k.box('steel girder web','graphite',r.x,h-.34,zz,r.w-.14,.52,.018,0);
+     for(const dy of [-.25,.25])k.box('steel girder flange','graphite',r.x,h-.34+dy,zz,r.w-.14,.022,.2,0);
+    }
+    for(let xx=left+.75;xx<right-.4;xx+=1.5)k.box('deck rib','plaster',xx,h-.07,r.z,.09,.1,r.d-.1,0);
+    const nx=Math.max(1,Math.round(r.w/6)),nz=Math.max(1,Math.round(r.d/6));
+    for(let a=0;a<nx;a++)for(let b=0;b<nz;b++){
+     const px=left+(a+.5)*r.w/nx,pz=r.z-r.d/2+(b+.5)*r.d/nz,y=Math.max(3.2,h-1.6);
+     k.bar('high-bay suspension','steel',[px,h-.6,pz],[px,y+.3,pz],.008);
+     k.cylinder('high-bay reflector','graphite',px,y+.14,pz,.29,.28,.1);
+     k.cylinder('high-bay lens','warm',px,y-.005,pz,.25,.012);
+    }
+   }
   }else if(profile.ceiling==='acoustic'){
    for(let xx=left+.6;xx<right-.4;xx+=.6)k.box('library acoustic fin','oak',xx,h-0.18,r.z,.08,.22,r.d*.68,.009);
    for(const dz of [-.27,.27]){k.box('reading room pendant body','brass',r.x,h-0.48,r.z+dz*r.d,r.w*.66,.06,.09,.012);k.box('reading room pendant lens','warm',r.x,h-0.518,r.z+dz*r.d,r.w*.64,.015,.065,.003);}

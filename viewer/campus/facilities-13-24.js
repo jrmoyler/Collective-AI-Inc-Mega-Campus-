@@ -423,7 +423,7 @@ export function createFacility13to24(f,{deferDetails=false}={}){
   solar(b,w*.02,hall.top+.35,-d*.22,w*.30,d*.26);
   for(const side of [-1,1])planter(b,side*w*.33,roofTop(0,mainH)+.02,-d*.05,w*.22,2.4);
   // Curved glazed lobby with bronze floor bands carries the public name.
-  const lobby=wing(b,-w*.18,d*.28,w*.52,d*.25,mainH*.62,1,{r:d*.12,skin:'copper',trim:'warm'});
+  const lobby=wing(b,-w*.18,d*.28,w*.52,d*.25,mainH*.62,1,{r:d*.12,skin:'copper',trim:'warm',band:.92});
   signPanel(b,root,{x:-w*.22,y:lobby.top-1.2,z:d*.28+d*.125+.95,w:w*.32,h:2.4,depth:.5,text:'CIVIC CORE PUBLIC HUB',emblem:false});
   // Sweeping solar-glass canopy: blue glass bays between steel ribs on
   // branching columns, following a real circular sweep in plan.
@@ -468,7 +468,13 @@ export function createFacility13to24(f,{deferDetails=false}={}){
   signPanel(b,root,{x:-w*.235,y:researchH*.47,z:-d*.12+d*.32+.9,w:w*.07,h:researchH*.8,depth:.8,text:'TERRA AXIS'});
   entry(b,w*.06,-d*.12+d*.32+1.5,w*.1);
  }else if(id===18){ // Nomad Nexus: long deployment bar, field-kit bay, projecting sign volume.
-  wing(b,0,-d*.16,w*.97,d*.62,h,2,{r:1.2,fins:true,planters:false});
+  wing(b,w*.1425,-d*.16,w*.685,d*.62,h,2,{r:1.2,fins:true,planters:false});
+  // Left end: full ground floor with a set-back upper planning room whose
+  // global mobility map wall faces an open roof terrace.
+  const lower=wing(b,-w*.3425,-d*.16,w*.285+.6,d*.62,h/2,1,{r:1.2,planters:false});
+  const map=wing(b,-w*.3425,-d*.29,w*.285,d*.36,h/2,1,{base:h/2,r:1});
+  screen(b,map.x,h/2+h*.26,map.z+map.d/2+.8,map.w*.7,h*.28);
+  for(let x=-w*.44;x<=-w*.25;x+=w*.065)planter(b,x,lower.top+.02,-d*.16+d*.31-2.2,w*.045,1.8);
   const bay=wing(b,-w*.30,d*.30,w*.34,d*.28,h*.5,1,{r:1});
   const front=-d*.16+d*.31;
   // Projecting graphite identity volume over the recessed arrival.
@@ -480,7 +486,6 @@ export function createFacility13to24(f,{deferDetails=false}={}){
   {const g=new T.TorusGeometry(sh*.22,.14,8,48);b.add(g,'gold',sx-sw*.36,sy,front+sd);g.dispose();}
   root.userData.signAnchor={text:'NOMAD NEXUS',width:sw*.62,height:sh*.3,position:[sx+sw*.06,sy,front+sd],yaw:0};
   // Global mobility map wall inside the upper floor, then stacked kit cases.
-  screen(b,-w*.26,h*.74,front-1.4,w*.24,h*.28);
   for(let j=0;j<3;j++)for(let i=0;i<3;i++){b.box('dark',-w*.40+i*2.2,.9+j*1.15,d*.30,1.9,.95,1.3);b.box('steel',-w*.40+i*2.2,.9+j*1.15,d*.30+.67,1.4,.05,.06);}
   solar(b,w*.25,roofTop(0,h)+.35,-d*.24,w*.36,d*.30);
   for(let x=-w*.40;x<=-w*.20;x+=w*.1)planter(b,x,bay.top+.02,d*.30,w*.07,2);
