@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import {Sky} from 'three/addons/objects/Sky.js';
 import {createCanvas} from '@napi-rs/canvas';
-import {nearPlaneFor,fixedDepthStep,createDepthRange,skyDepthVertexShader,NEAR_MIN} from '../viewer/campus/depth-precision.js';
-import {Batch,materials,applyDepthConvention,DEPTH_OFFSET_UNITS} from '../viewer/campus/geometry.js';
+import {nearPlaneFor,fixedDepthStep,createDepthRange,skyDepthVertexShader,NEAR_MIN,ranksResolve,AERIAL_RANK_SEPARATION} from '../viewer/campus/depth-precision.js';
+import {Batch,materials,applyDepthConvention,DEPTH_OFFSET_UNITS,DEPTH_RANK} from '../viewer/campus/geometry.js';
 import {facadeEdge,roofCoping,occupiedBays} from '../viewer/campus/facade-craft.js';
 import {configureFacilityDetails,DETAIL_GLASS_ORDER,SHELL_GLASS_ORDER} from '../viewer/campus/facility-details.js';
 import {getPostprocessingSamples} from '../viewer/campus/postprocessing-capabilities.js';
@@ -47,6 +47,27 @@ test('glazing recedes behind coincident opaque faces under both depth convention
  applyDepthConvention(box,false);
  for(const m of [materials.glazing,clone])assert.equal(m.polygonOffsetUnits,DEPTH_OFFSET_UNITS);
  box.geometry.dispose();clone.dispose();
+});
+
+test('inset metals and light strips advance over masonry under both depth conventions',()=>{
+ const panel=materials.dark.clone(),trim=materials.gold.clone(),light=materials.cyan.clone(),box=new T.Mesh(new T.BoxGeometry(),[materials.stone,panel,trim,light]);
+ assert.equal(materials.stone.polygonOffset,false);
+ // Ranks are a strict ladder for metals, so no two finishes that touch share one.
+ const metals=['steel','copper','dark','solar','gold'].map(n=>DEPTH_RANK[n]);assert.equal(new Set(metals).size,metals.length);
+ assert.ok(DEPTH_RANK.emissive<DEPTH_RANK.gold&&DEPTH_RANK.gold<DEPTH_RANK.dark&&DEPTH_RANK.dark<DEPTH_RANK.steel&&DEPTH_RANK.steel<DEPTH_RANK.substrate);
+ assert.equal(applyDepthConvention(box,false),3);
+ assert.ok(panel.polygonOffsetUnits<0&&trim.polygonOffsetUnits<0&&light.polygonOffsetUnits<0,'advancing layers pull toward the camera');
+ assert.equal(panel.polygonOffsetFactor,0,'opaque ranks use a constant offset, not a slope term');
+ assert.equal(applyDepthConvention(box,true),3);
+ assert.ok(panel.polygonOffsetUnits>0&&trim.polygonOffsetUnits>0&&light.polygonOffsetUnits>0,'reversed depth flips the units term');
+ applyDepthConvention(box,false);box.geometry.dispose();[panel,trim,light].forEach(m=>m.dispose());
+});
+
+test('the audit treats only rank-separated faces as resolved',()=>{
+ assert.equal(ranksResolve(DEPTH_RANK.dark,DEPTH_RANK.steel,.02),true,'a 2 cm contact between adjacent ranks resolves');
+ assert.equal(ranksResolve(DEPTH_RANK.dark,DEPTH_RANK.dark,0),false,'equal ranks never resolve');
+ assert.equal(ranksResolve(DEPTH_RANK.glass,DEPTH_RANK.substrate,.01),true);
+ assert.ok(AERIAL_RANK_SEPARATION>=.03&&AERIAL_RANK_SEPARATION<.04,`aerial rank step ${AERIAL_RANK_SEPARATION} m`);
 });
 
 // Faces of different materials closer than this flicker at aerial range.

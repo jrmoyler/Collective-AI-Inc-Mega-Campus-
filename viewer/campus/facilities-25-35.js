@@ -4,7 +4,7 @@
 // Geometry represents visible architecture; source floor programs remain authoritative.
 // CF-25 area/siting remain unrecovered in the source: nothing here asserts a measured size.
 import * as T from 'three';
-import {Batch,cylinder,ring,line,materials} from './geometry.js';
+import {Batch,cylinder,ring,line,materials,setDepthRank,DEPTH_RANK} from './geometry.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 import {facadeEdge,roofCoping,roofTree,occupiedBays} from './facade-craft.js';
@@ -29,6 +29,8 @@ const amberTrim=new T.MeshStandardMaterial({name:'CF25-35 amber edge light',colo
 // Graphite cladding and roof membrane: the shared 'dark' finish reads as a black void in
 // dusk light; the references show a mid-graphite frame with visible shading.
 const graphite=new T.MeshStandardMaterial({name:'CF25-35 graphite cladding',color:0x4d555e,roughness:.46,metalness:.38,envMapIntensity:.9});
+// Cladding panels stand proud of the masonry they clip to, but sit behind the steel and dark metal trim.
+setDepthRank(graphite,DEPTH_RANK.graphite);
 // Weathered field stone (CF-33/34 frames read grey-beige, not white limestone).
 const fieldStone=materials.stone.clone();fieldStone.name='CF25-35 field stone';fieldStone.color.set(0xb0a797);
 const roofDeck=new T.MeshStandardMaterial({name:'CF25-35 roof membrane',color:0x5d636a,roughness:.86,metalness:.05});

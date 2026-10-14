@@ -1,6 +1,6 @@
 // Individual atlas reconstructions. Dimensions are schematic envelope fits, not surveys.
 import * as T from 'three';
-import {Batch,cylinder,ring,line,materials} from './geometry.js';
+import {Batch,cylinder,ring,line,materials,setDepthRank,DEPTH_RANK} from './geometry.js';
 
 import {facadeEdge,roofCoping,roofTree,occupiedBays} from './facade-craft.js';
 
@@ -27,6 +27,8 @@ const blueCurtain=new T.MeshStandardMaterial({name:'Atlas blue curtain glass',co
 // Grow-tower glazing tinted by the magenta horticultural lighting behind it.
 const growGlass=duskLinked(new T.MeshStandardMaterial({name:'Atlas grow tower glass',color:0xc8a0d8,metalness:.1,roughness:.1,transparent:true,opacity:.34,depthWrite:false,side:T.DoubleSide,emissive:0xd048c8}),.2);
 const amberGlass=duskLinked(new T.MeshStandardMaterial({name:'Atlas amber core glass',color:0xe0a050,metalness:.2,roughness:.12,transparent:true,opacity:.62,depthWrite:false,side:T.DoubleSide,emissive:0xff9a38}),.28);
+// Tinted glass recedes behind coplanar frames and slabs like the global glazing.
+for(const glass of [blueCurtain,growGlass,amberGlass])setDepthRank(glass,DEPTH_RANK.glass);
 // Production LED volume: abstract dusk gradient, no pictorial content.
 const ledTexture=(()=>{const W=4,H=64,data=new Uint8Array(W*H*4);for(let y=0;y<H;y++){const t=y/(H-1),band=Math.exp(-((t-.38)**2)/.004);const r=40+120*t+120*band,g=30+40*t+140*band,bl=150+90*t+60*band;for(let x=0;x<W;x++)data.set([Math.min(255,r),Math.min(255,g),Math.min(255,bl),255],(y*W+x)*4);}const tex=new T.DataTexture(data,W,H,T.RGBAFormat);tex.colorSpace=T.SRGBColorSpace;tex.needsUpdate=true;return tex;})();
 const ledWall=new T.MeshStandardMaterial({name:'Atlas LED volume',color:0x0c0c14,roughness:.35,emissive:0xffffff,emissiveMap:ledTexture,emissiveIntensity:1.25});

@@ -23,6 +23,16 @@ export function nearPlaneFor(orbitDistance,cameraHeight){
 // Depth step (metres) of a fixed-point buffer at a view distance.
 export function fixedDepthStep(distance,near,bits=24){return distance*distance/(near*2**bits);}
 
+// Conservative depth separation (metres) that one polygonOffset depth-rank step
+// creates at the default aerial view: 2 units of the 24-bit step (see geometry.js).
+export const AERIAL_RANK_SEPARATION=2*fixedDepthStep(1200,nearPlaneFor(1200,680));
+
+// Two faces with different depth ranks resolve deterministically when the rank
+// step moves the winner in front of the loser by more than their separation.
+// Equal ranks never resolve; the audit then needs geometry to separate the faces.
+export function rankSeparation(rankA=0,rankB=0){return Math.abs(rankA-rankB)*AERIAL_RANK_SEPARATION;}
+export function ranksResolve(rankA=0,rankB=0,gap=0){return rankA!==rankB&&rankSeparation(rankA,rankB)>=gap;}
+
 // Updates the camera only when the near plane changes by more than 3%, so the
 // projection is not rebuilt every frame and does not visibly breathe.
 export function createDepthRange(){

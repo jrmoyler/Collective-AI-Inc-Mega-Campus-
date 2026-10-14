@@ -58,25 +58,42 @@ export const materials={
  kinetic:std({color:0x00e8d4,emissive:0x00fff0,emissiveIntensity:5.2,roughness:.14}),
 };
 
-// Clear glazing is routinely authored flush with slab edges, spandrels and
-// frames. Recede it by a slope-scaled depth offset so coincident opaque faces
-// always win instead of flickering through the transparent tint. The tag is
-// copied by Material.clone(), so facility-specific glass variants inherit it.
+// Coplanar finishes fight at aerial range, so every tagged material carries a
+// signed depth rank that decides which face wins a near-coincident pair. Lower
+// ranks advance toward the camera:
+//  glass (+1, tinted +1.5)  clear glazing is flush with slab edges, spandrels and
+//                           frames, so it recedes behind every opaque face;
+//  substrate (0)            masonry and stone is the reference surface;
+//  planting and cladding    trunk, leaf and graphite panels sit a fraction proud of
+//  (-.25 to -.5, -.75)      the masonry they clip to;
+//  metals (-1.25 to -5)     a strict ladder, so each metal contact has a distinct
+//                           winner: steel < copper < dark panels < solar < gold trim;
+//  emissive (-6)            light strips and lit glass advance over the panels they sit in.
+// Equal ranks still fight, so those faces need >= 2.5 cm separation at authoring
+// time; scripts/audit-coplanar.mjs reports the ones that remain (it reports none
+// across the 35 facility factories). The tag is copied by Material.clone(), so
+// facility-specific variants inherit it.
 export const DEPTH_OFFSET_UNITS=2,REVERSED_DEPTH_OFFSET_UNITS=8;
-export function recedeBehindCoplanar(material,layer=1){
- material.polygonOffset=true;material.polygonOffsetFactor=layer;material.polygonOffsetUnits=layer*DEPTH_OFFSET_UNITS;
- material.userData.depthOffsetLayer=layer;return material;
+export const DEPTH_RANK={glass:1,tintedGlass:1.5,substrate:0,trunk:-.25,graphite:-.5,leaf:-.75,steel:-1.25,copper:-2,dark:-3,solar:-4,gold:-5,emissive:-6};
+// Only glass slopes its offset with the surface angle; opaque ranks use a constant
+// offset so grazing facades are not pushed toward the camera by their slope.
+export function setDepthRank(material,rank){
+ material.userData.depthRank=rank;
+ material.polygonOffset=rank!==0;material.polygonOffsetFactor=rank>0?rank:0;material.polygonOffsetUnits=rank*DEPTH_OFFSET_UNITS;
+ return material;
 }
-recedeBehindCoplanar(materials.glazing);recedeBehindCoplanar(materials.blueGlass);
+setDepthRank(materials.glazing,DEPTH_RANK.glass);setDepthRank(materials.blueGlass,DEPTH_RANK.tintedGlass);
+for(const name of ['steel','copper','dark','solar','gold','leaf','trunk'])setDepthRank(materials[name],DEPTH_RANK[name]);
+for(const name of ['warm','warmWin','cyan','violet','magenta','kinetic'])setDepthRank(materials[name],DEPTH_RANK.emissive);
 // three negates polygonOffsetFactor for a reversed depth buffer but not the
 // units term, so flip units for every tagged material once the renderer is known.
 export function applyDepthConvention(root,reversed){
  const seen=new Set();
  root?.traverse?.(object=>{
   for(const material of Array.isArray(object.material)?object.material:[object.material]){
-   const layer=material?.userData?.depthOffsetLayer;if(!layer||seen.has(material))continue;seen.add(material);
-   material.polygonOffset=true;material.polygonOffsetFactor=layer;
-   material.polygonOffsetUnits=reversed?-layer*REVERSED_DEPTH_OFFSET_UNITS:layer*DEPTH_OFFSET_UNITS;
+   const rank=material?.userData?.depthRank;if(!rank||seen.has(material))continue;seen.add(material);
+   material.polygonOffset=true;material.polygonOffsetFactor=rank>0?rank:0;
+   material.polygonOffsetUnits=reversed?-rank*REVERSED_DEPTH_OFFSET_UNITS:rank*DEPTH_OFFSET_UNITS;
   }
  });
  return seen.size;
