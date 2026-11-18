@@ -14,7 +14,7 @@ import {CreatePlane} from '@babylonjs/core/Meshes/Builders/planeBuilder.js';
 import {StandardMaterial} from '@babylonjs/core/Materials/standardMaterial.js';
 import {DynamicTexture} from '@babylonjs/core/Materials/Textures/dynamicTexture.js';
 import '@babylonjs/core/Collisions/collisionCoordinator.js';
-import {animate} from 'animejs';
+import {planFlight,roomFocus,approach} from './interior-camera.js';
 import {levelCode} from './wayfinding.js';
 import {arrivalBoards,signMount} from './interior-gallery.js';
 import {routeToRoom} from './floor-topology.js';
@@ -83,7 +83,7 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
   onLifecycle('floor-request',{facility:f.key,floor:l+1});
   const assembly=createInteriorGeometry(f,l); // Validate floor before disposing the active scene.
   try{
-  flight?.pause();flight=null;held.clear();post?.dispose();post=null;shadow?.dispose();shadow=null;scene?.dispose();level=l;currentRoom=null;layout=assembly.layout;scene=new Scene(engine);scene.useRightHandedSystem=true;scene.clearColor=new Color4(.27,.35,.40,1);scene.collisionsEnabled=true;
+  flight=null;held.clear();post?.dispose();post=null;shadow?.dispose();shadow=null;scene?.dispose();level=l;currentRoom=null;layout=assembly.layout;scene=new Scene(engine);scene.useRightHandedSystem=true;scene.clearColor=new Color4(.27,.35,.40,1);scene.collisionsEnabled=true;
   scene.imageProcessingConfiguration.toneMappingEnabled=true;scene.imageProcessingConfiguration.toneMappingType=1;scene.imageProcessingConfiguration.exposure=1.1;scene.imageProcessingConfiguration.contrast=1.1;
   if(!engineOverride)createInteriorEnvironment(scene,engine,{quality});
   const finishes=createInteriorMaterials(scene,new Set(assembly.root.children.flatMap(g=>g.children.map(m=>m.material.name))),{quality,textureScale:engineOverride?.25:1});for(const m of Object.values(finishes))m.maxSimultaneousLights=8;
@@ -179,21 +179,36 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
   onFloor(l,layout.rooms);onRoom('Arrival corridor');awaitingFrame='floor-first-frame';
   }finally{assembly.root.traverse(object=>object.geometry?.dispose());}
  }
- function stop(){flight?.pause();flight=null;}
+ function stop(){flight=null;}
+ // Current gaze as plan yaw/pitch (yaw = atan2(dx,dz)); the right-handed camera looks down local -Z.
+ function gaze(){const d=camera.getDirection(new Vector3(0,0,-1));return {yaw:Math.atan2(d.x,d.z),pitch:Math.atan2(d.y,Math.hypot(d.x,d.z)||1e-6)};}
+ function pose(x,z,yaw,pitch){camera.position.set(x,1.67,z);const c=Math.cos(pitch);camera.setTarget(new Vector3(x+Math.sin(yaw)*c,1.67+Math.sin(pitch),z+Math.cos(yaw)*c));}
+ // Room stops walk a filleted route at a steady pace, then settle the gaze on the room.
  function visit(index){stop();const r=layout.rooms[index];if(!r)return;
-  const points=routeToRoom(layout,[camera.position.x,camera.position.z],index);let k=0;camera.detachControl();
-  function next(){if(disposed)return;if(k>=points.length){currentRoom=index;camera.setTarget(new Vector3(r.x,1.45,r.z));camera.attachControl(canvas,true);flight=null;onRoom(r.name);return;}const [x,z]=points[k++];camera.setTarget(new Vector3(x,1.7,z));flight=animate(camera.position,{x,z,duration:reduced?0:Math.max(350,Math.hypot(x-camera.position.x,z-camera.position.z)*100),ease:'inOutSine',onComplete:next});}next();
+  const route=routeToRoom(layout,[camera.position.x,camera.position.z],index);const {yaw,pitch}=gaze();
+  const plan=planFlight({from:[camera.position.x,camera.position.z],yaw,pitch,route,focus:roomFocus(r,route.at(-1),index),focusHeight:1.32});
+  camera.detachControl();camera.cameraDirection.set(0,0,0);camera.cameraRotation.set(0,0);
+  const arrive=()=>{if(disposed)return;flight=null;currentRoom=index;camera.attachControl(canvas,true);onRoom(r.name);};
+  if(reduced||plan.duration<=0){pose(plan.final.x,plan.final.z,plan.final.yaw,plan.final.pitch);arrive();return;}
+  flight={plan,t:0,index,arrive};
  }
+ function fly(dt){if(!flight)return;flight.t+=dt;const p=flight.plan.sample(flight.t);pose(p.x,p.z,p.yaw,p.pitch);if(p.done)flight.arrive();}
+ // Keyboard look (Q/E, or held 'turn-left'/'turn-right') with an eased turn rate.
+ let turnRate=0;
+ function turn(dt){const target=(held.has('turn-left')?1:0)-(held.has('turn-right')?1:0);turnRate=approach(turnRate,target*1.5,9,dt);if(Math.abs(turnRate)<1e-3){turnRate=0;return;}const {yaw,pitch}=gaze();pose(camera.position.x,camera.position.z,yaw+turnRate*dt,pitch);}
  function interrupt(){stop();camera?.attachControl(canvas,true);}
- const onKey=e=>{if(['w','a','s','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))interrupt();};
+ const TURN_KEYS={q:'turn-left',Q:'turn-left',e:'turn-right',E:'turn-right'};
+ const typing=e=>/^(INPUT|SELECT|TEXTAREA)$/.test(e.target?.tagName||'')||e.ctrlKey||e.metaKey||e.altKey;
+ const onKey=e=>{if(typing(e))return;if(['w','a','s','d','W','A','S','D','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))interrupt();if(TURN_KEYS[e.key]){interrupt();held.add(TURN_KEYS[e.key]);}};
+ const onKeyUp=e=>{if(TURN_KEYS[e.key])held.delete(TURN_KEYS[e.key]);};
  const resize=()=>{scale();engine.resize();};
  const blur=()=>{stop();held.clear();camera?.detachControl();if(camera){camera.cameraDirection.set(0,0,0);camera.cameraRotation.set(0,0);camera.attachControl(canvas,true);}};
  const lostObserver=engine.onContextLostObservable.add(()=>{contextLost=true;blur();onLifecycle('interior-context-lost',{facility:f.key,floor:level+1});});
  const restoredObserver=engine.onContextRestoredObservable.add(()=>{if(disposed)return;contextLost=false;awaitingFrame='interior-context-restored';});
- function dispose(){if(disposed)return;disposed=true;stop();held.clear();engine.stopRenderLoop();engine.onContextLostObservable.remove(lostObserver);engine.onContextRestoredObservable.remove(restoredObserver);canvas.removeEventListener('pointerdown',interrupt);window.removeEventListener('keydown',onKey);window.removeEventListener('resize',resize);window.removeEventListener('blur',blur);post?.dispose();shadow?.dispose();scene?.dispose();engine.dispose();}
+ function dispose(){if(disposed)return;disposed=true;stop();held.clear();engine.stopRenderLoop();engine.onContextLostObservable.remove(lostObserver);engine.onContextRestoredObservable.remove(restoredObserver);canvas.removeEventListener('pointerdown',interrupt);window.removeEventListener('keydown',onKey);window.removeEventListener('keyup',onKeyUp);window.removeEventListener('resize',resize);window.removeEventListener('blur',blur);post?.dispose();shadow?.dispose();scene?.dispose();engine.dispose();}
  try{
-  scale();canvas.addEventListener('pointerdown',interrupt);window.addEventListener('keydown',onKey);window.addEventListener('resize',resize);window.addEventListener('blur',blur);
-  build(initialFloor);engine.runRenderLoop(()=>{if(!scene||disposed||contextLost||document.hidden)return;try{const dt=Math.min(engine.getDeltaTime()/1000,.05);if(held.size){interrupt();const fwd=camera.getDirection(new Vector3(0,0,-1));fwd.y=0;fwd.normalize();const right=camera.getDirection(Vector3.Right());right.y=0;const delta=Vector3.Zero();if(held.has('forward'))delta.addInPlace(fwd);if(held.has('back'))delta.subtractInPlace(fwd);if(held.has('left'))delta.subtractInPlace(right);if(held.has('right'))delta.addInPlace(right);camera.cameraDirection.addInPlace(delta.scale(dt*2.5));}camera.position.y=1.67;scene.render();if(!engineOverride&&!scene.isReady())return;if(awaitingFrame){onLifecycle(awaitingFrame,{facility:f.key,floor:level+1});awaitingFrame=null;}onFrame({engine:'Babylon.js',facility:f.key,floor:level+1,frameMs:engine.getDeltaTime(),width:engine.getRenderWidth(),height:engine.getRenderHeight(),meshes:scene.meshes.length});}catch(error){dispose();onError(error);}});
+  scale();canvas.addEventListener('pointerdown',interrupt);window.addEventListener('keydown',onKey);window.addEventListener('keyup',onKeyUp);window.addEventListener('resize',resize);window.addEventListener('blur',blur);
+  build(initialFloor);engine.runRenderLoop(()=>{if(!scene||disposed||contextLost||document.hidden)return;try{const dt=Math.min(engine.getDeltaTime()/1000,.05);fly(dt);turn(dt);if(held.size){interrupt();const fwd=camera.getDirection(new Vector3(0,0,-1));fwd.y=0;fwd.normalize();const right=camera.getDirection(Vector3.Right());right.y=0;const delta=Vector3.Zero();if(held.has('forward'))delta.addInPlace(fwd);if(held.has('back'))delta.subtractInPlace(fwd);if(held.has('left'))delta.subtractInPlace(right);if(held.has('right'))delta.addInPlace(right);camera.cameraDirection.addInPlace(delta.scale(dt*2.5));}camera.position.y=1.67;scene.render();if(!engineOverride&&!scene.isReady())return;if(awaitingFrame){onLifecycle(awaitingFrame,{facility:f.key,floor:level+1});awaitingFrame=null;}onFrame({engine:'Babylon.js',facility:f.key,floor:level+1,frameMs:engine.getDeltaTime(),width:engine.getRenderWidth(),height:engine.getRenderHeight(),meshes:scene.meshes.length});}catch(error){dispose();onError(error);}});
  }catch(error){dispose();throw error;}
  return {getCanvas:()=>canvas,getScene:()=>scene,getCamera:()=>camera,setFloor(l){if(disposed)return;const previous=scene;try{build(l);}catch(error){if(scene===previous&&!previous.isDisposed)throw error;dispose();onError(error);}},visit,setQuality(value){if(disposed)return;quality=value;scale();if(scene&&camera&&!engineOverride){post?.dispose();post=createInteriorPipeline(scene,camera,quality);}engine.resize();},hold(key,value){if(disposed)return;if(value)held.add(key);else held.delete(key);},dispose};
 }

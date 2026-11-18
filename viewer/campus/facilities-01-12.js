@@ -3,6 +3,7 @@ import * as T from 'three';
 import {Batch,cylinder,ring,line,materials,setDepthRank,DEPTH_RANK} from './geometry.js';
 
 import {facadeEdge,roofCoping,roofTree,occupiedBays} from './facade-craft.js';
+import {architecturalGlass,occupancyVariance} from './arch-materials.js';
 
 const rect=(x,z,w,d)=>[[x-w/2,z-d/2],[x+w/2,z-d/2],[x+w/2,z+d/2],[x-w/2,z+d/2]];
 const centroid=p=>p.reduce((v,q)=>[v[0]+q[0]/p.length,v[1]+q[1]/p.length],[0,0]);
@@ -29,6 +30,10 @@ const growGlass=duskLinked(new T.MeshStandardMaterial({name:'Atlas grow tower gl
 const amberGlass=duskLinked(new T.MeshStandardMaterial({name:'Atlas amber core glass',color:0xe0a050,metalness:.2,roughness:.12,transparent:true,opacity:.62,depthWrite:false,side:T.DoubleSide,emissive:0xff9a38}),.28);
 // Tinted glass recedes behind coplanar frames and slabs like the global glazing.
 for(const glass of [blueCurtain,growGlass,amberGlass])setDepthRank(glass,DEPTH_RANK.glass);
+// The HQ keeps its saturated blue body: a pale sky reflection must not bleach it.
+architecturalGlass(blueCurtain,{reflectance:1.1});for(const glass of [growGlass,amberGlass])architecturalGlass(glass);
+// Rooms behind the glazing switch individually at dusk instead of one uniform glow.
+for(const lit of [litFloor,litFloorCool,litWall])occupancyVariance(lit);
 // Production LED volume: abstract dusk gradient, no pictorial content.
 const ledTexture=(()=>{const W=4,H=64,data=new Uint8Array(W*H*4);for(let y=0;y<H;y++){const t=y/(H-1),band=Math.exp(-((t-.38)**2)/.004);const r=40+120*t+120*band,g=30+40*t+140*band,bl=150+90*t+60*band;for(let x=0;x<W;x++)data.set([Math.min(255,r),Math.min(255,g),Math.min(255,bl),255],(y*W+x)*4);}const tex=new T.DataTexture(data,W,H,T.RGBAFormat);tex.colorSpace=T.SRGBColorSpace;tex.needsUpdate=true;return tex;})();
 const ledWall=new T.MeshStandardMaterial({name:'Atlas LED volume',color:0x0c0c14,roughness:.35,emissive:0xffffff,emissiveMap:ledTexture,emissiveIntensity:1.25});
@@ -478,7 +483,7 @@ function facadeIdentity(b,f){const {id,w,d,h}=f;
  if(id===11){for(let y=5;y<h*.7;y+=8)b.box('stone',-w*.32,y,d*.401,w*.25,.14,.12);}
 }
 const atlasGlazing=materials.glazing.clone();
-atlasGlazing.name='Atlas neutral clear architectural glazing';atlasGlazing.color.set(0xc1d0d0);atlasGlazing.opacity=.20;atlasGlazing.metalness=.02;atlasGlazing.roughness=.11;atlasGlazing.envMapIntensity=.6;atlasGlazing.depthWrite=false;
+atlasGlazing.name='Atlas neutral clear architectural glazing';atlasGlazing.color.set(0xc1d0d0);atlasGlazing.opacity=.20;atlasGlazing.metalness=.02;atlasGlazing.roughness=.11;atlasGlazing.envMapIntensity=.6;atlasGlazing.depthWrite=false;architecturalGlass(atlasGlazing,{roughness:.08});
 
 function nearDetailFactory(f,levels){
  // This closure retains only the facility description and numeric floor outlines, never a built Batch or

@@ -5,6 +5,7 @@ import {createReferenceFidelityDetail} from './reference-fidelity.js';
 import {Box3,Group} from 'three';
 import {sign} from './geometry.js';
 import {orderTransparentDetail,SHELL_GLASS_ORDER} from './facility-details.js';
+import {addRoofscape} from './arch-roofscape.js';
 
 // Every record has an individually reconstructed envelope. Unknown IDs fail
 // explicitly instead of quietly receiving a generic family building.
@@ -13,6 +14,9 @@ export function createFacility(f,options={}){
  if(!root)throw new Error('Missing reference architecture for '+f.key);
  const height=new Box3().setFromObject(root).max.y;
  root.userData.envelopeHeight=height;
+ // Roof plant on the free deck area planned against the full envelope; merged
+ // into existing finish meshes, so it adds triangles but no draw calls.
+ addRoofscape(root,f);
  root.name=f.key;root.position.set(f.x,0,f.z);
  root.userData.referenceSource='CF-'+String(f.id).padStart(2,'0')+'_Facility_Infographic.png';
  root.userData.referenceInterpretation='Observed facade reconstruction; hidden elevations and dimensions inferred';

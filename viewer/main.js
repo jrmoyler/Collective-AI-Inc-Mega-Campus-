@@ -1,4 +1,6 @@
 import {bindVisitorAtlas} from './campus/visitor-atlas.js';
+import {xp,bindExperience,shotFor,showSelection,syncUrl,GROUND_SHOT} from './campus/experience-controller.js';
+import {planFlight,flightDuration,obstaclesFrom} from './campus/experience-camera.js';
 import {createArrivalCourts} from './campus/arrival-courts.js';
 // @ts-nocheck
 import {createFrameLoop,withRendererState,disposeSceneResources} from './campus/render-lifecycle.js';
@@ -26,6 +28,11 @@ import {createStreetFurniture} from './campus/street-furniture.js';
 import {setDuskMaterials,applyDepthConvention} from './campus/geometry.js';
 import {createDepthRange,skyDepthVertexShader} from './campus/depth-precision.js';
 import {createCampusMap,createPlanViewer} from './campus/plans.js';
+import {installAerialPerspective,atmospherePreset} from './campus/render-atmosphere.js';
+import {createGradePass,gradePreset} from './campus/post-grade.js';
+import {renderProfile} from './campus/quality.js';
+import {setShadowMapSize} from './campus/sun-shadows.js';
+import {FXAAPass} from 'three/addons/postprocessing/FXAAPass.js';
 const $=s=>document.querySelector(s);const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;let renderer,scene,camera,controls,composer,landscape,infrastructure,fleets,streetFurniture,interior=null,selected=null,flight=null,flyover=false,showLabels=true,entering=false,clock=0;
 let exteriorDirty=true;
 function invalidateExterior(){exteriorDirty=true;}
@@ -49,27 +56,34 @@ function chooseFloor(level){
  arrivalFloor=level;
  if($('#destination-floor'))$('#destination-floor').value=String(level);
  if($('#facility-program'))$('#facility-program').textContent=selected.program[level].split(';').join(' · ');
+ syncUrl();
 }
 function setView(id){
+ xp.view=id;
+ const touring=!!xp.tour?.state.active;
+ document.body.classList.toggle('touring',touring);
  for(const control of ['aerial','north','ground','tour']){
-  const button=$('#'+control);
-  button?.classList.toggle('active',control===id);
-  button?.setAttribute('aria-pressed',String(control===id));
+  const button=$('#'+control),on=control==='tour'?touring:control===id;
+  button?.classList.toggle('active',on);
+  button?.setAttribute('aria-pressed',String(on));
  }
+ syncUrl();
 }
 function setLayers(open){
  if($('#layers'))$('#layers').hidden=!open;
  $('#layers-toggle')?.setAttribute('aria-expanded',String(open));
 }
-function select(id,level=0){
+function select(id,level=0,{fromTour=false,sheet:openSheet=true}={}){
  if(entering&&selected?.id!==id)exit();
  const f=FACILITIES.find(facility=>facility.id===id);
  if(!f)return;
+ if(!fromTour)xp.tour?.pause();
+ xp.dismissWelcome?.();
  selected=f;
  updateTrip(id);
  setLayers(false);
  document.body.classList.add('exploring');
- if($('#detail'))$('#detail').hidden=false;
+ if($('#detail')&&(openSheet||innerWidth>760))$('#detail').hidden=false;
  if(innerWidth<761)closeDirectory();
  sheet();
  if($('#facility-key'))$('#facility-key').textContent=f.key;
@@ -87,12 +101,25 @@ function select(id,level=0){
  chooseFloor(level);
  if($('#area-note'))$('#area-note').textContent=f.assumedArea?'Area is a design-package assumption; original allowance remains unresolved.':'Program and floor count from the supplied schematic design package.';
  markers.forEach(({el,f})=>el.classList.toggle('selected',f.id===id));
- $('#facility-name')?.focus({preventScroll:true});
- message(graphicsReady?`${f.key} selected · exterior or interior tour available`:`${f.key} selected · schematic floor plans available`);
+ if(!fromTour)$('#facility-name')?.focus({preventScroll:true});
+ showSelection(xp.api,f);xp.sound?.cue();syncUrl();
+ message(graphicsReady?`${f.key} ${f.name} selected · exterior or interior tour available`:`${f.key} ${f.name} selected · schematic floor plans available`);
 }
-function moveCamera(position,target,view=null){if(!graphicsReady)return;if(entering)exit();document.body.classList.add('exploring');flight?.pause();flyover=false;setView(view);const state={x:camera.position.x,y:camera.position.y,z:camera.position.z,tx:controls.target.x,ty:controls.target.y,tz:controls.target.z};flight=animate(state,{x:position[0],y:position[1],z:position[2],tx:target[0],ty:target[1],tz:target[2],duration:reduced?0:1200,ease:'inOutCubic',onUpdate:()=>{camera.position.set(state.x,state.y,state.z);controls.target.set(state.tx,state.ty,state.tz);controls.update();},onComplete:()=>flight=null});}
+function moveCamera(position,target,view=null,{onComplete=null}={}){
+ if(!graphicsReady)return;if(entering)exit();
+ if(view!=='tour')xp.tour?.stop();
+ document.body.classList.add('exploring');flight?.pause();flight=null;flyover=false;setView(view);
+ // Arc over intervening roofs; the look-at point leads so the destination resolves early.
+ const from=camera.position.toArray(),fromTarget=controls.target.toArray();
+ const path=planFlight({from,to:position,fromTarget,toTarget:target,obstacles:obstaclesFrom(FACILITIES,facilityHeight)});
+ const apply=t=>{const p=path.sample(t);camera.position.fromArray(p.position);controls.target.fromArray(p.target);controls.update();invalidateExterior();};
+ const duration=flightDuration(from,position,fromTarget,target,{reduced});
+ if(!duration){apply(1);onComplete?.();return;}
+ const state={t:0};
+ flight=animate(state,{t:1,duration,ease:'inOutCubic',onUpdate:()=>apply(state.t),onComplete:()=>{flight=null;onComplete?.();}});
+}
 function facilityHeight(f){return buildings.find(group=>group.userData.facility===f.id)?.userData.envelopeHeight??f.h;}
-function focus(){if(!selected)return;const f=selected,h=facilityHeight(f);moveCamera([f.x+f.w*1.2,h+f.w*.8,f.z+f.d*1.9],[f.x,h*.35,f.z]);}
+function focus({view=null,shot:overrides={},onComplete=null}={}){if(!selected||!graphicsReady)return;const shot=shotFor(xp.api,selected,overrides);if(shot)moveCamera(shot.position,shot.target,view,{onComplete});}
 function disposePostprocessing(){
  if(!composer)return;
  const disposing=composer;composer=null;bloom=null;
@@ -158,29 +185,37 @@ function setDay(day){
  hemi.intensity=day?.7:1;hemi.color.set(day?0xd6e6f2:0x4f64a0);hemi.groundColor.set(day?0x5a5644:0x2e2619);
  sun.intensity=day?2.9:1.9;sun.color.set(day?0xfff1dc:0xffae6a);
  rim.intensity=day?.18:.22;rim.color.set(day?0xc4dbed:0x6f82c8);
- scene.background.set(day?0xa9c3d8:0x111a33);scene.fog.color.set(day?0xa9c3d8:0x1a2442);
- // Keep the complete campus in clear air at the default ~1.2 km aerial.
- scene.fog.near=day?2300:1400;scene.fog.far=day?7200:6200;
+ const air=atmospherePreset(day);
+ scene.background.set(day?0xa9c3d8:0x111a33);scene.fog.color.set(air.fogColor);
+ // Height-dependent aerial perspective (render-atmosphere.js): near is the clear
+ // radius, far the ground-level visibility. The campus stays in clear air at the
+ // default ~1.2 km aerial; the low countryside and horizon recede into haze.
+ scene.fog.near=air.fogNear;scene.fog.far=air.fogFar;
  setDuskMaterials(!day);streetFurniture?.userData.setDusk?.(!day);
  // Daylight needs no glow: HDR sky, animated guidance strips and sunlit white
  // shuttles spread the low bloom mips into a milky veil. Dusk keeps a tight glow
  // for luminaires and lit glazing only.
  if(bloom){bloom.enabled=!day;bloom.strength=.26;bloom.radius=.3;bloom.threshold=1.1;}
- renderer.toneMappingExposure=day?.9:1.25;
+ composer?.grade?.setPreset(gradePreset(day));
+ renderer.toneMappingExposure=air.exposure;
  if(ambient)ambient.intensity=day?.04:.03;
  // Reflections come from the same outdoor sky, not an indoor showroom.
  if(getPostprocessingSamples(renderer)===null){scene.environment=null;environmentTarget?.dispose();environmentTarget=null;return;}
- let pmrem,envSky,next;
+ let pmrem,envSky,envGround,next;
  try{
   pmrem=new T.PMREMGenerator(renderer);const envScene=new T.Scene();envSky=sky.clone();
   envSky.material=sky.material.clone();envSky.material.uniforms.showSunDisc.value=false;
   envSky.position.set(0,0,0);envScene.add(envSky);
+  // Lower hemisphere: lit ground rather than a mirrored second sky, so glazing
+  // and wet paving reflect the campus floor below the horizon.
+  envGround=new T.Mesh(new T.CircleGeometry(7000,48),new T.MeshBasicMaterial({color:air.envGround,side:T.DoubleSide,fog:false,toneMapped:false}));
+  envGround.rotation.x=-Math.PI/2;envGround.position.y=-2;envScene.add(envGround);
   next=withRendererState(renderer,()=>pmrem.fromScene(envScene,.04,.1,10000));validateRenderTargets(renderer,[next]);scene.environment=next.texture;
   environmentTarget?.dispose();environmentTarget=next;
   // Sky radiance is unscaled physical output; at 0.85 it veiled the scene.
-  scene.environmentIntensity=day?.3:.35;
+  scene.environmentIntensity=air.environmentIntensity;
  }catch(e){if(next!==environmentTarget)next?.dispose();console.warn('Atmosphere reflections unavailable',e);}
- finally{pmrem?.dispose();if(envSky?.material!==sky.material)envSky?.material.dispose();}
+ finally{pmrem?.dispose();if(envSky?.material!==sky.material)envSky?.material.dispose();envGround?.geometry.dispose();envGround?.material.dispose();}
 }
 async function enter(){if(!graphicsReady)return;if(!selected||entering||interior)return;entering=true;if($('#enter')){$('#enter').disabled=true;$('#enter').textContent='Opening interior…';}const f=selected,request=++tourRequest;performanceReport.pause('tour-load');performanceReport.event('tour-request',{facility:f.key});try{const {createInterior}=await import('./campus/interior.js');if(request!==tourRequest||!graphicsReady)return;flight?.pause();flyover=false;setView(null);$('#interior').hidden=false;setCampusInert(true);$('#inside-key').textContent=f.key;$('#inside-name').textContent=f.name;$('#floor-select').replaceChildren();for(let i=0;i<f.levels;i++){const option=document.createElement('option');option.value=i;option.textContent=f.id===3?`B${i+1}`:`L${String(i+1).padStart(2,'0')}`;$('#floor-select').append(option);}interior=createInterior($('#interior-canvas'),f,{initialFloor:arrivalFloor,reduced,quality,onError:error=>{performanceReport.event('interior-error',{message:String(error.message)});exit();message('Interior graphics stopped. You can reopen the tour.');console.error(error);},onLifecycle:(type,detail)=>{performanceReport.event(type,detail);if(type==='floor-request'||type==='interior-context-lost')performanceReport.pause(type);},onFrame:sample=>{performanceReport.record({...sample,quality});acceptancePanel?.frame($('#interior-canvas'),sample);},onRoom:name=>{$('#room-status').textContent=name;},onFloor:(l,rooms)=>{chooseFloor(l);$('#floor-select').value=l;$('#room-list').hidden=innerWidth<761;$('#rooms-toggle').setAttribute('aria-expanded',String(!$('#room-list').hidden));$('#room-list').replaceChildren();rooms.forEach((r,i)=>{const button=document.createElement('button');button.textContent=`${i+1}. ${r.name}`;button.onclick=()=>{interior?.visit(i);if(innerWidth<761){$('#room-list').hidden=true;$('#rooms-toggle').setAttribute('aria-expanded','false');}};$('#room-list').append(button);});}});$('#interior-canvas').focus();message('');}catch(e){if(request!==tourRequest)return;console.error(e);$('#interior').hidden=true;setCampusInert(false);interior?.dispose();interior=null;message('Interior could not open. Please try again.');}finally{if(request===tourRequest){entering=false;if($('#enter')){$('#enter').disabled=false;$('#enter').innerHTML='Explore inside <span>↗</span>';}}}}
 function setCampusInert(active){
@@ -190,6 +225,9 @@ function setCampusInert(active){
 }
 function exit(){invalidateExterior();setCampusInert(false);if(interior||entering){performanceReport.event('tour-exit',{facility:selected?.key});performanceReport.pause('tour-exit');}tourRequest++;entering=false;if($('#enter')){$('#enter').disabled=!graphicsReady;$('#enter').innerHTML='Explore inside <span>↗</span>';}interior?.dispose();interior=null;if($('#interior'))$('#interior').hidden=true;if(graphicsReady){renderer?.setSize(innerWidth,innerHeight);composer?.setSize(innerWidth,innerHeight);checkPostprocessing();}$('#enter')?.focus();}
 function bind(){
+ bindExperience({select,chooseFloor,setView,moveCamera,focus:options=>focus(options),reduced,mobile,facilityHeight,invalidate:invalidateExterior,
+  get selected(){return selected;},get arrivalFloor(){return arrivalFloor;},get graphicsReady(){return graphicsReady;},get busy(){return !!(interior||entering);},
+  get camera(){return camera;},get scene(){return scene;},get buildings(){return buildings;},get reversedDepth(){return reversedDepth;},get trees(){return landscape?.trees;}});
  updateTrip=bindVisitorAtlas((id,floor)=>{
   if(entering)exit();
   closeDirectory();select(id,floor);
@@ -213,9 +251,9 @@ function bind(){
  if($('#destination-floor'))$('#destination-floor').onchange=e=>chooseFloor(Number(e.target.value));
  if($('#directory-toggle'))$('#directory-toggle').onclick=()=>{setLayers(false);const open=$('#directory').hidden;if(open&&entering)exit();$('#directory').hidden=!open;$('#directory-toggle').setAttribute('aria-expanded',String(open));if(open&&innerWidth<761&&$('#detail'))$('#detail').hidden=true;sheet();if(open)$('#search')?.focus();};
  if($('#directory-close'))$('#directory-close').onclick=()=>{closeDirectory();$('#directory-toggle').focus();};if($('#detail-close'))$('#detail-close').onclick=()=>{if(entering)exit();$('#detail').hidden=true;sheet();$('#directory-toggle')?.focus();};
- if($('#focus'))$('#focus').onclick=focus;if($('#view-plan'))$('#view-plan').onclick=()=>{if(entering)exit();if(selected)planViewer.open(selected,arrivalFloor);};if($('#enter'))$('#enter').onclick=enter;if($('#exit-interior'))$('#exit-interior').onclick=exit;if($('#floor-select'))$('#floor-select').onchange=e=>interior?.setFloor(Number(e.target.value));
- if($('#aerial'))$('#aerial').onclick=()=>moveCamera([40,mobile?720:680,mobile?980:920],[0,10,-40],'aerial');if($('#north'))$('#north').onclick=()=>moveCamera([-80,620,-980],[20,20,-40],'north');if($('#ground'))$('#ground').onclick=()=>{if(selected){const f=selected;moveCamera([f.x,5.2,f.z+f.d/2+38],[f.x,facilityHeight(f)*.42,f.z],'ground');}else moveCamera([-280,8,285],[-130,25,110],'ground');};
- if($('#tour'))$('#tour').onclick=()=>{if(entering)exit();flight?.pause();flyover=!flyover;setView(flyover?'tour':null);};
+ if($('#focus'))$('#focus').onclick=()=>focus();if($('#view-plan'))$('#view-plan').onclick=()=>{if(entering)exit();if(selected)planViewer.open(selected,arrivalFloor);};if($('#enter'))$('#enter').onclick=enter;if($('#exit-interior'))$('#exit-interior').onclick=exit;if($('#floor-select'))$('#floor-select').onchange=e=>interior?.setFloor(Number(e.target.value));
+ if($('#aerial'))$('#aerial').onclick=()=>moveCamera([40,mobile?720:680,mobile?980:920],[0,10,-40],'aerial');if($('#north'))$('#north').onclick=()=>moveCamera([-80,620,-980],[20,20,-40],'north');if($('#ground'))$('#ground').onclick=()=>{if(selected&&!$('#detail')?.hidden)focus({view:'ground',shot:GROUND_SHOT});else moveCamera([-280,8,285],[-130,25,110],'ground');};
+ // #tour starts the curated guided tour (experience-controller); the old orbit flyover is retired.
  if($('#day'))$('#day').onclick=()=>setDay($('#day').getAttribute('aria-pressed')!=='true');
  if($('#layers-toggle'))$('#layers-toggle').onclick=()=>{const open=$('#layers').hidden;if(open){closeDirectory();if($('#detail'))$('#detail').hidden=true;sheet();}setLayers(open);};
  if($('#labels'))$('#labels').onclick=()=>{showLabels=!showLabels;$('#labels').setAttribute('aria-pressed',String(showLabels));if($('#markers'))$('#markers').hidden=!showLabels;};
@@ -224,8 +262,10 @@ function bind(){
  if($('#fleet-layer'))$('#fleet-layer').onchange=e=>{if(fleets)fleets.root.visible=e.target.checked;};
  document.querySelectorAll('[data-move]').forEach(b=>{b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);interior?.hold(b.dataset.move,true);};for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>interior?.hold(b.dataset.move,false));});
  window.addEventListener('blur',()=>{document.querySelectorAll('[data-move]').forEach(b=>interior?.hold(b.dataset.move,false));});
- window.addEventListener('keydown',e=>{if(e.key!=='Escape'||$('#plan-dialog')?.open||$('#visitor-atlas')?.open)return;
+ window.addEventListener('keydown',e=>{if(e.key!=='Escape'||$('#plan-dialog')?.open||$('#visitor-atlas')?.open||$('#shortcut-help')?.open)return;
   if(interior||entering){exit();return;}
+  if(xp.tour?.state.active){xp.tour.stop();$('#tour')?.focus();return;}
+  if($('#welcome')&&!$('#welcome').hidden){xp.dismissWelcome?.();$('#directory-toggle')?.focus();return;}
   if($('#layers')&&!$('#layers').hidden){setLayers(false);$('#layers-toggle')?.focus();return;}
   if($('#detail')&&!$('#detail').hidden){$('#detail').hidden=true;sheet();($('#directory')?.hidden?$('#directory-toggle'):$('#search'))?.focus();return;}
   if($('#directory')&&!$('#directory').hidden){closeDirectory();$('#directory-toggle')?.focus();}});
@@ -254,7 +294,12 @@ async function boot(){
  const canvas=document.createElement('canvas');canvas.addEventListener('webglcontextcreationerror',event=>performanceReport.event('context-creation-error',{message:event.statusMessage}));
  // Reversed float depth removes the metre-scale depth steps that made layered
  // facades, copings and bands z-fight at the ~1.2 km aerial distance.
- renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance',preserveDrawingBuffer:false,alpha:false,reversedDepthBuffer:!legacyDepth});reversedDepth=renderer.capabilities.reversedDepthBuffer===true;renderer.debug.onShaderError=(gl,program)=>{throw new Error('WebGL shader compilation failed: '+gl.getProgramInfoLog(program));};renderer.setPixelRatio(exteriorPixelRatio(devicePixelRatio,quality,mobile));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;attachCanvas();
+ renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance',preserveDrawingBuffer:false,alpha:false,reversedDepthBuffer:!legacyDepth});reversedDepth=renderer.capabilities.reversedDepthBuffer===true;renderer.debug.onShaderError=(gl,program)=>{throw new Error('WebGL shader compilation failed: '+gl.getProgramInfoLog(program));};renderer.setPixelRatio(exteriorPixelRatio(devicePixelRatio,quality,mobile));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.NeutralToneMapping;renderer.toneMappingExposure=1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;attachCanvas();
+ // Khronos PBR Neutral: ACES desaturated the bright daylight sky to grey-white
+ // and shifted sunlit masonry hues; Neutral keeps base colours and a blue sky.
+ // Height-dependent aerial perspective replaces three's depth-only fog chunks
+ // before any exterior material compiles (render-atmosphere.js).
+ installAerialPerspective(T.ShaderChunk);
  {const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');performanceReport.event('graphics-capabilities',{api:gl.getParameter(gl.VERSION),vendor:gl.getParameter(debug?debug.UNMASKED_VENDOR_WEBGL:gl.VENDOR),renderer:gl.getParameter(debug?debug.UNMASKED_RENDERER_WEBGL:gl.RENDERER),maxTextureSize:gl.getParameter(gl.MAX_TEXTURE_SIZE)});}
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();performanceReport.event('exterior-context-lost');performanceReport.pause('exterior-context-lost');flight?.pause();flyover=false;graphicsGeneration++;graphicsReady=false;frameLoop?.stop();environmentTarget?.dispose();environmentTarget=null;if(scene)scene.environment=null;exit();message('Graphics paused · waiting for the browser to restore them');});
  scene=new T.Scene();scene.background=new T.Color(0x6a2848);scene.fog=new T.Fog(0xe88870,1700,4000);sky=createAtmosphere();scene.add(sky);camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.5,9000);camera.position.set(40,mobile?720:680,mobile?980:920);controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,10,-40);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.02;controls.minDistance=8;controls.maxDistance=2300;controls.update();controls.addEventListener('start',()=>{document.body.classList.add('exploring');flight?.pause();flight=null;flyover=false;setView(null);});
@@ -277,11 +322,24 @@ async function boot(){
    bloom=new UnrealBloomPass(new T.Vector2(innerWidth,innerHeight),.42,.55,.62);
    composer.addPass(bloom);
    composer.addPass(new OutputPass());
+   // Display-referred finishing: FXAA only stands in when the HDR target has
+   // no MSAA samples; the grade (S-curve, split tone, vignette, dither) is a
+   // single cheap full-screen pass and never adds light.
+   composer.fxaa=new FXAAPass();composer.fxaa.enabled=samples===0;composer.addPass(composer.fxaa);
+   composer.grade=createGradePass();composer.addPass(composer.grade);
    checkPostprocessing();
   }
  }catch(error){console.warn('Postprocessing initialization failed',error);disposePostprocessing();}
  setDay(true);
  scene.add(sun.target);const fitSunShadow=createSunShadowFitter(sun);renderer.info.autoReset=false;
+ // Quality gates the shadow budget (map size and PCF softness). Applied from the
+ // render loop so any quality change, from any control, takes effect next frame.
+ let renderQuality=null;
+ const applyRenderProfile=()=>{
+  renderQuality=quality;const profile=renderProfile(quality,mobile,{maxTextureSize:renderer.capabilities.maxTextureSize});
+  if(setShadowMapSize(sun,profile.shadowMapSize))invalidateExterior();
+  fitSunShadow.setSoftness({penumbra:profile.shadowPenumbra,maxRadius:profile.shadowRadiusMax});
+ };
  let last=performance.now(),frames=0;const projected=new T.Vector3(),viewPoint=new T.Vector3();
  controls.addEventListener('change',invalidateExterior);
  function render(now){
@@ -296,6 +354,9 @@ async function boot(){
   landscape?.update(clock);infrastructure?.update(clock);fleets?.update(clock,camera.position);
   streetFurniture?.userData.update(camera.position);for(const building of buildings)building.userData.updateDetails?.(camera.position);sky.position.copy(camera.position);sky.material.uniforms.time.value=clock;
   const orbitDistance=camera.position.distanceTo(controls.target);if(!legacyDepth)depthRange(camera,orbitDistance);
+  if(renderQuality!==quality)applyRenderProfile();
+  // checkPostprocessing may drop MSAA after a resize or context restore.
+  if(composer?.fxaa)composer.fxaa.enabled=composer.renderTarget1.samples===0&&!mobile;
   fitSunShadow(controls.target,orbitDistance,sun.userData.direction);
   renderer.info.autoReset=false;renderer.info.reset();
   if(composer)composer.render();else renderer.render(scene,camera);

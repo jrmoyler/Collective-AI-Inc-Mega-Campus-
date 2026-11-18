@@ -12,9 +12,18 @@ export function shadowExtentFor(viewDistance){
 
 // One shadow map covers the campus at aerial distance and concentrates its
 // existing texels around the viewed facility at street distance.
-export function createSunShadowFitter(light){
+// The PCF kernel radius is expressed in texels; converting a fixed world-space
+// penumbra keeps shadow softness constant while the extent ladder changes the
+// texel size (a sharp aerial edge and a soft street edge are the same shadow).
+export function shadowRadiusFor(texel,penumbra=.26,maxRadius=2){
+ if(!(texel>0))return 1;
+ return MathUtils.clamp(penumbra/texel,1,maxRadius);
+}
+
+export function createSunShadowFitter(light,{penumbra=.26,maxRadius=2}={}){
+ const softness={penumbra,maxRadius};
  const right=new Vector3(),up=new Vector3(),center=new Vector3(),worldUp=new Vector3(0,1,0);
- return (target,viewDistance,direction)=>{
+ const fit=(target,viewDistance,direction)=>{
   const extent=shadowExtentFor(viewDistance);
   const texel=2*extent/light.shadow.mapSize.x;
   right.crossVectors(worldUp,direction).normalize();up.crossVectors(direction,right).normalize();
@@ -29,6 +38,18 @@ export function createSunShadowFitter(light){
   // fixed offset leaves acne stripes; raise the normal offset only then.
   const grazing=MathUtils.clamp(1-direction.y/.5,0,1);
   light.shadow.normalBias=MathUtils.clamp(texel*(.3+.6*grazing),.018,.5);
-  return {extent,texel};
+  light.shadow.radius=shadowRadiusFor(texel,softness.penumbra,softness.maxRadius);
+  return {extent,texel,radius:light.shadow.radius};
  };
+ fit.setSoftness=(next={})=>{Object.assign(softness,next);};
+ return fit;
+}
+
+// Changing mapSize needs the old depth map released; three reallocates it on
+// the next shadow render.
+export function setShadowMapSize(light,size){
+ if(light.shadow.mapSize.x===size&&light.shadow.mapSize.y===size)return false;
+ light.shadow.mapSize.set(size,size);
+ light.shadow.map?.dispose();light.shadow.map=null;
+ return true;
 }

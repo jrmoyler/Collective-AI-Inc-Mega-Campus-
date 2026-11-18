@@ -2,6 +2,7 @@ import * as T from 'three';
 import {Batch,cylinder,ring,line,materials} from './geometry.js';
 
 import {roofTree,occupiedBays} from './facade-craft.js';
+import {architecturalGlass,occupancyVariance} from './arch-materials.js';
 
 // Individual CF infographics govern these twelve compositions. The dusk
 // cutaways read as graphite frames, protruding floor bands with lit gold
@@ -22,6 +23,7 @@ const floorFinish=new T.MeshStandardMaterial({name:'reference-warm-oak-floor',co
 const sprintTrack=new T.MeshStandardMaterial({name:'reference-blue-sprint-track',color:0x2c63ae,roughness:.86});
 const turf=new T.MeshStandardMaterial({name:'reference-performance-turf',color:0x3f8b37,roughness:.95});
 const serviceDeck=new T.MeshStandardMaterial({name:'reference-teal-battery-deck',color:0x1f6d6e,roughness:.58,metalness:.12});
+architecturalGlass(referenceGlazing);occupancyVariance(litInterior);
 function syncInteriorLight(){litInterior.emissiveIntensity=materials.warm.emissiveIntensity>.6?.62:.12;}
 
 function outline(w,d,r){

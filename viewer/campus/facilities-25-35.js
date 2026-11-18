@@ -8,6 +8,7 @@ import {Batch,cylinder,ring,line,materials,setDepthRank,DEPTH_RANK} from './geom
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 import {facadeEdge,roofCoping,roofTree,occupiedBays} from './facade-craft.js';
+import {architecturalGlass,occupancyVariance} from './arch-materials.js';
 
 function footprint(w,d,r=1.4){
  const s=new T.Shape(),x=w/2,z=d/2;r=Math.min(r,x*.8,z*.8);
@@ -34,7 +35,7 @@ setDepthRank(graphite,DEPTH_RANK.graphite);
 // Weathered field stone (CF-33/34 frames read grey-beige, not white limestone).
 const fieldStone=materials.stone.clone();fieldStone.name='CF25-35 field stone';fieldStone.color.set(0xb0a797);
 const roofDeck=new T.MeshStandardMaterial({name:'CF25-35 roof membrane',color:0x5d636a,roughness:.86,metalness:.05});
-const LIT=new Set([litFloor,litCeiling,amberTrim]);
+const LIT=new Set([litFloor,litCeiling,amberTrim]);occupancyVariance(litFloor);occupancyVariance(litCeiling);
 function syncLuminaires(){const k=Math.max(0,Math.min(1.4,materials.warm.emissiveIntensity/1.5));litFloor.emissiveIntensity=.26*k;litCeiling.emissiveIntensity=.95*k;amberTrim.emissiveIntensity=1.25*k;}
 syncLuminaires();
 
@@ -145,7 +146,7 @@ function drum(b,x,z,r,h,levels=2,{atrium=false,fin=graphite,finCount=32,base=0}=
 }
 
 // Occupied frontage uses local, low-tint glazing: no global scene material mutation.
-const clearFacade=materials.glazing.clone();clearFacade.name='CF25-35 clear occupied facade';clearFacade.color.set(0xdce9e9);clearFacade.opacity=.20;clearFacade.metalness=.025;clearFacade.roughness=.16;clearFacade.envMapIntensity=.6;
+const clearFacade=materials.glazing.clone();clearFacade.name='CF25-35 clear occupied facade';clearFacade.color.set(0xdce9e9);clearFacade.opacity=.20;clearFacade.metalness=.025;clearFacade.roughness=.16;clearFacade.envMapIntensity=.6;architecturalGlass(clearFacade,{roughness:.1});
 function soft(b,mat,x,y,z,w,h,d,r=.08){const g=new RoundedBoxGeometry(w,h,d,2,Math.min(r,w*.3,h*.3,d*.3));b.add(g,mat,x,y,z);g.dispose();}
 function chair(b,x,y,z){soft(b,'dark',x,y+.46,z,.52,.11,.52);soft(b,'dark',x,y+.77,z+.22,.52,.57,.10);for(const s of [-1,1])b.box('steel',x+s*.20,y+.22,z,.045,.44,.40);}
 function workbench(b,x,y,z,type){soft(b,'white',x,y+.87,z,3.6,.16,1.25);for(const xx of [-1.5,1.5])b.box('steel',x+xx,y+.44,z,.1,.88,1.1);

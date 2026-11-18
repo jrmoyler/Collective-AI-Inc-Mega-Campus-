@@ -5,17 +5,15 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {botanicalMaterial,barkMaterial,speciesTemplates,CROWN_RATIO} from './botanical.js';
 import {Batch,materials,cylinder,ring,line,seeded,kineticRoadMaterial} from './geometry.js';
 import {addWaterfrontOverlook} from './waterfront.js';
+import {createStreetscape} from './world-streetscape.js';
+import {planGroundcover,createGroundcover} from './world-groundcover.js';
 import {FACILITIES,SPIRES,LAKES,SITE} from './data.js';
 
 // Landscape owns its own physically based materials (ground, asphalt, pavers,
 // coping, water, spray, foliage) so shared building materials stay untouched.
 
-const haloMat=new T.MeshBasicMaterial({
- color:0x8fcfc4,transparent:true,opacity:.12,blending:T.AdditiveBlending,depthWrite:false,toneMapped:false,fog:false,side:T.DoubleSide,
-});
-const goldHaloMat=new T.MeshBasicMaterial({
- color:0xe1c18b,transparent:true,opacity:.15,blending:T.AdditiveBlending,depthWrite:false,toneMapped:false,fog:false,side:T.DoubleSide,
-});
+// Roadway emission stays inside the narrow embedded guidance strip (DESIGN.md):
+// the former additive halo ribbons that bled light onto the asphalt are gone.
 
 // Shared GLSL value noise used by the ground, road and stone shaders.
 const NOISE=`
@@ -136,7 +134,10 @@ function paverMaterial(){
  m.onBeforeCompile=s=>{
   s.vertexShader='varying vec2 vPaverUv;\n'+s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vPaverUv=uv;');
   s.fragmentShader='varying vec2 vPaverUv;\n'+NOISE+s.fragmentShader.replace('#include <map_fragment>',`
-  vec2 pp=vec2(vPaverUv.x/.6,vPaverUv.y/.3);float prow=floor(pp.y);pp.x+=mod(prow,2.0)*.5;
+  // Soldier course of darker granite setts along the kerb/coping edge, then
+  // running-bond field pavers broken by expansion joints every 9 m.
+  float soldier=1.0-step(.36,vPaverUv.y);
+  vec2 pp=mix(vec2(vPaverUv.x/.6,vPaverUv.y/.3),vec2(vPaverUv.x/.2,vPaverUv.y/.36),soldier);float prow=floor(pp.y);pp.x+=mod(prow,2.0)*.5*(1.0-soldier);
   vec2 pf=fract(pp),pw=fwidth(pp)+.001;
   float joint=1.0-min(smoothstep(.0,.04+pw.x,min(pf.x,1.0-pf.x)),smoothstep(.0,.08+pw.y,min(pf.y,1.0-pf.y)));
   float pDist=length(vViewPosition);
@@ -144,6 +145,9 @@ function paverMaterial(){
   float ph=lsHash(floor(pp));
   vec3 tile=vec3(.30,.285,.25)*(.86+.22*ph)*(.92+.16*lsNoise(vPaverUv*3.0));
   tile*=1.0-.18*smoothstep(.6,.9,lsFbm(vPaverUv*.15));
+  tile=mix(tile,vec3(.2,.198,.19)*(.85+.25*ph),soldier);
+  float eJoint=(1.0-smoothstep(.02,.05,abs(fract(vPaverUv.x/9.0+.5)-.5)*9.0))*(1.0-smoothstep(40.0,160.0,pDist));
+  joint=max(joint,eJoint);
   diffuseColor.rgb=mix(tile,vec3(.12,.115,.10),joint*.8);`);
  };
  m.customProgramCacheKey=()=>'landscape-pavers';
@@ -199,6 +203,13 @@ function waterMaterial(uniforms){
   vec3 wSky=mix(wSurround,mix(uHorizon*.85,uZenith,smoothstep(.2,.6,wR.y)),smoothstep(.04,.34,wR.y));
   outgoingLight=mix(outgoingLight,wSky,clamp(wF,0.0,1.0)*.85);
   outgoingLight+=uHorizon*.05*(1.0-smoothstep(.0,.06,vWaterDepth));
+  // Shoreline: a lapping band of broken, lit-by-the-sky froth against the
+  // coping. It is diffuse albedo scaled by the horizon light, never emissive.
+  float wShore=1.0-smoothstep(.0,.045,vWaterDepth);
+  float wLap=texture2D(uRipple,waterWorld.xz*.21+vec2(uTime*.05,-uTime*.03)).x;
+  float wBand=smoothstep(.5,.75,wLap+.35*sin(uTime*.8+waterWorld.x*.6+waterWorld.z*.45))*wShore;
+  float wSkyLum=dot(uHorizon,vec3(.3,.55,.15));
+  outgoingLight=mix(outgoingLight,vec3(.62,.66,.64)*wSkyLum*.55,wBand*.55*(1.0-smoothstep(60.0,500.0,wDist)));
   #include <opaque_fragment>`);
  };
  m.customProgramCacheKey=()=>'landscape-water';
@@ -364,11 +375,11 @@ export function createLandscape(){
   const {g}=ribbon(r.pts,.32,r.closed,.24);
   const mat=kineticRoadMaterial(r.kind);kineticMats.push(mat);
   const m=new T.Mesh(g,mat);m.receiveShadow=true;m.name=r.kind==='gold'?'gold-ring-road':'kinetic-road';root.add(m);
-  const haloR=ribbon(r.pts,.72,r.closed,.25);
-  const halo=new T.Mesh(haloR.g,r.kind==='gold'?goldHaloMat:haloMat);halo.name=r.kind==='gold'?'gold-road-halo':'road-halo';root.add(halo);
  });
  const curbs=new T.Mesh(mergeOrEmpty(curbGeos),curbMat);curbs.name='curbs';curbs.receiveShadow=true;curbs.castShadow=true;root.add(curbs);
  const sidewalk=new T.Mesh(mergeOrEmpty(walkGeos),paverMat);sidewalk.name='walk';sidewalk.receiveShadow=true;root.add(sidewalk);
+ // Crossings, stop bars, tactile paving, gullies and access covers (5 draws).
+ const streetscape=createStreetscape(roadInfo,roadClearance,(x,z)=>FACILITIES.some(f=>Math.abs(x-f.x)<f.w/2+2&&Math.abs(z-f.z)<f.d/2+2));root.add(streetscape.root);
 
  // ---- Water: connected ponds, channels and fountains ----
  const waterMat=waterMaterial(waterUniforms);
@@ -589,6 +600,13 @@ export function createLandscape(){
  const ovalGeo=new T.ShapeGeometry(oval,64);ovalGeo.rotateX(-Math.PI/2);
  const campusPad=new T.Mesh(ovalGeo,groundMaterial(site,{stripes:1}));campusPad.position.y=.04;campusPad.receiveShadow=true;campusPad.name='campus-lawn';root.add(campusPad);
 
+ // ---- Herbaceous layer: tussocks, ferns, pink perennials, pond sedges ----
+ // One instanced mesh, compacted to the camera's 150 m neighbourhood.
+ // Facade aprons and arrival forecourts (benches, totems, queues) stay paved.
+ const forecourtClear=(x,z,r)=>clear(x,z,r)&&FACILITIES.every(f=>!(Math.abs(x-f.x)<f.w/2+6&&z>f.z-f.d/2-6&&z<f.z+f.d/2+14));
+ const groundcoverPlan=planGroundcover({trees,clear:forecourtClear,lakes:LAKES,shore:shorePoint,inside:(x,z)=>Math.hypot(x/ovalRx,z/ovalRz)<.98});
+ const groundcover=createGroundcover(groundcoverPlan,{wind});groundcover.attach(campusPad);root.add(groundcover.mesh);
+
  // ---- Instanced trees and shrubs ----
  const templates=speciesTemplates(),dummy=new T.Object3D(),tint=new T.Color();
  const speciesMeshes={};
@@ -687,7 +705,10 @@ export function createLandscape(){
  return {
   root,roads,kineticMats,overlooks,
   // Existing per-frame hook (main.js calls landscape.update(clock)).
-  update(t){wind.value=t;waterUniforms.uTime.value=t;kineticMats.forEach(m=>m.uniforms.uTime.value=t);},
+  // An optional eye position drives groundcover compaction; otherwise the eye
+  // of the last perspective render is used (main.js passes only the clock).
+  update(t,eye){wind.value=t;waterUniforms.uTime.value=t;kineticMats.forEach(m=>m.uniforms.uTime.value=t);groundcover.update(eye);},
+  streetscape:streetscape.root.userData.counts,groundcover,
   treeCount:trees.length,shrubCount:shrubs.length,
   species:Object.fromEntries(Object.entries(speciesMeshes).map(([k,v])=>[k,v.count])),
   trees,
