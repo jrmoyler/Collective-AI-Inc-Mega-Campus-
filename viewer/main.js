@@ -1,3 +1,5 @@
+import {bindVisitorAtlas} from './campus/visitor-atlas.js';
+import {createArrivalCourts} from './campus/arrival-courts.js';
 // @ts-nocheck
 import {createFrameLoop,withRendererState,disposeSceneResources} from './campus/render-lifecycle.js';
 import {exteriorPixelRatio} from './campus/quality.js';
@@ -36,7 +38,7 @@ let booted=false,frameLoop=null,tourRequest=0,resizeHandler=null,graphicsGenerat
 function message(text){const el=$('#status');if(el)el.textContent=text;}
 function sheet(){document.body.classList.toggle('sheet-open',!$('#detail')?.hidden||!$('#directory')?.hidden);}
 function closeDirectory(){if($('#directory'))$('#directory').hidden=true;$('#directory-toggle')?.setAttribute('aria-expanded','false');sheet();}
-let arrivalFloor=0;
+let arrivalFloor=0, updateTrip=()=>{};
 function updateDirectory(){
  const list=$('#facility-list');
  if(!list)return;
@@ -64,6 +66,7 @@ function select(id,level=0){
  const f=FACILITIES.find(facility=>facility.id===id);
  if(!f)return;
  selected=f;
+ updateTrip(id);
  setLayers(false);
  document.body.classList.add('exploring');
  if($('#detail'))$('#detail').hidden=false;
@@ -187,6 +190,12 @@ function setCampusInert(active){
 }
 function exit(){invalidateExterior();setCampusInert(false);if(interior||entering){performanceReport.event('tour-exit',{facility:selected?.key});performanceReport.pause('tour-exit');}tourRequest++;entering=false;if($('#enter')){$('#enter').disabled=!graphicsReady;$('#enter').innerHTML='Explore inside <span>↗</span>';}interior?.dispose();interior=null;if($('#interior'))$('#interior').hidden=true;if(graphicsReady){renderer?.setSize(innerWidth,innerHeight);composer?.setSize(innerWidth,innerHeight);checkPostprocessing();}$('#enter')?.focus();}
 function bind(){
+ updateTrip=bindVisitorAtlas((id,floor)=>{
+  if(entering)exit();
+  closeDirectory();select(id,floor);
+  const f=selected, x=f.x-f.w*.23, z=f.z+f.d/2+4.2;
+  moveCamera([x-9,11,z+10],[x+1,3.2,z-1]);
+ });
  document.addEventListener('click',invalidateExterior);
  document.addEventListener('change',invalidateExterior);
  acceptancePanel=createAcceptancePanel({report:performanceReport,getCanvas:()=>interior?.getCanvas()||renderer?.domElement,});
@@ -215,7 +224,7 @@ function bind(){
  if($('#fleet-layer'))$('#fleet-layer').onchange=e=>{if(fleets)fleets.root.visible=e.target.checked;};
  document.querySelectorAll('[data-move]').forEach(b=>{b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);interior?.hold(b.dataset.move,true);};for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>interior?.hold(b.dataset.move,false));});
  window.addEventListener('blur',()=>{document.querySelectorAll('[data-move]').forEach(b=>interior?.hold(b.dataset.move,false));});
- window.addEventListener('keydown',e=>{if(e.key!=='Escape'||$('#plan-dialog')?.open)return;
+ window.addEventListener('keydown',e=>{if(e.key!=='Escape'||$('#plan-dialog')?.open||$('#visitor-atlas')?.open)return;
   if(interior||entering){exit();return;}
   if($('#layers')&&!$('#layers').hidden){setLayers(false);$('#layers-toggle')?.focus();return;}
   if($('#detail')&&!$('#detail').hidden){$('#detail').hidden=true;sheet();($('#directory')?.hidden?$('#directory-toggle'):$('#search'))?.focus();return;}
@@ -311,6 +320,7 @@ async function boot(){
   if(markerHost)markerHost.append(el);markers.push({el,f});
   if(i%5===4)await yieldFrame();
  }
+ scene.add(createArrivalCourts(FACILITIES));
  infrastructure=createInfrastructure();scene.add(infrastructure.root);
  fleets=createFleets(landscape.roads);scene.add(fleets.root);
  new GLTFLoader().load(`${import.meta.env.BASE_URL}models/synergy-node.glb`,g=>{if(!renderer){disposeSceneResources(g.scene);return;}invalidateExterior();for(const [x,z] of SPIRES){const node=g.scene.clone(true);node.position.set(x+13,0,z);node.name='Blender physical synergy node';scene.add(node);}},undefined,e=>{console.warn('Synergy node detail unavailable',e);message('Some node detail failed to load; mesh towers remain available.');});

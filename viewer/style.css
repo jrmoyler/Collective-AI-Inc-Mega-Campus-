@@ -102,3 +102,37 @@ header {
   .keyboard-guide { display: none; }
   .touch-guide { display: inline; }
 }
+
+#atlas-open { color: #e8c482; border-color: #746044; }
+#visitor-atlas { color: #f3f1e9; background: #0a1722; padding: 0; border: 1px solid #53646a; width: min(1080px,calc(100vw - 32px)); max-height: calc(100dvh - 32px); overscroll-behavior: contain; }
+#visitor-atlas::backdrop { background: #020913d9; }
+.atlas-heading, #visitor-atlas figcaption { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.atlas-heading { padding: 20px 24px 15px; border-bottom: 1px solid #34454b; }
+.atlas-heading h2 { margin: 4px 0 0; font-size: clamp(26px,4vw,42px); font-weight: 550; letter-spacing: -.045em; }
+#atlas-close { font-size: 22px; }
+.atlas-layout { display: grid; grid-template-columns: minmax(0,1.6fr) minmax(260px,1fr); }
+#visitor-atlas figure { align-self: stretch; margin: 0; background: #0b1d26; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 24px 0; }
+#atlas-plate { width: 100%; height: auto; }
+#visitor-atlas figcaption { padding: 8px 16px; font: 11px var(--mono); color: #a8bec0; }
+.atlas-guide { padding: 24px; border-left: 1px solid #34454b; }
+.atlas-guide label, #trip-position { display: block; font: 12px var(--mono); color: #bfccd0; }
+.atlas-guide select { width: 100%; margin: 8px 0 4px; }
+
+.atlas-guide p { font-size: 14px; color: #c0ced4; line-height: 1.5; }
+#atlas-stops { padding-left: 24px; }
+#atlas-stops li::marker { color: var(--circuit); font-family: var(--mono); }
+#atlas-stops button { display: block; text-align: left; border: 0; border-bottom: 1px solid #35454c; border-radius: 0; background: transparent; width: 100%; padding: 8px; }
+#atlas-stops button:hover { background: #203039; }
+#atlas-stops small { display: block; color: #bdcbd0; margin-top: 4px; }
+#atlas-start { background: var(--circuit); color: #101b22; font-weight: 700; width: 100%; }
+#trip-controls { margin-top: 12px; border-top: 1px solid #496269; padding-top: 12px; }
+#trip-next { margin-top: 6px; width: 100%; color: #a5e5d3; }
+@media(max-width:760px){
+  #atlas-open,#directory-toggle { padding-inline: 8px; font-size: 12px; }
+  .atlas-layout { grid-template-columns: 1fr; }
+  #visitor-atlas figure { padding: 0; }
+  #atlas-plate { max-height: 27dvh; object-fit: contain; }
+  .atlas-guide { padding: 15px; border: none; }
+  .atlas-heading { padding: 12px 15px; }
+}
+@media(max-width:400px){header .mark { display:none; } header { gap: 4px; } header .brand { font-size: 12px; }}
