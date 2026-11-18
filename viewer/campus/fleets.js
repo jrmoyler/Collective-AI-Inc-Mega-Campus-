@@ -139,7 +139,7 @@ function shuttleDefs(){
  return cached('shuttle',()=>{
   const k=new Kit(),L=5.6,W=2.2,a=1.85,wr=.42,belt=1.2;
   const lower=[[L/2,belt,.12],[L/2,.44,.24],[L/2-.34,.25,.14]];arch(lower,a,wr,.5,.25);arch(lower,-a,wr,.5,.25);lower.push([-L/2+.34,.25,.14],[-L/2,.44,.24],[-L/2,belt,.12]);
-  k.add(M.paint,sideExtrude(lower,W,.09));
+  k.add(M.paint,sideExtrude(lower,W,.035));
   k.add(M.glass,sideExtrude([[L/2-.03,belt-.04,0],[L/2-.14,2.3,.36],[-L/2+.14,2.3,.36],[-L/2+.03,belt-.04,0]],W-.07,.05));
   k.add(M.paint,sideExtrude([[L/2-.11,2.2,0],[L/2-.2,2.43,.16],[-L/2+.2,2.43,.16],[-L/2+.11,2.2,0]],W-.02,.07));
   // Corner pillars, black B-pillar door frames and flush panel gaps.
@@ -189,7 +189,7 @@ function freightDefs(){
  return cached('freight',()=>{
   const k=new Kit(),L=8.4,W=2.45,wr=.5,af=L/2-1.35,ar=-L/2+1.7,cabBack=L/2-2.15;
   const cab=[[L/2,1.3,.14],[L/2,.5,.22],[L/2-.35,.36,.12]];arch(cab,af,wr,.6,.36);cab.push([cabBack,.36,0],[cabBack,2.78,0],[L/2-1.05,2.78,.35],[L/2-.14,1.62,.22]);
-  k.add(M.cabPaint,sideExtrude(cab,W,.09));
+  k.add(M.cabPaint,sideExtrude(cab,W,.035));
   k.add(M.cabPaint,sideExtrude([[L/2-1.0,2.7,0],[cabBack-.05,2.7,0],[cabBack-.05,3.42,0],[L/2-1.55,3.34,.4]],W-.24,.08));
   const s=Math.atan2(1.16,.91);k.box(M.glass,W-.36,1.36,.05,[0,2.22,L/2-.6],.03,[-(Math.PI/2-s),0,0]);
   for(const sx of [-1,1]){
@@ -367,6 +367,12 @@ function personParts(style){
   };
  });
 }
+// Radius stations follow the silhouette of the actuator underneath. The
+// shell flares at bearing housings and narrows where the joints articulate.
+function actuatorShell(kit,stations,depth,offset=0){
+ const profile=stations.map(([y,radius])=>new T.Vector2(radius,y));
+ kit.add(M.androidShell,new T.LatheGeometry(profile,18),[0,0,offset],[0,0,0],[1,1,depth]);
+}
 function androidParts(){
  return cached('android-parts',()=>{
   const part=fn=>{const k=new Kit();fn(k);return k.build();};
@@ -396,12 +402,46 @@ function androidParts(){
     }
     k.box(M.androidJoint,.043,.016,.014,[0,-.061,.093],.004);
    }),
-   upper:part(k=>{k.sphere(M.androidJoint,.055,[0,0,0],[1,1,1],14);k.capsule(M.androidShell,.05,.17,[0,-.15,0]);}),
-   fore:part(k=>{k.sphere(M.androidJoint,.045,[0,0,0],[1,1,1],12);k.capsule(M.androidShell,.043,.15,[0,-.13,0]);k.cyl(M.androidJoint,.034,.034,.03,[0,-.245,0],undefined,12);}),
-   hand:part(k=>{k.box(M.androidJoint,.07,.09,.03,[0,-.05,0],.012);for(let i=0;i<4;i++)k.capsule(M.androidJoint,.009,.06,[-.027+i*.018,-.12,.004]);k.capsule(M.androidJoint,.01,.04,[.042,-.05,.015],[0,0,.5]);}),
-   thigh:part(k=>{k.sphere(M.androidJoint,.068,[0,0,0],[1,1,1],14);k.capsule(M.androidShell,.07,.27,[0,-.22,0]);}),
-   shin:part(k=>{k.sphere(M.androidJoint,.058,[0,0,0],[1,1,1],14);k.capsule(M.androidShell,.056,.27,[0,-.215,.01]);k.capsule(M.androidJoint,.028,.22,[0,-.2,-.05]);}),
-   foot:part(k=>{k.box(M.androidShell,.1,.07,.24,[0,-.045,.05],.03);k.box(M.rubber,.104,.016,.25,[0,-.078,.05],.006);}),
+   upper:part(k=>{
+    k.sphere(M.androidJoint,.055,[0,0,0],[1,1,1],14);
+    actuatorShell(k,[[-.26,.023],[-.235,.038],[-.165,.051],[-.084,.058],[-.045,.042],[-.034,.025]],.90);
+    k.capsule(M.androidJoint,.015,.18,[0,-.15,-.04],[-.08,0,0]);
+   }),
+   fore:part(k=>{
+    k.cyl(M.androidJoint,.043,.043,.085,[0,0,0],[0,0,Math.PI/2],16);
+    actuatorShell(k,[[-.237,.024],[-.214,.033],[-.127,.049],[-.068,.055],[-.042,.044],[-.028,.02]],.84,.007);
+    k.box(M.androidJoint,.028,.155,.022,[0,-.135,-.033],.008);
+    k.cyl(M.androidJoint,.033,.033,.035,[0,-.244,0],undefined,12);
+   }),
+   hand:part(k=>{
+    k.box(M.androidJoint,.07,.086,.034,[0,-.05,0],.012);
+    k.box(M.androidShell,.057,.052,.013,[0,-.053,-.018],.005);
+    for(let digit=0;digit<4;digit++){
+     const x=-.026+digit*.017, length=[.042,.051,.048,.036][digit];
+     k.capsule(M.androidJoint,.0075,length,[x,-.099,.005],[-.22,0,0]);
+     k.capsule(M.androidJoint,.0065,.018,[x,-.117-length*.35,.018],[-.68,0,0]);
+    }
+    k.capsule(M.androidJoint,.01,.04,[.042,-.055,.015],[0,0,.48]);
+   }),
+   thigh:part(k=>{
+    k.sphere(M.androidJoint,.068,[0,0,0],[1,1,1],14);
+    actuatorShell(k,[[-.386,.033],[-.361,.053],[-.276,.071],[-.153,.086],[-.077,.083],[-.051,.049]],.88,.007);
+    for(const side of [-1,1])
+     k.capsule(M.androidJoint,.018,.25,[side*.047,-.22,-.049],[.04,0,side*.06]);
+   }),
+   shin:part(k=>{
+    k.cyl(M.androidJoint,.056,.056,.102,[0,0,0],[0,0,Math.PI/2],18);
+    k.sphere(M.androidShell,.055,[0,-.024,.043],[.82,1.2,.54],14);
+    actuatorShell(k,[[-.366,.028],[-.33,.035],[-.213,.048],[-.115,.064],[-.071,.058],[-.045,.032]],.85,.007);
+    k.capsule(M.androidJoint,.025,.23,[0,-.204,-.048],[.07,0,0]);
+    k.cyl(M.androidJoint,.020,.022,.09,[0,-.373,-.009],[-.17,0,0],12);
+   }),
+   foot:part(k=>{
+    k.cyl(M.androidJoint,.035,.035,.077,[0,0,0],[0,0,Math.PI/2],14);
+    k.box(M.androidShell,.103,.068,.22,[0,-.043,.046],.028,[-.04,0,0]);
+    k.box(M.rubber,.109,.019,.25,[0,-.077,.05],.007);
+    k.box(M.androidShell,.099,.033,.079,[0,-.058,.132],.012);
+   }),
   };
  });
 }
@@ -422,7 +462,7 @@ function humanoid(kind,style={}){
   const arm=new T.Group();arm.position.set(side*BODY.shoulderHalf,BODY.shoulderY,0);torso.add(arm);attach(arm,P.upper,'upper arm',shirt);
   const elbow=new T.Group();elbow.position.y=-BODY.upper;arm.add(elbow);attach(elbow,P.fore,'forearm',style.shortSleeve?skin:shirt);
   const wrist=new T.Group();wrist.position.y=-BODY.fore;elbow.add(wrist);attach(wrist,P.hand,'hand',skin);
-  if(android && side===1)wrist.rotation.y=Math.PI; // mirror the grip with a proper rotation for instancing
+  if(android && side===1)wrist.rotation.y=Math.PI; // turn both thumbs inward
   rig.arms.push({arm,elbow,wrist,side});
   const thigh=new T.Group();thigh.position.set(side*BODY.hipHalf,0,0);body.add(thigh);attach(thigh,P.thigh,'thigh',pants);
   const shin=new T.Group();shin.position.y=-BODY.thigh;thigh.add(shin);attach(shin,P.shin,'shin',pants);

@@ -15,7 +15,8 @@ import {StandardMaterial} from '@babylonjs/core/Materials/standardMaterial.js';
 import {DynamicTexture} from '@babylonjs/core/Materials/Textures/dynamicTexture.js';
 import '@babylonjs/core/Collisions/collisionCoordinator.js';
 import {animate} from 'animejs';
-import {signMount} from './interior-gallery.js';
+import {levelCode} from './wayfinding.js';
+import {arrivalBoards,signMount} from './interior-gallery.js';
 import {routeToRoom} from './floor-topology.js';
 import {createInteriorGeometry} from './interior-architecture.js';
 import {createInteriorMaterials} from './interior-materials.js';
@@ -37,7 +38,7 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
   ctx.fillStyle='#18232a';ctx.fillRect(0,0,768,240);
   ctx.fillStyle='#d5b06c';ctx.fillRect(0,0,10,240);
   ctx.font='600 28px sans-serif';
-  ctx.fillText(f.key+'   /   L'+String(floor+1).padStart(2,'0')+'   /   '+String(index+1).padStart(2,'0'),42,51);
+  ctx.fillText(f.key+'   /   '+levelCode(f,floor)+'   /   '+String(index+1).padStart(2,'0'),42,51);
   ctx.fillRect(42,72,683,2);
   ctx.fillStyle='#f4f1e8';ctx.font='600 55px sans-serif';
   const lines=[''];
@@ -49,12 +50,34 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
   lines.forEach((line,i)=>ctx.fillText(line,42,lines.length===1?167:131+i*58,681));
   tex.update();
   const material=new StandardMaterial('room plaque lettering',scene);
-  material.diffuseTexture=tex;material.emissiveColor=new Color3(.58,.58,.58);
+  material.diffuseTexture=tex;material.emissiveTexture=tex;material.emissiveColor=new Color3(.48,.48,.48);
   material.specularColor=Color3.Black();material.backFaceCulling=false;
   const sign=CreatePlane('Program: '+room.name,{width:mount.width,height:mount.width/3.2},scene);
   const sin=Math.sin(room.angle),cos=Math.cos(room.angle);
   sign.position.set(room.doorX+cos*mount.x-sin*.201,mount.y,room.doorZ-sin*mount.x-cos*.201);
   sign.rotation.y=room.angle+Math.PI;sign.material=material;sign.isPickable=false;
+ }
+ function arrivalIdentity(floor) {
+  const tex=new DynamicTexture('arrival identity',{width:1200,height:240},scene,true);
+  const ctx=tex.getContext();
+  ctx.fillStyle='#13222b';ctx.fillRect(0,0,1200,240);
+  ctx.fillStyle='#d6b473';ctx.fillRect(0,0,200,240);
+  ctx.fillStyle='#142129';ctx.textAlign='center';
+  ctx.font='600 28px sans-serif';ctx.fillText('FLOOR',100,76);
+  ctx.font='bold 67px sans-serif';ctx.fillText(levelCode(f,floor),100,157,180);
+  ctx.textAlign='left';ctx.fillStyle='#dec89e';ctx.font='600 31px sans-serif';ctx.fillText(f.key,236,67);
+  ctx.fillStyle='#fff5e4';
+  let font=72;
+  do{ctx.font='600 '+font+'px sans-serif';font-=2;}while(ctx.measureText(f.name).width>925&&font>38);
+  ctx.fillText(f.name,236,170,925);tex.update();
+  const material=new StandardMaterial('arrival enamel lettering',scene);
+  material.diffuseTexture=tex;material.emissiveTexture=tex;material.emissiveColor=new Color3(.50,.50,.50);
+  material.specularColor=Color3.Black();material.backFaceCulling=false;
+  for(const board of arrivalBoards(layout)){
+   const sign=CreatePlane('Arrival: '+f.name,{width:board.width,height:board.height},scene);
+   sign.position.set(board.x-Math.sin(board.angle)*.041,board.y,board.z-Math.cos(board.angle)*.041);
+   sign.rotation.y=board.angle+Math.PI;sign.material=material;sign.isPickable=false;
+  }
  }
  function build(l){
   onLifecycle('floor-request',{facility:f.key,floor:l+1});
@@ -62,7 +85,7 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
   try{
   flight?.pause();flight=null;held.clear();post?.dispose();post=null;shadow?.dispose();shadow=null;scene?.dispose();level=l;currentRoom=null;layout=assembly.layout;scene=new Scene(engine);scene.useRightHandedSystem=true;scene.clearColor=new Color4(.27,.35,.40,1);scene.collisionsEnabled=true;
   scene.imageProcessingConfiguration.toneMappingEnabled=true;scene.imageProcessingConfiguration.toneMappingType=1;scene.imageProcessingConfiguration.exposure=1.1;scene.imageProcessingConfiguration.contrast=1.1;
-  if(!engineOverride)createInteriorEnvironment(scene,engine);
+  if(!engineOverride)createInteriorEnvironment(scene,engine,{quality});
   const finishes=createInteriorMaterials(scene,new Set(assembly.root.children.flatMap(g=>g.children.map(m=>m.material.name))),{quality,textureScale:engineOverride?.25:1});for(const m of Object.values(finishes))m.maxSimultaneousLights=8;
   for(const source of assembly.root.children.flatMap(g=>g.children)){
    const mesh=new Mesh(source.name,scene),data=new VertexData(),g=source.geometry;
@@ -88,12 +111,47 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
     lamp.diffuse=technical?new Color3(.95,.97,1):new Color3(1,.84,.66);lamp.specular=lamp.diffuse.scale(.85);lamp.includedOnlyMeshes=roomMeshes[i];lights.push(lamp);
    }
   });
-  // Corridor downlights: warm pools under the suspended linear luminaires.
-  const corridorSpots=[];for(const c of layout.circulation){const length=c.axis==='H'?c.w:c.d;for(let t=-length/2+2.2;t<length/2-1;t+=7.2)corridorSpots.push([c.x+(c.axis==='H'?t:0),c.z+(c.axis==='V'?t:0)]);}
-  corridorSpots.sort((a,b)=>Math.hypot(a[0]-layout.entry[0],a[1]-layout.entry[1])-Math.hypot(b[0]-layout.entry[0],b[1]-layout.entry[1]));
-  for(const [x,z] of corridorSpots.slice(0,6)){const lamp=new SpotLight('corridor downlight',new Vector3(x,3.4,z),new Vector3(0,-1,0),2.2,1.8,scene);lamp.intensity=20;lamp.range=11;lamp.diffuse=new Color3(1,.83,.64);lamp.includedOnlyMeshes=circulationMeshes;lights.push(lamp);}
+  // Keep a bounded pool over the visitor's route, including the doorway faces
+  // seen from that route. Floor-wide fixed lights miss remote forks on large plans.
+  const corridorSpots=[];
+  const shellMeshes=layout.rooms.map((_,i)=>roomMeshes[i].filter(m=>m.name.startsWith('architecture room ')));
+  for(const passage of layout.circulation){
+   const horizontal=passage.axis==='H',length=horizontal?passage.w:passage.d;
+   const count=Math.max(1,Math.ceil(length/5.6));
+   for(let n=0;n<count;n++){
+    const t=((n+.5)/count-.5)*length;
+    const x=passage.x+(horizontal?t:0),z=passage.z+(horizontal?0:t);
+    const surfaces=circulationMeshes.slice();
+    layout.rooms.forEach((room,i)=>{
+     const dx=Math.max(0,Math.abs(room.x-x)-room.w/2);
+     const dz=Math.max(0,Math.abs(room.z-z)-room.d/2);
+     if(Math.hypot(dx,dz)<3.6)surfaces.push(...shellMeshes[i]);
+    });
+    corridorSpots.push({x,z,surfaces});
+   }
+  }
+  const downlights=Array.from({length:Math.min(6,corridorSpots.length)},(_,i)=>{
+   const lamp=new SpotLight('corridor downlight '+i,Vector3.Zero(),new Vector3(0,-1,0),2.35,1.4,scene);
+   lamp.intensity=26;lamp.range=9;lamp.diffuse=new Color3(1,.86,.72);lights.push(lamp);return lamp;
+  });
+  const assignedSpots=new Map();
+  let lastX=Infinity,lastZ=Infinity;
+  function lightPassage(){
+   const {x,z}=camera.position;
+   if(Math.hypot(x-lastX,z-lastZ)<1.4)return;
+   lastX=x;lastZ=z;
+   const distance=p=>(p.x-x)**2+(p.z-z)**2;
+   corridorSpots.sort((a,b)=>distance(a)-distance(b));
+   downlights.forEach((lamp,i)=>{
+    const point=corridorSpots[i];
+    if(assignedSpots.get(lamp)===point)return;
+    assignedSpots.set(lamp,point);
+    lamp.position.set(point.x,3.46,point.z);lamp.includedOnlyMeshes=point.surfaces.slice();
+   });
+  }
+  lightPassage();
   // The visited room receives a shadowed key: sunlight through glazing, or a soft overhead key in internal rooms.
-  const key=new DirectionalLight('room key light',new Vector3(0,-1,0),scene);key.intensity=0;key.includedOnlyMeshes=[];shadowLight=key;
+  const key=new DirectionalLight('room key light',new Vector3(0,-1,0),scene);key.intensity=0;key.renderPriority=1;key.includedOnlyMeshes=[];shadowLight=key;
   function assignShadow(index){
    const r=layout.rooms[index],meshes=roomMeshes[index];if(!r)return;
    const daylight=daylit[index];
@@ -113,9 +171,10 @@ export function createInterior(canvas,f,{onRoom,onFloor,reduced=false,engineOver
    for(const mesh of meshes)if(mesh.material&&mesh.material.alpha===1&&!['warm','blue','display','stageScreen','instrumentDisplay','contact'].includes(mesh.material.name))map.renderList.push(mesh);
   }
   assignShadow(0);
-  scene.onBeforeRenderObservable.add(()=>{const r=layout.rooms.findIndex(room=>Math.abs(camera.position.x-room.x)<room.w/2&&Math.abs(camera.position.z-room.z)<room.d/2);if(r>=0){if(currentRoom!==r){currentRoom=r;onRoom(layout.rooms[r].name);assignShadow(r);}}else if(currentRoom!==null){currentRoom=null;onRoom('Arrival corridor');}});
+  scene.onBeforeRenderObservable.add(()=>{lightPassage();const r=layout.rooms.findIndex(room=>Math.abs(camera.position.x-room.x)<room.w/2&&Math.abs(camera.position.z-room.z)<room.d/2);if(r>=0){if(currentRoom!==r){currentRoom=r;onRoom(layout.rooms[r].name);assignShadow(r);}}else if(currentRoom!==null){currentRoom=null;onRoom('Arrival corridor');}});
   if(!engineOverride){createExteriorBackdrop(scene,layout,l,{CreateCylinder,StandardMaterial,DynamicTexture,Color3,Mesh},f);post=createInteriorPipeline(scene,camera,quality);}
   layout.rooms.forEach((room,index)=>roomSign(room,index,l));
+  arrivalIdentity(l);
 
   onFloor(l,layout.rooms);onRoom('Arrival corridor');awaitingFrame='floor-first-frame';
   }finally{assembly.root.traverse(object=>object.geometry?.dispose());}

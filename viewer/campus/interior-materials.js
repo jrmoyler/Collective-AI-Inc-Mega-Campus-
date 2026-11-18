@@ -65,7 +65,8 @@ function contactTexture(scene){
 }
 export function finishTexture(scene,name){const p=FINISHES[name]||FINISHES.stone;return surface(scene,name,p.color||0xffffff);}
 // textureScale < 1 is for headless construction tests, where texel density is irrelevant.
-export function createInteriorMaterials(scene,usedOccupantNames=null,{quality='balanced',textureScale=1}={}){const result={};for(const [name,p] of Object.entries(FINISHES)){
+export function createInteriorMaterials(scene,usedMaterials=null,{quality='balanced',textureScale=1}={}){const result={};for(const [name,p] of Object.entries(FINISHES)){
+ if(usedMaterials&&!usedMaterials.has(name))continue;
  const m=new PBRMaterial(name,scene);m.albedoColor=Color3.White();
  // Surface pixels already contain the finish color.
  m.metallic=p.metalness||0;m.roughness=Math.max(.06,p.roughness??.5);m.environmentIntensity=1;m.specularIntensity=1;
@@ -100,7 +101,7 @@ export function createInteriorMaterials(scene,usedOccupantNames=null,{quality='b
  const textures=new Map();
  const assetTexture=(url,gamma)=>{const key=url+':'+gamma;if(!textures.has(key)){const t=new Texture(url,scene,false,false);t.gammaSpace=gamma;t.anisotropicFilteringLevel=4;textures.set(key,t);}return textures.get(key);};
  for(const [name,p] of Object.entries(OCCUPANT_MATERIALS)){
-  if(usedOccupantNames&&!usedOccupantNames.has(name))continue;
+  if(usedMaterials&&!usedMaterials.has(name))continue;
   const m=new PBRMaterial(name,scene);m.albedoColor=new Color3(...p.color.slice(0,3));m.metallic=0;m.roughness=p.roughness;m.backFaceCulling=!p.doubleSided;
   // MakeHuman slots: 0-3 skin, 4 garment, 5 footwear, 6 hair, 7 eyes, 8 brows.
   const slot=Number(name.split('-').pop()),skin=slot<=3,cutout=p.cutout&&!skin&&slot!==7;

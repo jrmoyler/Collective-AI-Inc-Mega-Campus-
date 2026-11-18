@@ -90,3 +90,23 @@ test('ground and streets carry material variation, markings, kerbs and pavers',(
  assert.deepEqual(landscape.roads[0].curve.points[0].toArray(),[-462,.22,-345]);
  assert.ok(byName('shrubs')[0].count>1000);
 });
+
+test('each basin has a shore-connected viewing deck clear of facilities and fountain jets',()=>{
+ assert.equal(landscape.overlooks.length,LAKES.length);
+ for(const [index,site] of landscape.overlooks.entries()){
+  assert.ok(site,`missing overlook at basin ${index}`);
+  const [cx,cz,rx,rz]=LAKES[index];
+  const radius=(x,z)=>{
+   const angle=Math.atan2(-(z-cz)/rz,(x-cx)/rx);
+   return Math.hypot((x-cx)/rx,(z-cz)/rz)/shoreRadius(index,angle);
+  };
+  const project=(u,v)=>[site.x+Math.cos(site.yaw)*u+Math.sin(site.yaw)*v,site.z-Math.sin(site.yaw)*u+Math.cos(site.yaw)*v];
+  assert.ok(radius(...project(0,-3.35))>1,'ramp meets land');
+  for(const side of [-1,1])for(const v of [4.7,4.7+site.depth]){
+   const [x,z]=project(side*site.width/2,v);
+   assert.ok(radius(x,z)<1,'deck lies inside pond');
+   assert.ok(Math.hypot(x-cx,z-cz)>5,'deck clears fountain');
+   assert.ok(FACILITIES.every(f=>Math.abs(x-f.x)>f.w/2||Math.abs(z-f.z)>f.d/2),'building clearance');
+  }
+ }
+});

@@ -96,3 +96,18 @@ test('survey optics stay level while the airframe banks and the camera sweeps',(
  }
  assert.ok(Math.max(...headings)-Math.min(...headings)>.28,'camera surveys independently of travel direction');
 });
+
+test('coachwork wheel arches clear both visible wheel hubs',()=>{
+ const fleet=createFleets([road()]);
+ const ray=new T.Raycaster();
+ for(const name of ['shuttle','freight']){
+  const vehicle=fleet.root.children.find(o=>o.name===name);
+  vehicle.updateMatrixWorld(true);
+  for(const wheel of vehicle.userData.wheels){
+   const {x,y,z}=wheel.position,side=Math.sign(x);
+   ray.set(new T.Vector3(side*3,y,z),new T.Vector3(-side,0,0));
+   const closest=ray.intersectObjects(vehicle.children,true)[0];
+   assert.equal(closest.object.name,'wheel',name+' side panel crosses a wheel hub');
+  }
+ }
+});

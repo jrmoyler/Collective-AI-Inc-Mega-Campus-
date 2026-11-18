@@ -25,6 +25,8 @@ import {setDuskMaterials,applyDepthConvention} from './campus/geometry.js';
 import {createDepthRange,skyDepthVertexShader} from './campus/depth-precision.js';
 import {createCampusMap,createPlanViewer} from './campus/plans.js';
 const $=s=>document.querySelector(s);const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;let renderer,scene,camera,controls,composer,landscape,infrastructure,fleets,streetFurniture,interior=null,selected=null,flight=null,flyover=false,showLabels=true,entering=false,clock=0;
+let exteriorDirty=true;
+function invalidateExterior(){exteriorDirty=true;}
 let quality='balanced';const performanceReport=createPerformanceReport({metadata:()=>({build:__CAMPUS_BUILD__,userAgent:navigator.userAgent,viewport:[innerWidth,innerHeight],devicePixelRatio})});let acceptancePanel=null,pendingReadyEvent=null;
 const buildings=[],markers=[];const mobile=matchMedia('(max-width:760px)').matches;let sun,hemi,rim,sky,bloom,ambient;let graphicsReady=false;const planViewer=createPlanViewer();
 // ?legacyDepth reproduces the previous fixed 0.5 m / 24-bit depth setup for A/B review on devices.
@@ -73,7 +75,12 @@ function select(id,level=0){
  if($('#facility-area'))$('#facility-area').textContent=f.design_area.toLocaleString();
  if($('#facility-floors'))$('#facility-floors').textContent=f.levels;
  const floors=$('#destination-floor');
- if(floors)floors.replaceChildren(...f.program.map((_,i)=>new Option(levelCode(f,i),String(i))));
+ if(floors)floors.replaceChildren(...f.program.map((_,i)=>{
+  const option=document.createElement('option');
+  option.textContent=levelCode(f,i);
+  option.value=String(i);
+  return option;
+ }));
  chooseFloor(level);
  if($('#area-note'))$('#area-note').textContent=f.assumedArea?'Area is a design-package assumption; original allowance remains unresolved.':'Program and floor count from the supplied schematic design package.';
  markers.forEach(({el,f})=>el.classList.toggle('selected',f.id===id));
@@ -133,6 +140,7 @@ function createAtmosphere(){
 }
 let environmentTarget=null;
 function setDay(day){
+ invalidateExterior();
  if(!sky||!sun||!hemi||!rim)return;
  // Dusk: sun low behind the default aerial camera, so facades facing the viewer
  // take a warm rake while the northern sky ahead stays deep navy.
@@ -177,8 +185,10 @@ function setCampusInert(active){
   panel.inert=active;
  }
 }
-function exit(){setCampusInert(false);if(interior||entering){performanceReport.event('tour-exit',{facility:selected?.key});performanceReport.pause('tour-exit');}tourRequest++;entering=false;if($('#enter')){$('#enter').disabled=!graphicsReady;$('#enter').innerHTML='Explore inside <span>↗</span>';}interior?.dispose();interior=null;if($('#interior'))$('#interior').hidden=true;if(graphicsReady){renderer?.setSize(innerWidth,innerHeight);composer?.setSize(innerWidth,innerHeight);checkPostprocessing();}$('#enter')?.focus();}
+function exit(){invalidateExterior();setCampusInert(false);if(interior||entering){performanceReport.event('tour-exit',{facility:selected?.key});performanceReport.pause('tour-exit');}tourRequest++;entering=false;if($('#enter')){$('#enter').disabled=!graphicsReady;$('#enter').innerHTML='Explore inside <span>↗</span>';}interior?.dispose();interior=null;if($('#interior'))$('#interior').hidden=true;if(graphicsReady){renderer?.setSize(innerWidth,innerHeight);composer?.setSize(innerWidth,innerHeight);checkPostprocessing();}$('#enter')?.focus();}
 function bind(){
+ document.addEventListener('click',invalidateExterior);
+ document.addEventListener('change',invalidateExterior);
  acceptancePanel=createAcceptancePanel({report:performanceReport,getCanvas:()=>interior?.getCanvas()||renderer?.domElement,});
  document.addEventListener('visibilitychange',()=>performanceReport.pause(document.hidden?'hidden':'visible'));
  performanceReport.event('startup-begin');
@@ -264,11 +274,18 @@ async function boot(){
  setDay(true);
  scene.add(sun.target);const fitSunShadow=createSunShadowFitter(sun);renderer.info.autoReset=false;
  let last=performance.now(),frames=0;const projected=new T.Vector3(),viewPoint=new T.Vector3();
+ controls.addEventListener('change',invalidateExterior);
  function render(now){
   const dt=Math.min((now-last)/1000,.05);last=now;if(interior||entering||document.hidden||!graphicsReady)return;if(!reduced)clock+=dt;
-  landscape?.update(clock);infrastructure?.update(clock);fleets?.update(clock,camera.position);
+
   if(flyover&&!reduced){camera.position.set(Math.sin(clock*.032)*1100,720,Math.cos(clock*.032)*1100);controls.target.set(0,12,-40);}
-  controls.update();streetFurniture?.userData.update(camera.position);for(const building of buildings)building.userData.updateDetails?.(camera.position);sky.position.copy(camera.position);sky.material.uniforms.time.value=clock;
+  controls.update();
+  // With motion reduced, the fleet and landscape have a fixed clock. A stationary
+  // view can retain its last GPU frame until camera, layers or loaded assets change.
+  if(reduced&&!exteriorDirty&&!performanceReport.active&&!acceptancePanel&&!pendingReadyEvent)return;
+  exteriorDirty=false;
+  landscape?.update(clock);infrastructure?.update(clock);fleets?.update(clock,camera.position);
+  streetFurniture?.userData.update(camera.position);for(const building of buildings)building.userData.updateDetails?.(camera.position);sky.position.copy(camera.position);sky.material.uniforms.time.value=clock;
   const orbitDistance=camera.position.distanceTo(controls.target);if(!legacyDepth)depthRange(camera,orbitDistance);
   fitSunShadow(controls.target,orbitDistance,sun.userData.direction);
   renderer.info.autoReset=false;renderer.info.reset();
@@ -276,12 +293,12 @@ async function boot(){
   if(pendingReadyEvent){performanceReport.event(pendingReadyEvent,{effects:!!composer,width:renderer.domElement.width,height:renderer.domElement.height});if(pendingReadyEvent==='exterior-context-restored')message('Graphics restored');pendingReadyEvent=null;reveal();}
   acceptancePanel?.frame(renderer.domElement,{engine:'Three.js',facility:selected?.key||'campus',quality,camera:camera.position.toArray(),target:controls.target.toArray()});
   if(performanceReport.active){let meshes=0;scene.traverseVisible(object=>{if(object.isMesh)meshes++;});performanceReport.record({engine:'Three.js',quality,width:renderer.domElement.width,height:renderer.domElement.height,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,meshes});}
-  if(++frames%3===0&&showLabels){const far=camera.position.length()>800;const occupied=[];const host=document.getElementById('markers');for(const {el,f} of markers){if(!el.isConnected&&host)host.append(el);projected.set(f.x,facilityHeight(f)+8,f.z);const ahead=viewPoint.copy(projected).applyMatrix4(camera.matrixWorldInverse).z<-camera.near;projected.project(camera);const x=(projected.x*.5+.5)*innerWidth,y=(-projected.y*.5+.5)*innerHeight;let visible=ahead&&viewPoint.z>-camera.far&&x>10&&x<innerWidth-10&&y>90&&y<innerHeight-135;if(mobile&&far&&f.id%2===0)visible=false;if(visible&&occupied.some(p=>Math.hypot(p[0]-x,p[1]-y)<28))visible=false;if(visible)occupied.push([x,y]);el.hidden=!visible;el.style.left=x+'px';el.style.top=y+'px';}}
+  if((++frames%3===0||reduced)&&showLabels){const far=camera.position.length()>800;const occupied=[];const host=document.getElementById('markers');for(const {el,f} of markers){if(!el.isConnected&&host)host.append(el);projected.set(f.x,facilityHeight(f)+8,f.z);const ahead=viewPoint.copy(projected).applyMatrix4(camera.matrixWorldInverse).z<-camera.near;projected.project(camera);const x=(projected.x*.5+.5)*innerWidth,y=(-projected.y*.5+.5)*innerHeight;let visible=ahead&&viewPoint.z>-camera.far&&x>10&&x<innerWidth-10&&y>90&&y<innerHeight-135;if(mobile&&far&&f.id%2===0)visible=false;if(visible&&occupied.some(p=>Math.hypot(p[0]-x,p[1]-y)<28))visible=false;if(visible)occupied.push([x,y]);el.hidden=!visible;el.style.left=x+'px';el.style.top=y+'px';}}
  }
  frameLoop=createFrameLoop(render,{onError:renderFailure});
  // Inspection hook for automated visual review only (?debug); not used by the UI.
  if(new URLSearchParams(location.search).has('debug'))window.__campus={get renderer(){return renderer;},get scene(){return scene;},get camera(){return camera;},get controls(){return controls;},get composer(){return composer;},get bloom(){return bloom;},get sun(){return sun;},get hemi(){return hemi;},get ambient(){return ambient;},get sky(){return sky;},reversedDepth:()=>reversedDepth,setDay};
- resizeHandler=()=>{if(!renderer||!camera)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer?.setSize(innerWidth,innerHeight);composer?.setPixelRatio(renderer.getPixelRatio());composer?.setSize(innerWidth,innerHeight);checkPostprocessing();};
+ resizeHandler=()=>{invalidateExterior();if(!renderer||!camera)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer?.setSize(innerWidth,innerHeight);composer?.setPixelRatio(renderer.getPixelRatio());composer?.setSize(innerWidth,innerHeight);checkPostprocessing();};
  window.addEventListener('resize',resizeHandler);
 
  if($('#load-message'))$('#load-message').textContent='Raising 35 facilities…';
@@ -296,8 +313,8 @@ async function boot(){
  }
  infrastructure=createInfrastructure();scene.add(infrastructure.root);
  fleets=createFleets(landscape.roads);scene.add(fleets.root);
- new GLTFLoader().load(`${import.meta.env.BASE_URL}models/synergy-node.glb`,g=>{if(!renderer){disposeSceneResources(g.scene);return;}for(const [x,z] of SPIRES){const node=g.scene.clone(true);node.position.set(x+13,0,z);node.name='Blender physical synergy node';scene.add(node);}},undefined,e=>{console.warn('Synergy node detail unavailable',e);message('Some node detail failed to load; mesh towers remain available.');});
- new GLTFLoader().load(`${import.meta.env.BASE_URL}models/campus-street-furniture.glb`,g=>{if(!renderer){disposeSceneResources(g.scene);return;}streetFurniture=createStreetFurniture(g.scene);streetFurniture.userData.update(camera.position);streetFurniture.userData.setDusk?.($('#day')?.getAttribute('aria-pressed')!=='true');scene.add(streetFurniture);},undefined,e=>console.warn('Street furniture detail unavailable',e));
+ new GLTFLoader().load(`${import.meta.env.BASE_URL}models/synergy-node.glb`,g=>{if(!renderer){disposeSceneResources(g.scene);return;}invalidateExterior();for(const [x,z] of SPIRES){const node=g.scene.clone(true);node.position.set(x+13,0,z);node.name='Blender physical synergy node';scene.add(node);}},undefined,e=>{console.warn('Synergy node detail unavailable',e);message('Some node detail failed to load; mesh towers remain available.');});
+ new GLTFLoader().load(`${import.meta.env.BASE_URL}models/campus-street-furniture.glb`,g=>{if(!renderer){disposeSceneResources(g.scene);return;}invalidateExterior();streetFurniture=createStreetFurniture(g.scene);streetFurniture.userData.update(camera.position);streetFurniture.userData.setDusk?.($('#day')?.getAttribute('aria-pressed')!=='true');scene.add(streetFurniture);},undefined,e=>console.warn('Street furniture detail unavailable',e));
  const ray=new T.Raycaster(),pointer=new T.Vector2();let start=null;renderer.domElement.addEventListener('pointerdown',e=>{start=[e.clientX,e.clientY];});renderer.domElement.addEventListener('pointerup',e=>{if(!start||Math.hypot(e.clientX-start[0],e.clientY-start[1])>7)return;pointer.set(e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2);ray.setFromCamera(pointer,camera);const hit=ray.intersectObjects(buildings,true)[0];if(hit)select(hit.object.userData.facility);start=null;});
  renderer.domElement.addEventListener('webglcontextrestored',async event=>{
   if(!renderer||renderer.domElement!==event.currentTarget)return;

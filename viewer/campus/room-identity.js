@@ -84,7 +84,7 @@ function wallPosition(k, identity, room) {
 const up=new Vector3(0,1,0);
 function storage(k,i,r){
  const placement=wallPosition(k,i,r);
- if(!placement)return;
+ if(!placement)return false;
  const start=k.parts.length, width=i.credenzaWidth;
  k.box('recessed toe kick','graphite',0,.09,.025,width-.12,.11,.46,.004);
  k.box(i.key+' authored credenza',i.secondary,0,.54,0,width,.80,.54,.014);
@@ -101,6 +101,7 @@ function storage(k,i,r){
   part.position.x+=placement.x;
   part.position.z+=placement.z;
  }
+ return true;
 }
 function authoredWall(k,i,r){
  const x=(i.left?-1:1)*(r.w/2-.10),z=Math.min(r.d-.85,Math.max(1.1,r.d*.62));
@@ -111,9 +112,25 @@ function authoredWall(k,i,r){
  }
  k.box(i.key+' identity wash', 'warm',x-(i.left?-.055:.055),3.12,z,.018,.025,i.panelSpan*.82,.002);
 }
+// On a crowded floor, show the room's finish samples flush to the feature
+// panel. The three real materials can be inspected without consuming aisle space.
+function finishSamples(k,identity,room){
+ const side=identity.left?-1:1, x=side*(room.w/2-.151);
+ const z=Math.min(room.d-.85,Math.max(1.1,room.d*.62));
+ const width=Math.min(.32,identity.panelSpan*.19);
+ k.box('sample mounting rail',identity.metal,x,2.45,z,.040,.34,width*3.7,.006);
+ for(const [i,finish] of [identity.floorFinish,identity.secondary,identity.accent].entries()){
+  const dz=z+(i-1)*width*1.13,face=x-side*.032;
+  k.box('finish sample',finish,face,2.47,dz,.027,.23,width,.003);
+  k.box('engraved sample index',identity.metal,face-side*.015,2.37,dz,.005,.018,width*.41,0);
+ }
+}
+
 export function furnishRoomIdentity(k,r,index=0){
  const identity=roomIdentity(r,index);
- storage(k,identity,r);authoredWall(k,identity,r);
+ const installed=storage(k,identity,r);
+ authoredWall(k,identity,r);
+ if(!installed)finishSamples(k,identity,r);
  // A unique, physically visible signature strip records the room's authored
  // composition in geometry rather than metadata. Width/depth vary per room.
  const z=Math.min(r.d-.28,Math.max(.75,r.d*.31));

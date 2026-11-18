@@ -56,6 +56,9 @@ export function galleryBays(kit, passage, schedule) {
         kit.bar('gallery lantern rib', body, last, next, .046);
         last = next;
       }
+      // A continuous luminous spine makes the corridor legible on approach.
+      block('lantern ridge housing',trim,0,3.43,t,.19,.09,pitch-.14);
+      block('lantern ridge diffuser','warm',0,3.373,t,.13,.024,pitch-.22);
       for (const side of [-1, 1]) {
         block('lantern shoe', trim, side * half, 3.25, t, .12, .56, .16);
         block('lantern side diffuser','warm',side * (half - .05),3.06,t,.025,.10,.12);
@@ -160,5 +163,71 @@ export function programWall(kit, room, identity, schedule) {
       box('recessed wall textile',fabric,.099,1.37,z,.014,1.75,span/bays-.11);
     }
     box('continuous picture rail',schedule.trim,.102,2.37,0,.07,.035,span);
+  }
+}
+
+// Public faces of room partitions along a passage. Intersections have no
+// adjacent room edge and remain open; doorway frontages already have glazing.
+export function galleryFrontages(kit, passage, rooms, schedule) {
+  const horizontal=passage.axis==='H';
+  const length=horizontal?passage.w:passage.d;
+  const width=horizontal?passage.d:passage.w;
+  const center=horizontal?passage.x:passage.z;
+  const cross=horizontal?passage.z:passage.x;
+  for(const room of rooms){
+    if(room.parent===passage.id)continue;
+    const mid=horizontal?room.x:room.z;
+    const extent=(horizontal?room.w:room.d)/2;
+    const transverse=horizontal?room.z:room.x;
+    const half=(horizontal?room.d:room.w)/2;
+    const side=Math.sign(transverse-cross);
+    if(Math.abs(Math.abs(transverse-cross)-half-width/2)>.02)continue;
+    const start=Math.max(center-length/2,mid-extent)+.14;
+    const end=Math.min(center+length/2,mid+extent)-.14;
+    if(end-start<.75)continue;
+    const edge=cross+side*width/2;
+    const block=(name,finish,along,y,setback,span,height,depth)=>{
+      const lateral=edge-side*setback;
+      kit.box(name,finish,horizontal?along:lateral,y,horizontal?lateral:along,
+        horizontal?span:depth,height,horizontal?depth:span,0);
+    };
+    const count=Math.ceil((end-start)/1.45),bay=(end-start)/count;
+    for(let n=0;n<count;n++){
+      const along=start+(n+.5)*bay;
+      block('gallery dado panel',schedule.body,along,.50,.076,bay-.014,.83,.027);
+      block('gallery upper wall lining',n%3===0?'linen':'plaster',along,1.94,.076,bay-.014,1.96,.027);
+      block('gallery joint cover',schedule.trim,along-bay/2+.012,1.94,.093,.014,1.96,.012);
+    }
+    block('gallery dado cap',schedule.trim,(start+end)/2,.94,.095,end-start,.033,.040);
+    block('gallery cornice',schedule.body,(start+end)/2,2.96,.099,end-start,.085,.11);
+    block('gallery concealed wall wash','warm',(start+end)/2,2.91,.13,end-start-.22,.014,.026);
+  }
+}
+
+export function arrivalBoards(layout) {
+  const root=layout.circulation[0],east=root.axis==='H';
+  const angle=east?Math.PI/2:0;
+  const width=Math.min(3.24,(east?root.d:root.w)-.28);
+  const format=(x,y,z)=>({x,y,z,width,height:width/5,angle});
+  const end=east?format(layout.w/2-.37,3.20,root.z):format(root.x,3.16,layout.d/2-.12);
+  const length=east?root.w:root.d;
+  const along=-length/2+Math.min(6,length*.46);
+  const near=format(root.x+(east?along:0),2.98,root.z+(east?0:along));
+  return [end,near];
+}
+
+export function mountArrivalBoards(kit,layout,schedule) {
+  for (const [index,board] of arrivalBoards(layout).entries()) {
+    const horizontal=board.angle!==0;
+    const block=(name,finish,x,y,z,width,height,depth)=>{
+      kit.box(name,finish,x,y,z,horizontal?depth:width,height,horizontal?width:depth,0);
+    };
+    block('facility identity fascia','graphite',board.x,board.y,board.z,board.width+.08,board.height+.08,.075);
+    block('fascia lower reveal',schedule.trim,board.x,board.y-board.height/2-.033,board.z,board.width+.10,.023,.085);
+    if(index===1)for(const side of [-1,1]){
+      const top=board.y+board.height/2+.04;
+      block('suspended fascia hanger',schedule.trim,board.x+(horizontal?0:side*board.width*.40),
+        (top+3.59)/2,board.z+(horizontal?side*board.width*.40:0),.036,3.59-top,.036);
+    }
   }
 }

@@ -35,8 +35,9 @@ export function interiorRadiance(x,y,z){
  const up=smooth(.2,.42,y),down=smooth(-.05,-.3,y);
  return horizon.map((c,i)=>c*(1-up-down)+ceiling[i]*up+floor[i]*down);
 }
+const floatBits=new Float32Array(1),uintBits=new Uint32Array(floatBits.buffer);
 function f16(value){
- const f=new Float32Array(1),u=new Uint32Array(f.buffer);f[0]=value;const x=u[0];
+ floatBits[0]=value;const x=uintBits[0];
  const sign=(x>>>16)&0x8000;let e=((x>>>23)&0xff)-112,m=x&0x7fffff;
  if(e<=0)return sign;if(e>30)return sign|0x7c00;return sign|(e<<10)|(m>>>13);
 }
@@ -45,7 +46,7 @@ export function interiorEnvironmentFaces(size=48){
  const dirs=[(u,v)=>[1,-v,-u],(u,v)=>[-1,-v,u],(u,v)=>[u,1,v],(u,v)=>[u,-1,-v],(u,v)=>[u,-v,1],(u,v)=>[-u,-v,-1]];
  return dirs.map(dir=>{const out=new Float32Array(size*size*4);for(let j=0;j<size;j++)for(let i=0;i<size;i++){const u=(i+.5)/size*2-1,v=(j+.5)/size*2-1,c=interiorRadiance(...dir(u,v)),o=(j*size+i)*4;out[o]=c[0];out[o+1]=c[1];out[o+2]=c[2];out[o+3]=1;}return out;});
 }
-export function createInteriorEnvironment(scene,engine,{size=48}={}){
+export function createInteriorEnvironment(scene,engine,{quality='balanced',size=quality==='high'?64:32}={}){
  const faces=interiorEnvironmentFaces(size);
  const caps=engine.getCaps(),half=!!caps.textureHalfFloat&&engine.webGLVersion>=2;
  let texture;
@@ -62,7 +63,7 @@ export function createInteriorEnvironment(scene,engine,{size=48}={}){
  scene.environmentTexture=texture;
  // Convolve for GGX roughness so polished stone shows soft luminaire streaks.
  if(half&&caps.textureLOD&&(caps.textureHalfFloatRender||caps.textureFloatRender)){
-  try{const filter=new HDRFiltering(engine,{quality:4096,hdrScale:1});filter.prefilter(texture).catch(()=>{});}catch{/* unfiltered mips remain valid */}
+  try{const filter=new HDRFiltering(engine,{quality:quality==='high'?1024:256,hdrScale:1});filter.prefilter(texture).catch(()=>{});}catch{/* unfiltered mips remain valid */}
  }
  return texture;
 }

@@ -2,7 +2,7 @@ import * as T from 'three';
 import {furnishOccupants} from './room-occupants.js';
 import {floorLayout} from './data.js';
 import {InteriorKit,furnishRoom,planter,server,robot} from './interior-kit.js';
-import {galleryBays,gallerySchedule,programWall,roomThreshold,sideWindow,signMount} from './interior-gallery.js';
+import {galleryBays,galleryFrontages,mountArrivalBoards,gallerySchedule,programWall,roomThreshold,sideWindow,signMount} from './interior-gallery.js';
 import {roomIdentity,furnishRoomIdentity} from './room-identity.js';
 // Bake oriented room vertices: Babylon and offline glTF consume the same buffers.
 function place(group,r){
@@ -40,7 +40,7 @@ export function createInteriorGeometry(f,level=0){
   // A perimeter room receives daylight; an internal room has a solid back wall.
   const bz=source.doorZ+Math.cos(source.angle)*source.localDepth;
   const exterior=Math.abs(Math.abs(bz)-d/2)<.01;
-  const acceptsDaylight=!r.fitout.privateRoom&&!/LED volume|Soundstage|Audio booths|Motion capture|Podcast/i.test(r.name);
+  const acceptsDaylight=f.id!==3&&!r.fitout.privateRoom&&!/LED volume|Soundstage|Audio booths|Motion capture|Podcast/i.test(r.name);
   const glazed=exterior&&acceptsDaylight;
   let daylightDirection=glazed?[-Math.sin(source.angle),-Math.cos(source.angle)]:null;
   if(glazed){
@@ -145,6 +145,7 @@ export function createInteriorGeometry(f,level=0){
   k.box('circulation stone inlay','floorStone',c.x,.04,c.z,c.w,.025,c.d,0);
   k.box('circulation acoustic ceiling','plaster',c.x,3.64,c.z,c.w,.12,c.d,0);
   galleryBays(k,c,gallery);
+  galleryFrontages(k,c,layout.rooms,gallery);
  }
  // Close the envelope at passage ends and around the two service strips.
  // Keep these out of room glazing to avoid doubling tinted surfaces.
@@ -154,6 +155,10 @@ export function createInteriorGeometry(f,level=0){
  }
  for(const c of layout.circulation)if(c.axis==='V')for(const side of [-1,1]){
   const z=c.z+side*c.d/2;if(Math.abs(Math.abs(z)-d/2)>.01)continue;
+  if(f.id===3){
+   k.box('basement passage end','stone',c.x,1.8,z,c.w,3.6,.15,0);
+   continue;
+  }
   k.box('passage end sill','stone',c.x,.30,z,c.w,.60,.14,.008);
   k.box('passage end glazing','glass',c.x,2.1,z,c.w,3,.016,0);
   for(const dx of [-c.w/2,0,c.w/2])k.box('passage end mullion','graphite',c.x+dx,1.8,z,.06,3.6,.12,.005);
@@ -165,5 +170,6 @@ export function createInteriorGeometry(f,level=0){
   k.box('elevator door','steel',x-side*.1,1.5,z,.04,2.8,1.48,.008);
   k.box('elevator door seam','graphite',x-side*.13,1.5,z,.012,2.8,.012,.001);
  }
+ mountArrivalBoards(k,layout,gallery);
  root.add(k.finish(true));root.userData.layout=layout;return {root,layout};
 }

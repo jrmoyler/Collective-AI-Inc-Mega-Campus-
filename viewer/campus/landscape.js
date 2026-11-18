@@ -424,8 +424,12 @@ export function createLandscape(){
   }
   const inlet=shore.map(p=>channelClearance(p.x,p.z)<1.2);
   const entry=overlooks[lakeIndex];
-  const rampCrossing=shore.map(p=>entry&&Math.hypot(p.x-entry.x,p.z-entry.z)<1.65);
-  const copingGap=i=>inlet[i]||rampCrossing[i]||rampCrossing[i+1];
+  const copingGap=i=>{
+   if(inlet[i]||!entry)return inlet[i];
+   const p=shore[i],q=shore[i===shore.length-1?1:i+1],dx=q.x-p.x,dz=q.z-p.z;
+   const t=T.MathUtils.clamp(((entry.x-p.x)*dx+(entry.z-p.z)*dz)/(dx*dx+dz*dz),0,1);
+   return Math.hypot(entry.x-p.x-dx*t,entry.z-p.z-dz*t)<1.2;
+  };
   copingGeos.push(sweep(shore,[{o0:0,y0:.26,o1:0,y1:.56,face:'in'},{o0:0,y0:.56,o1:.9,y1:.56,face:'up'},{o0:.9,y0:.56,o1:.9,y1:.02,face:'out'}],{skip:copingGap}));
   const promenadeBlocked=shore.map(p=>roadClearance(p.x+p.nx*2,p.z+p.nz*2)<4||FACILITIES.some(f=>Math.abs(p.x+p.nx*2-f.x)<f.w/2+1&&Math.abs(p.z+p.nz*2-f.z)<f.d/2+1));
   promenadeGeos.push(sweep(shore,[{o0:.9,y0:.1,o1:3.4,y1:.1,face:'up'},{o0:3.4,y0:.1,o1:3.4,y1:.02,face:'out'}],{skip:i=>promenadeBlocked[i]||inlet[i]}));
@@ -638,6 +642,12 @@ export function createLandscape(){
    const start=random()*Math.PI*2,span=.25+random()*.45,isReed=k%2===0;
    for(let a=start;a<start+span;a+=isReed?.018:.03){
     const inset=isReed?1.2+random()*2.2:.3+random()*.7,[x,z]=shorePoint(lakeIndex,a,-inset);
+    const site=overlooks[lakeIndex];
+    if(site){
+     const dx=x-site.x,dz=z-site.z;
+     const side=dx*Math.cos(site.yaw)-dz*Math.sin(site.yaw),inward=dx*Math.sin(site.yaw)+dz*Math.cos(site.yaw);
+     if(Math.abs(side)<site.width/2+.5&&inward>-3.5&&inward<5+site.depth)continue;
+    }
     if(channelClearance(x,z)<3)continue;
     (isReed?reeds:rocks).push({x,z,s:isReed?.8+random()*.5:.35+random()*.55,rot:random()*6.283});
    }
