@@ -152,7 +152,8 @@ function broadleaf(seed,{limbs,trunkTop,crownY,crownR,crownH,cell=ATLAS_CELL.bro
  const k=new TreeKit(seed,{center:new T.Vector3(0,crownY,0),radii:new T.Vector3(crownR,crownH,crownR)});const r=k.random;
  const top=new T.Vector3((r()-.5)*.03,trunkTop,(r()-.5)*.03);
  k.limb(new T.Vector3(0,-.02,0),new T.Vector3(0,trunkTop*.45,0),.05,.04);
- k.limb(new T.Vector3(0,trunkTop*.45,0),top,.04,.032);
+ // Overlap the upper trunk into the lower one so the tilted joint never opens a sky gap.
+ k.limb(new T.Vector3(0,trunkTop*.41,0),top,.041,.032);
  const tips=[];
  const grow=(from,dir,len,rad,depth)=>{
   const bend=dir.clone().add(new T.Vector3((r()-.5)*.5,.25+r()*.2,(r()-.5)*.5)).normalize();
