@@ -194,7 +194,7 @@ function bind(){
   if(entering)exit();
   closeDirectory();select(id,floor);
   const f=selected, x=f.x-f.w*.23, z=f.z+f.d/2+4.2;
-  moveCamera([x-13,6.8,z+21],[x+2,4,z-3]);
+  moveCamera([x-9,11,z+10],[x+1,3.2,z-1]);
  });
  document.addEventListener('click',invalidateExterior);
  document.addEventListener('change',invalidateExterior);
