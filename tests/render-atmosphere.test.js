@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DirectionalLight,ShaderChunk,Vector3} from 'three';
-import {installAerialPerspective,aerialHaze,AERIAL_MARKER,ATMOSPHERE_PRESETS,atmospherePreset} from '../viewer/campus/render-atmosphere.js';
+import {installAerialPerspective,aerialHaze,horizonFade,AERIAL_MARKER,ATMOSPHERE_PRESETS,atmospherePreset} from '../viewer/campus/render-atmosphere.js';
 import {GradeShader,GRADE_PRESETS,createGradePass,gradePreset} from '../viewer/campus/post-grade.js';
 import {renderProfile} from '../viewer/campus/quality.js';
 import {createSunShadowFitter,setShadowMapSize,shadowRadiusFor} from '../viewer/campus/sun-shadows.js';
@@ -9,7 +9,8 @@ import {createSunShadowFitter,setShadowMapSize,shadowRadiusFor} from '../viewer/
 test('aerial perspective keeps the campus clear at the default aerial and hazes the horizon',()=>{
  const air=ATMOSPHERE_PRESETS.day;
  // Default aerial camera ~680 m up, campus ground 900-1700 m away.
- for(const d of [900,1300,1700])assert.ok(aerialHaze(d,680,0,{near:air.fogNear,far:air.fogFar})<.16,`campus haze at ${d} m`);
+ for(const d of [900,1300])assert.ok(aerialHaze(d,680,0,{near:air.fogNear,far:air.fogFar})<.06,`campus haze at ${d} m`);
+ assert.ok(aerialHaze(1700,680,0,{near:air.fogNear,far:air.fogFar})<.1,'far campus rim');
  // Countryside toward the horizon recedes.
  assert.ok(aerialHaze(6000,680,0,{near:air.fogNear,far:air.fogFar})>.3);
  // At street height the same distance is hazier than from the air, and a tall
@@ -18,6 +19,9 @@ test('aerial perspective keeps the campus clear at the default aerial and hazes 
  assert.ok(aerialHaze(2000,8,120,{near:air.fogNear,far:air.fogFar})<aerialHaze(2000,8,0,{near:air.fogNear,far:air.fogFar}));
  // Within the clear radius nothing is fogged; horizontal rays are finite.
  assert.equal(aerialHaze(300,8,0,{near:air.fogNear,far:air.fogFar}),0);
+ // The terrain apron meets the 9 km far plane in horizon haze, not a hard line;
+ // the campus (<2.5 km from any default view) is untouched by that fade.
+ assert.equal(horizonFade(2500),0);assert.equal(horizonFade(9000),1);assert.ok(horizonFade(7000)>0&&horizonFade(7000)<1);
  const flat=aerialHaze(3000,40,40,{near:0,far:3000});assert.ok(flat>0&&flat<1&&Number.isFinite(flat));
 });
 

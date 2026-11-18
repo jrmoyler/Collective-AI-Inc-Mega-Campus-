@@ -17,6 +17,15 @@
 // shadow-casting sun, which three always sorts to directionalLights[0].
 
 export const AERIAL_SCALE_HEIGHT=180;
+// The exterior camera's far plane is 9 km and the terrain apron reaches it, so
+// without help the ground ends in a hard line against a much brighter horizon
+// sky. Over the last few kilometres the haze converges on a horizon-bright
+// version of the fog colour (sky radiance near the horizon is ~2x the haze).
+export const AERIAL_HORIZON_FADE=[5200,8600],AERIAL_HORIZON_GAIN=2;
+export function horizonFade(distance){
+ const [a,b]=AERIAL_HORIZON_FADE,t=Math.min(1,Math.max(0,(distance-a)/(b-a)));
+ return t*t*(3-2*t);
+}
 export const AERIAL_MARKER='/* campus-aerial-perspective */';
 
 // JS mirror of the GLSL, used by tests and by the QA panel to reason about
@@ -84,6 +93,9 @@ const fragment=`
 			float aerialPhase = 0.18 * pow( aerialCos, 4.0 ) + 0.32 * pow( aerialCos, 24.0 );
 			aerialColor = mix( fogColor, fogColor * aerialSun * 1.35, aerialPhase );
 		#endif
+		float aerialHorizon = smoothstep( ${AERIAL_HORIZON_FADE[0].toFixed(1)}, ${AERIAL_HORIZON_FADE[1].toFixed(1)}, length( aerialRay ) );
+		aerialColor = mix( aerialColor, fogColor * ${AERIAL_HORIZON_GAIN.toFixed(2)}, aerialHorizon );
+		fogFactor = max( fogFactor, aerialHorizon );
 		gl_FragColor.rgb = mix( gl_FragColor.rgb, aerialColor, fogFactor );
 	#endif
 #endif`;
@@ -104,7 +116,7 @@ export function installAerialPerspective(ShaderChunk){
 // radiance in sky units, so glazing reflects ground below the horizon instead
 // of a second bright sky (DESIGN.md: glass must not glow).
 export const ATMOSPHERE_PRESETS=Object.freeze({
- day:Object.freeze({fogColor:0xb9cddd,fogNear:450,fogFar:6800,exposure:.9,environmentIntensity:.32,envGround:0x6c7458}),
- dusk:Object.freeze({fogColor:0x2c3556,fogNear:380,fogFar:5600,exposure:1.2,environmentIntensity:.35,envGround:0x24232a}),
+ day:Object.freeze({fogColor:0xb9cddd,fogNear:900,fogFar:8000,exposure:1,environmentIntensity:.32,envGround:0x6c7458}),
+ dusk:Object.freeze({fogColor:0x2c3556,fogNear:800,fogFar:6500,exposure:1.15,environmentIntensity:.35,envGround:0x24232a}),
 });
 export function atmospherePreset(day){return day?ATMOSPHERE_PRESETS.day:ATMOSPHERE_PRESETS.dusk;}

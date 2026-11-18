@@ -294,7 +294,9 @@ async function boot(){
  const canvas=document.createElement('canvas');canvas.addEventListener('webglcontextcreationerror',event=>performanceReport.event('context-creation-error',{message:event.statusMessage}));
  // Reversed float depth removes the metre-scale depth steps that made layered
  // facades, copings and bands z-fight at the ~1.2 km aerial distance.
- renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance',preserveDrawingBuffer:false,alpha:false,reversedDepthBuffer:!legacyDepth});reversedDepth=renderer.capabilities.reversedDepthBuffer===true;renderer.debug.onShaderError=(gl,program)=>{throw new Error('WebGL shader compilation failed: '+gl.getProgramInfoLog(program));};renderer.setPixelRatio(exteriorPixelRatio(devicePixelRatio,quality,mobile));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;attachCanvas();
+ renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance',preserveDrawingBuffer:false,alpha:false,reversedDepthBuffer:!legacyDepth});reversedDepth=renderer.capabilities.reversedDepthBuffer===true;renderer.debug.onShaderError=(gl,program)=>{throw new Error('WebGL shader compilation failed: '+gl.getProgramInfoLog(program));};renderer.setPixelRatio(exteriorPixelRatio(devicePixelRatio,quality,mobile));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.NeutralToneMapping;renderer.toneMappingExposure=1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;attachCanvas();
+ // Khronos PBR Neutral: ACES desaturated the bright daylight sky to grey-white
+ // and shifted sunlit masonry hues; Neutral keeps base colours and a blue sky.
  // Height-dependent aerial perspective replaces three's depth-only fog chunks
  // before any exterior material compiles (render-atmosphere.js).
  installAerialPerspective(T.ShaderChunk);
