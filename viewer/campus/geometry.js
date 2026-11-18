@@ -1,5 +1,6 @@
 // @ts-nocheck
 import * as T from 'three';
+import {exteriorFinishes,setExteriorUV} from './exterior-finishes.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
 function paint(size, fn){
@@ -18,14 +19,14 @@ export const textures={
  canopy:paint(128,(data,size,rand)=>{for(let i=0;i<size*size;i++){const v=rand();setRGB(data,i,28+v*50,78+v*100,22+v*30);}}),
  blossom:paint(128,(data,size,rand)=>{for(let i=0;i<size*size;i++){const v=rand();setRGB(data,i,190+v*60,90+v*50,128+v*50);}}),
  asphalt:paint(256,(data,size,rand)=>{for(let i=0;i<size*size;i++){const v=38+rand()*18;setRGB(data,i,v,v+2,v+4);}}),
- limestone:paint(256,(data,size,rand)=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){const seam=(x%64<2||y%48<2)?-16:0;const n=(rand()-.5)*12+Math.sin((x+y)*.08)*3;setRGB(data,y*size+x,216+seam+n,209+seam+n,194+seam+n);}}),
+ limestone:exteriorFinishes.limestone.color,
  porcelain:paint(256,(data,size,rand)=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){const n=(rand()-.5)*7+Math.sin(x*.04)*2;setRGB(data,y*size+x,235+n,238+n,233+n);}}),
  brushed:paint(256,(data,size,rand)=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){const streak=Math.sin(y*.7)*8+(rand()-.5)*10;setRGB(data,y*size+x,132+streak,145+streak,150+streak);}}),
- copper:paint(256,(data,size,rand)=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){const patina=Math.sin((x+y)*.03)*9+(rand()-.5)*12;setRGB(data,y*size+x,185+patina,112+patina*.45,66+patina*.25);}}),
- charcoal:paint(256,(data,size,rand)=>{for(let i=0;i<size*size;i++){const n=(rand()-.5)*16;setRGB(data,i,38+n,47+n,55+n);}}),
+ copper:exteriorFinishes.copper.color,
+ charcoal:exteriorFinishes.graphite.color,
 };
 
-textures.grass.repeat.set(48,42);textures.asphalt.repeat.set(8,1);textures.limestone.repeat.set(3,3);textures.porcelain.repeat.set(4,4);textures.brushed.repeat.set(6,12);textures.copper.repeat.set(4,4);textures.charcoal.repeat.set(6,6);
+textures.grass.repeat.set(48,42);textures.asphalt.repeat.set(8,1);textures.porcelain.repeat.set(4,4);textures.brushed.repeat.set(6,12);
 
 function std(params){return new T.MeshStandardMaterial({envMapIntensity:1.05,...params});}
 export const materials={
@@ -104,9 +105,15 @@ for(const name of ['steel','stone','dark','grass','road','path','white','leaf','
  materials[name].color.set(0xffffff);
 }
 materials.concrete.map=textures.porcelain;
-for(const [name,scale] of [['stone',.012],['path',.012],['road',.006],['civic',.012],['copper',.002]]){
- materials[name].bumpMap=materials[name].map;materials[name].bumpScale=scale;
+for(const [name,finish,relief] of [
+ ['stone','limestone',.018],['civic','limestone',.018],['path','limestone',.012],
+ ['dark','graphite',.004],['copper','copper',.002]
+]){
+ const m=materials[name];
+ m.bumpMap=m.metalnessMap=m.roughnessMap=exteriorFinishes[finish].surface;
+ m.bumpScale=relief;m.roughness=1;
 }
+materials.road.bumpMap=materials.road.map;materials.road.bumpScale=.006;
 
 const paneGeo=new T.PlaneGeometry(1,1),horizontalPaneGeo=new T.PlaneGeometry(1,1).rotateX(-Math.PI/2);
 const boxGeo=new T.BoxGeometry(1,1,1,1,1,1);const temp=new T.Object3D();
@@ -124,7 +131,7 @@ export class Batch{
   }
   this.add(boxGeo,mat,x,y,z,w,h,d,ry);
  }
- finish(name='assembly'){const group=new T.Group();group.name=name;for(const [mat,gs] of this.items){const g=mergeGeometries(gs,false);gs.forEach(x=>x.dispose());const m=new T.Mesh(g,materials[mat]||mat);m.name=name+'-'+(typeof mat==='string'?mat:'surface');m.castShadow=!(m.material.transparent&&m.material.alphaTest===0);m.receiveShadow=true;group.add(m);}this.items.clear();return group;}
+ finish(name='assembly'){const group=new T.Group();group.name=name;for(const [mat,gs] of this.items){const g=mergeGeometries(gs,false);setExteriorUV(g,mat);gs.forEach(x=>x.dispose());const m=new T.Mesh(g,materials[mat]||mat);m.name=name+'-'+(typeof mat==='string'?mat:'surface');m.castShadow=!(m.material.transparent&&m.material.alphaTest===0);m.receiveShadow=true;group.add(m);}this.items.clear();return group;}
 }
 export function cylinder(batch,mat,x,y,z,r,h,rt=r,n=32){const g=new T.CylinderGeometry(rt,r,h,n,1,false);batch.add(g,mat,x,y,z);g.dispose();}
 export function ring(batch,mat,x,y,z,r,t=.3,rx=Math.PI/2){const g=new T.TorusGeometry(r,t,8,72);batch.add(g,mat,x,y,z,1,1,1,0,rx);g.dispose();}

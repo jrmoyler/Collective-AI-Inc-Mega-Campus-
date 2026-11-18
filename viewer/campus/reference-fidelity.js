@@ -13,8 +13,15 @@ function equipmentCourt(b,x,y,z,w,d,count=5){
  b.box('dark',x,y+.18,z,w,.34,d);
  for(let i=0;i<count;i++){
   const xx=x-w*.38+i*w*.76/Math.max(1,count-1);
-  b.box('steel',xx,y+.78,z,Math.max(.7,w*.11),1.25,d*.54);
-  ribWall(b,xx,y+.78,z+d*.28,Math.max(.65,w*.1),1,count>5?4:3,'dark',.07);
+  const width=Math.max(.7,w*.11),depth=d*.54,fanRadius=Math.min(width,depth)*.32;
+  b.box('steel',xx,y+.78,z,width,1.25,depth);
+  // Condenser intake blades terminate at the casing rather than hovering
+  // above it. The raised discharge cowl has its own dark fan throat.
+  b.box('dark',xx,y+.79,z+depth/2+.026,width*.86,.89,.05);
+  for(let j=0;j<5;j++) b.box('steel',xx,y+.45+j*.16,z+depth/2+.09,width*.8,.052,.084);
+  cylinder(b,'dark',xx,y+1.45,z,fanRadius,.12,fanRadius,16);
+  for(let j=0;j<3;j++) b.box('steel',xx,y+1.54,z,fanRadius*1.85,.055,.048,j*Math.PI/3);
+  cylinder(b,'dark',xx,y+1.6,z,fanRadius*.2,.065,fanRadius*.2,10);
  }
 }
 function plantedEdge(b,x,y,z,w,d){
@@ -23,14 +30,28 @@ function plantedEdge(b,x,y,z,w,d){
 }
 function canopy(b,x,y,z,w,d,mat='steel'){
  b.box(mat,x,y,z,w,.18,d);
- for(const xx of [-w*.42,w*.42])cylinder(b,'steel',x+xx,y*.5,z,.12,Math.max(.5,y),.12,10);
+ for(const xx of [-w*.42,w*.42]){
+  cylinder(b,'steel',x+xx,y*.5,z,.14,Math.max(.5,y),.11,12);
+  for(const side of [-1,1]) line(b,'steel',[[x+xx,y-.8,z],[x+xx,y-.12,z+side*d*.36]],.065);
+ }
+ for(const side of [-1,1]){
+  b.box('copper',x,y+.035,z+side*(d/2+.045),w,.22,.09);
+  b.box('warm',x,y-.122,z+side*d*.34,w*.84,.042,.07);
+ }
 }
 function frame(b,x,y,z,w,h,mat='steel'){
  b.box(mat,x-w/2,y+h/2,z,.16,h,.20);b.box(mat,x+w/2,y+h/2,z,.16,h,.20);b.box(mat,x,y+h,z,w,.16,.20);
 }
 function terrace(b,x,y,z,w,d){
  b.box('stone',x,y,z,w,.28,d);
- ribWall(b,x,y+.55,z+d/2,w,1.1,Math.max(3,Math.floor(w/2.5)),'steel',.08);
+ const surface=y+.14;
+ ribWall(b,x,surface,z+d/2,w,1.05,Math.max(3,Math.ceil(w/2.2)+1),'steel',.08);
+ for(const offset of [.42,.76,1.08]){
+  b.box('steel',x,surface+offset,z+d/2,w,.055,.085);
+  for(const side of [-1,1]) b.box('steel',x+side*w/2,surface+offset,z,.085,.055,d);
+ }
+ for(const side of [-1,1]) for(const dz of [0,-d/2])
+  b.box('steel',x+side*w/2,surface+.525,z+dz,.09,1.05,.09);
 }
 function displayWall(b,x,y,z,w,h){
  b.box('dark',x,y+h/2,z,w,h,.18);

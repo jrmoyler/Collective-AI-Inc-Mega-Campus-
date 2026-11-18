@@ -12,3 +12,93 @@ body.exploring #scene-caption{display:none}#scene-caption h1{font-size:28px}#sce
 #acceptance-panel[hidden]{display:none}#acceptance-panel label{display:block}#acceptance-panel input{display:block;width:100%;box-sizing:border-box;margin:8px 0;padding:10px}.qa-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.qa-actions button{min-height:44px;font-size:12px}#acceptance-panel small{color:#b6c2d1}
 
 #acceptance-toggle{position:fixed;z-index:111;left:16px;bottom:calc(16px + env(safe-area-inset-bottom));font-size:12px}
+
+/* Visitor atlas: keyed facility rows and a clear destination before either tour. */
+:root {
+  --panel: #0d1326;
+  --line: #334152;
+  --muted: #b1becb;
+  --mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+header {
+  padding-top: max(12px, env(safe-area-inset-top));
+  border-bottom: 1px solid #34404e;
+  background: #09101d;
+}
+.brand .mark { color: var(--gold); }
+.head-stats { gap: 18px; }
+.head-stats span { border-left: 1px solid var(--line); padding-left: 18px; }
+.head-stats b, .eyebrow, .facts small, .facility-number, .directory-summary, #inside-key { font-family: var(--mono); }
+#scene-caption {
+  border-left: 3px solid var(--gold);
+  padding: 10px 16px;
+  background: #091321;
+}
+#scene-caption h1 { font-size: clamp(25px, 3.5vw, 46px); letter-spacing: -.035em; margin: 8px 0; }
+#scene-caption p { font-size: 14px; margin: 0; }
+#directory-toggle { border-color: #a38850; color: #f1d497; background: #18202a; }
+#directory, #detail, #layers, #rooms { border-top: 2px solid var(--gold); border-radius: 2px; }
+#directory, #detail { top: 85px; }
+#detail { max-height: calc(100dvh - 185px); overflow-y: auto; overscroll-behavior: contain; }
+#directory { width: 320px; }
+#directory h2, #detail h2, .plan-heading h2 { letter-spacing: -.035em; }
+#detail h2:focus { outline: none; }
+.panel-heading button { min-width: 44px; min-height: 44px; }
+#directory h2 { margin: 0 0 16px; }
+#facility-list { overscroll-behavior: contain; }
+#facility-list button { gap: 13px; padding: 10px 4px; }
+#facility-list button:focus-visible { outline-offset: -2px; }
+#facility-list button .facility-number { color: var(--gold); font-size: 11px; }
+#facility-list strong, #facility-list small { display: block; }
+#facility-list strong { font-size: 14px; line-height: 1.35; font-weight: 600; }
+#facility-list small { margin-top: 3px; color: var(--muted); font-size: 12px; }
+.directory-summary { display: flex; align-items: center; justify-content: space-between; min-height: 44px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.directory-summary button { background: transparent; border: 0; color: var(--teal); font: inherit; padding: 8px 4px; }
+.destination-floor { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; color: var(--muted); font-size: 13px; }
+.destination-floor select { margin: 0; width: 84px; }
+#facility-program { margin: 8px 0 14px; }
+#toolbar { border-radius: 3px; background: #0a1120; }
+#toolbar .active { border-bottom-color: var(--teal); }
+#rooms { border-top-color: var(--teal); }
+#rooms-toggle { min-height: 44px; }
+#room-list button { line-height: 1.4; }
+#touch-controls { bottom: max(20px, env(safe-area-inset-bottom)); right: max(16px, env(safe-area-inset-right)); }
+@media (pointer: fine) { #touch-controls { display: none; } }
+@media (max-width: 760px) {
+  header { padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right)); }
+  #toolbar { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 2px; }
+  #toolbar button { grid-column: span 3; padding: 4px 0; min-height: 44px; }
+  #toolbar button:nth-last-child(-n+3) { grid-column: span 4; }
+  #directory, #detail, #layers { width: auto; right: 12px; left: 12px; top: auto; bottom: calc(137px + env(safe-area-inset-bottom)); max-height: 55dvh; }
+  #directory { overflow-y: auto; }
+  #directory > * { flex-shrink: 0; }
+  #facility-list { flex: 1 1 auto; min-height: 68px; }
+  #layers { overflow-y: auto; }
+  #scene-caption { bottom: calc(156px + env(safe-area-inset-bottom)); max-width: 330px; }
+  #scene-caption p { font-size: 13px; }
+  .interior-top { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; padding-top: max(8px, env(safe-area-inset-top)); }
+  .interior-top > div { grid-column: span 2; min-width: 0; }
+  .interior-top h2 { max-width: none; margin: 2px 0; }
+  .interior-top .quality-control select { width: 104px; }
+  .interior-top .quality-control { grid-column: span 2; justify-self: start; }
+  .interior-top label:last-child { justify-self: end; }
+  #rooms { top: calc(125px + env(safe-area-inset-top)); }
+  #room-list button { flex: 0 0 155px; }
+  #touch-controls button { margin: 2px; }
+}
+@media (max-height: 540px) and (max-width: 950px) {
+  #scene-caption, #hint, #walk-help { display: none; }
+  #directory, #detail, #layers { top: 64px; bottom: 8px; max-height: none; width: min(340px, 70vw); left: auto; right: 8px; overflow-y: auto; }
+  #directory { left: 8px; right: auto; }
+  #toolbar { bottom: 5px; }
+  body.sheet-open #toolbar { visibility: hidden; }
+  .interior-top { display: flex; flex-wrap: nowrap; align-items: center; }
+  .interior-top > div { min-width: 0; }
+  #rooms { top: 66px; left: 8px; right: auto; width: min(270px, 43vw); max-height: calc(100dvh - 76px); }
+}
+
+.touch-guide { display: none; }
+@media (pointer: coarse) {
+  .keyboard-guide { display: none; }
+  .touch-guide { display: inline; }
+}

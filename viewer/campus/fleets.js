@@ -139,7 +139,7 @@ function shuttleDefs(){
  return cached('shuttle',()=>{
   const k=new Kit(),L=5.6,W=2.2,a=1.85,wr=.42,belt=1.2;
   const lower=[[L/2,belt,.12],[L/2,.44,.24],[L/2-.34,.25,.14]];arch(lower,a,wr,.5,.25);arch(lower,-a,wr,.5,.25);lower.push([-L/2+.34,.25,.14],[-L/2,.44,.24],[-L/2,belt,.12]);
-  k.add(M.paint,sideExtrude(lower,W,.09));
+  k.add(M.paint,sideExtrude(lower,W,.035));
   k.add(M.glass,sideExtrude([[L/2-.03,belt-.04,0],[L/2-.14,2.3,.36],[-L/2+.14,2.3,.36],[-L/2+.03,belt-.04,0]],W-.07,.05));
   k.add(M.paint,sideExtrude([[L/2-.11,2.2,0],[L/2-.2,2.43,.16],[-L/2+.2,2.43,.16],[-L/2+.11,2.2,0]],W-.02,.07));
   // Corner pillars, black B-pillar door frames and flush panel gaps.
@@ -160,6 +160,24 @@ function shuttleDefs(){
    k.box(M.trim,W*.94,.12,.08,[0,.33,sz*(L/2-.02)],.04);
    k.box(M.status,.5,.035,.02,[0,2.28,sz*(L/2-.2)]);
   }
+  // The split door has a recessed threshold, a flush reader and two grab rails.
+  for(const side of [-1,1]){
+   const skin=side*(W/2+.018);
+   k.box(M.trim,.09,.12,1.56,[skin,.27,0],.015);
+   for(const z of [-.21,.21]){
+    k.box(M.trim,.035,.26,.055,[skin,.97,z],.01);
+    k.box(M.gold,.04,.17,.018,[skin+side*.017,.97,z]);
+   }
+   k.box(M.sensor,.04,.17,.13,[skin,1.36,.38],.012);
+   k.box(M.status,.018,.015,.08,[skin+side*.027,1.41,.38]);
+  }
+  // Two low-profile condenser cassettes are legible even from the aerial view.
+  for(const z of [-1.18,1.18]){
+   k.box(M.paint,1.28,.17,1.42,[0,2.50,z],.07);
+   k.box(M.trim,.96,.03,1.13,[0,2.595,z],.012);
+   for(let slat=-3;slat<=3;slat++)
+    k.box(M.alu,.94,.032,.045,[0,2.617,z+slat*.137],0,[-.19,0,0]);
+  }
   k.box(M.trim,W-.3,.12,2*a-1.1,[0,.3,0]);
   for(const sx of [-1,1])for(const sz of [-1,1]){k.cyl(M.trim,.1,.11,.05,[sx*(W/2-.25),2.47,sz*(L/2-.4)]);k.cyl(M.sensor,.085,.085,.12,[sx*(W/2-.25),2.55,sz*(L/2-.4)],undefined,24);}
   k.box(M.trim,.95,.1,.46,[0,2.47,0],.04);k.cyl(M.sensor,.13,.13,.14,[0,2.58,0],undefined,24);
@@ -171,7 +189,7 @@ function freightDefs(){
  return cached('freight',()=>{
   const k=new Kit(),L=8.4,W=2.45,wr=.5,af=L/2-1.35,ar=-L/2+1.7,cabBack=L/2-2.15;
   const cab=[[L/2,1.3,.14],[L/2,.5,.22],[L/2-.35,.36,.12]];arch(cab,af,wr,.6,.36);cab.push([cabBack,.36,0],[cabBack,2.78,0],[L/2-1.05,2.78,.35],[L/2-.14,1.62,.22]);
-  k.add(M.cabPaint,sideExtrude(cab,W,.09));
+  k.add(M.cabPaint,sideExtrude(cab,W,.035));
   k.add(M.cabPaint,sideExtrude([[L/2-1.0,2.7,0],[cabBack-.05,2.7,0],[cabBack-.05,3.42,0],[L/2-1.55,3.34,.4]],W-.24,.08));
   const s=Math.atan2(1.16,.91);k.box(M.glass,W-.36,1.36,.05,[0,2.22,L/2-.6],.03,[-(Math.PI/2-s),0,0]);
   for(const sx of [-1,1]){
@@ -196,6 +214,15 @@ function freightDefs(){
   for(let y=1.25;y<3.45;y+=.19)k.box(M.alu,W-.22,.018,.012,[0,y,-L/2-.006]);
   k.box(M.alu,W-.16,.05,.03,[0,1.16,-L/2-.01]);
   for(const sx of [-1,1]){k.box(M.tail,.1,.34,.03,[sx*(W/2-.12),1.0,-L/2-.02],.02);k.box(M.amber,.1,.1,.03,[sx*(W/2-.12),.76,-L/2-.02],.02);}
+  // Rear lift gate in its transit position, with folded arms and traction ribs.
+  k.box(M.alu,W*.76,.51,.075,[0,.91,-L/2-.065],.028);
+  for(const side of [-1,1]){
+   k.box(M.trim,.085,.38,.09,[side*W*.28,.83,-L/2-.12],.016,[0,0,side*.18]);
+   k.box(M.amber,.19,.035,.025,[side*W*.32,1.09,-L/2-.116]);
+   k.box(M.alu,.055,.08,.44,[side*(W/2+.025),.65,af-.75]);
+  }
+  for(let rib=-4;rib<=4;rib++)
+   k.box(M.trim,.026,.29,.012,[rib*.12,.92,-L/2-.11]);
   k.box(M.trim,W*.96,.16,.14,[0,.62,-L/2+.02],.04);
   k.box(M.trim,W-.95,.28,L-1.1,[0,.72,-.3]);
   k.box(M.sensor,W*.56,.46,.04,[0,.82,L/2+.01],.04);
@@ -241,8 +268,31 @@ function droneBodyDefs(cargo){
   k.box(M.carbon,.44*s,.06*s,.55*s,[0,.15*s,-.05],.03);
   k.cyl(M.droneShell,.09,.1,.05,[0,.2*s,-.25*s],undefined,20);
   k.box(M.carbon,.34*s,.12*s,.52*s,[0,-.15*s,-.05],.04);
-  if(!cargo){k.box(M.carbon,.06,.12,.06,[0,-.16,.38]);k.sphere(M.carbon,.11,[0,-.27,.4],[1,1,1],20);k.cyl(M.sensor,.055,.055,.04,[0,-.27,.5],[Math.PI/2,0,0],20);}
-  else{k.sphere(M.sensor,.07,[0,-.12,.62],[1,.7,1],16);}
+  // Raised shoulders protect the battery tray and give the two classes
+  // distinct profiles from the roof camera as well as from ground level.
+  for(const side of [-1,1]){
+   const shoulder=cargo?M.carbon:M.droneShell;
+   k.add(shoulder,sideExtrude([[-.56*s,.025,0],[-.43*s,.18,.06],
+    [.09*s,.19,.05],[.45*s,.045,.035],[.3*s,-.055,.04],[-.4*s,-.07,.025]],.15*s,.024),
+    [side*.27*s,0,0]);
+   for(let vent=0;vent<4;vent++)
+    k.box(M.carbon,.018,.052,.027,[side*.349*s,.057,-.28*s+vent*.056],0,[.3,0,0]);
+  }
+  if(cargo){
+   k.sphere(M.sensor,.07,[0,-.12,.62],[1,.7,1],16);
+   // A reusable four-corner lifting cradle carries the parcel under the airframe.
+   for(const side of [-1,1]){
+    for(const end of [-1,1]){
+     k.box(M.alu,.045,.69,.045,[side*.495,-.67,end*.385]);
+     k.box(M.alu,.15,.082,.12,[side*.46,-1.025,end*.36],.016);
+    }
+    k.box(M.carbon,1.02,.05,.065,[0,-1.048,side*.325]);
+    k.box(M.alu,.065,.05,.80,[side*.48,-1.048,0]);
+   }
+  }else{
+   for(const side of [-1,1])
+    k.box(M.carbon,.038,.14,.045,[side*.134,-.17,.30],.009);
+  }
   const legY=cargo?-1.2:-.55,legX=cargo?.62:.3;
   for(const sx of [-1,1]){
    for(const sz of [-1,1])k.capsule(M.carbon,.022,Math.abs(legY)-.12,[sx*legX*.92,(legY-.1)/2,sz*.28*s],[0,0,sx*.08]);
@@ -256,9 +306,31 @@ function droneBodyDefs(cargo){
   return k.build();
  });
 }
+function surveyGimbal(){
+ const pivot=new T.Group();
+ pivot.name='stabilized survey camera';
+ pivot.position.set(0,-.245,.30);
+ const defs=cached('survey optics',()=>{
+  const kit=new Kit();
+  kit.sphere(M.carbon,.13,[0,0,0],[1,.89,1],18);
+  kit.box(M.droneShell,.19,.106,.052,[0,-.01,.093],.025);
+  for(const side of [-1,1]){
+   kit.cyl(M.carbon,.038,.04,.044,[side*.05,-.01,.122],[Math.PI/2,0,0],16);
+   kit.sphere(M.sensor,.028,[side*.05,-.01,.147],[1,1,.34],14);
+  }
+  return kit.build();
+ });
+ pivot.add(...meshesFrom(defs,'stereo optics'));
+ return pivot;
+}
 function drone(cargo=false){
  const root=new T.Group();root.name=cargo?'cargo-drone':'survey-drone';root.rotation.order='YXZ';
  for(const m of meshesFrom(droneBodyDefs(cargo),'airframe'))root.add(m);
+ if(!cargo){
+  const gimbal=surveyGimbal();
+  root.add(gimbal);
+  root.userData.gimbal=gimbal;
+ }
  const blades=[],span=cargo?1.25:.9,rr=cargo?.62:.46;
  // Front pair first so nav lights sit on the correct side: +x is port (left).
  for(const [x,z] of [[1,1],[-1,1],[-1,-1],[1,-1]])blades.push(rotor(root,x*span,z*span,rr));
@@ -295,6 +367,12 @@ function personParts(style){
   };
  });
 }
+// Radius stations follow the silhouette of the actuator underneath. The
+// shell flares at bearing housings and narrows where the joints articulate.
+function actuatorShell(kit,stations,depth,offset=0){
+ const profile=stations.map(([y,radius])=>new T.Vector2(radius,y));
+ kit.add(M.androidShell,new T.LatheGeometry(profile,18),[0,0,offset],[0,0,0],[1,1,depth]);
+}
 function androidParts(){
  return cached('android-parts',()=>{
   const part=fn=>{const k=new Kit();fn(k);return k.build();};
@@ -303,16 +381,67 @@ function androidParts(){
    pelvis:part(k=>{k.box(M.androidJoint,.3,.16,.19,[0,.02,0],.06);k.box(M.androidShell,.34,.1,.21,[0,.06,0],.045);}),
    torso:part(k=>{k.cyl(M.androidJoint,.11,.12,.16,[0,.06,0],undefined,20);for(const y of [.02,.07,.12])k.add(M.androidJoint,new T.TorusGeometry(.117,.01,6,24),[0,y,0],[Math.PI/2,0,0]);
     k.add(M.androidShell,new T.LatheGeometry(chestProfile,24),[0,0,0],[0,0,0],[1,1,.66]);k.box(M.androidJoint,.24,.28,.08,[0,.31,-.12],.03);k.box(M.status,.06,.018,.01,[0,.36,.118]);
-    for(const sx of [-1,1])k.sphere(M.androidShell,.07,[sx*.19,.44,0],[1,.8,1],16);}),
+    // Split breastplate, flexible centre reveal and dorsal cooling vanes.
+    for(const side of [-1,1]){
+     k.sphere(M.androidShell,.07,[side*.19,.44,0],[1,.8,1],16);
+     k.box(M.androidShell,.129,.13,.043,[side*.077,.335,.098],.019,[0,side*.22,-side*.12]);
+     k.box(M.androidJoint,.016,.079,.019,[side*.112,.345,.128],.006,[0,.17*side,-side*.12]);
+     for(let vent=0;vent<4;vent++)
+      k.box(M.androidJoint,.08,.011,.038,[side*.072,.24+vent*.029,-.148],0,[-.29,0,side*.10]);
+    }
+    k.box(M.status,.046,.012,.008,[0,.415,.089]);}),
    neck:part(k=>{k.cyl(M.androidJoint,.042,.05,.12,[0,.05,0],undefined,14);}),
-   head:part(k=>{k.sphere(M.androidShell,.112,[0,0,0],[.9,1.08,1],24);k.add(M.visor,new T.SphereGeometry(.114,24,12,Math.PI/2-.95,1.9,Math.PI*.36,Math.PI*.27),[0,0,.002],[0,0,0],[.9,1.08,1]);
-    for(const sx of [-1,1])k.cyl(M.androidJoint,.035,.035,.03,[sx*.1,0,-.01],[0,0,Math.PI/2],14);}),
-   upper:part(k=>{k.sphere(M.androidJoint,.055,[0,0,0],[1,1,1],14);k.capsule(M.androidShell,.05,.17,[0,-.15,0]);}),
-   fore:part(k=>{k.sphere(M.androidJoint,.045,[0,0,0],[1,1,1],12);k.capsule(M.androidShell,.043,.15,[0,-.13,0]);k.cyl(M.androidJoint,.034,.034,.03,[0,-.245,0],undefined,12);}),
-   hand:part(k=>{k.box(M.androidJoint,.07,.09,.03,[0,-.05,0],.012);for(let i=0;i<4;i++)k.capsule(M.androidJoint,.009,.06,[-.027+i*.018,-.12,.004]);k.capsule(M.androidJoint,.01,.04,[.042,-.05,.015],[0,0,.5]);}),
-   thigh:part(k=>{k.sphere(M.androidJoint,.068,[0,0,0],[1,1,1],14);k.capsule(M.androidShell,.07,.27,[0,-.22,0]);}),
-   shin:part(k=>{k.sphere(M.androidJoint,.058,[0,0,0],[1,1,1],14);k.capsule(M.androidShell,.056,.27,[0,-.215,.01]);k.capsule(M.androidJoint,.028,.22,[0,-.2,-.05]);}),
-   foot:part(k=>{k.box(M.androidShell,.1,.07,.24,[0,-.045,.05],.03);k.box(M.rubber,.104,.016,.25,[0,-.078,.05],.006);}),
+   head:part(k=>{
+    k.sphere(M.androidShell,.112,[0,0,0],[.9,1.08,1],24);
+    k.add(M.visor,new T.SphereGeometry(.114,24,12,Math.PI/2-.95,1.9,Math.PI*.36,Math.PI*.27),
+     [0,0,.002],[0,0,0],[.9,1.08,1]);
+    for(const side of [-1,1]){
+     k.cyl(M.androidJoint,.035,.035,.03,[side*.1,0,-.01],[0,0,Math.PI/2],14);
+     k.box(M.androidShell,.034,.067,.055,[side*.084,-.043,.032],.012,[.25,0,side*.19]);
+     k.sphere(M.status,.009,[side*.041,.016,.107],[1,.74,.53],10);
+    }
+    k.box(M.androidJoint,.043,.016,.014,[0,-.061,.093],.004);
+   }),
+   upper:part(k=>{
+    k.sphere(M.androidJoint,.055,[0,0,0],[1,1,1],14);
+    actuatorShell(k,[[-.26,.023],[-.235,.038],[-.165,.051],[-.084,.058],[-.045,.042],[-.034,.025]],.90);
+    k.capsule(M.androidJoint,.015,.18,[0,-.15,-.04],[-.08,0,0]);
+   }),
+   fore:part(k=>{
+    k.cyl(M.androidJoint,.043,.043,.085,[0,0,0],[0,0,Math.PI/2],16);
+    actuatorShell(k,[[-.237,.024],[-.214,.033],[-.127,.049],[-.068,.055],[-.042,.044],[-.028,.02]],.84,.007);
+    k.box(M.androidJoint,.028,.155,.022,[0,-.135,-.033],.008);
+    k.cyl(M.androidJoint,.033,.033,.035,[0,-.244,0],undefined,12);
+   }),
+   hand:part(k=>{
+    k.box(M.androidJoint,.07,.086,.034,[0,-.05,0],.012);
+    k.box(M.androidShell,.057,.052,.013,[0,-.053,-.018],.005);
+    for(let digit=0;digit<4;digit++){
+     const x=-.026+digit*.017, length=[.042,.051,.048,.036][digit];
+     k.capsule(M.androidJoint,.0075,length,[x,-.099,.005],[-.22,0,0]);
+     k.capsule(M.androidJoint,.0065,.018,[x,-.117-length*.35,.018],[-.68,0,0]);
+    }
+    k.capsule(M.androidJoint,.01,.04,[.042,-.055,.015],[0,0,.48]);
+   }),
+   thigh:part(k=>{
+    k.sphere(M.androidJoint,.068,[0,0,0],[1,1,1],14);
+    actuatorShell(k,[[-.386,.033],[-.361,.053],[-.276,.071],[-.153,.086],[-.077,.083],[-.051,.049]],.88,.007);
+    for(const side of [-1,1])
+     k.capsule(M.androidJoint,.018,.25,[side*.047,-.22,-.049],[.04,0,side*.06]);
+   }),
+   shin:part(k=>{
+    k.cyl(M.androidJoint,.056,.056,.102,[0,0,0],[0,0,Math.PI/2],18);
+    k.sphere(M.androidShell,.055,[0,-.024,.043],[.82,1.2,.54],14);
+    actuatorShell(k,[[-.366,.028],[-.33,.035],[-.213,.048],[-.115,.064],[-.071,.058],[-.045,.032]],.85,.007);
+    k.capsule(M.androidJoint,.025,.23,[0,-.204,-.048],[.07,0,0]);
+    k.cyl(M.androidJoint,.020,.022,.09,[0,-.373,-.009],[-.17,0,0],12);
+   }),
+   foot:part(k=>{
+    k.cyl(M.androidJoint,.035,.035,.077,[0,0,0],[0,0,Math.PI/2],14);
+    k.box(M.androidShell,.103,.068,.22,[0,-.043,.046],.028,[-.04,0,0]);
+    k.box(M.rubber,.109,.019,.25,[0,-.077,.05],.007);
+    k.box(M.androidShell,.099,.033,.079,[0,-.058,.132],.012);
+   }),
   };
  });
 }
@@ -333,6 +462,7 @@ function humanoid(kind,style={}){
   const arm=new T.Group();arm.position.set(side*BODY.shoulderHalf,BODY.shoulderY,0);torso.add(arm);attach(arm,P.upper,'upper arm',shirt);
   const elbow=new T.Group();elbow.position.y=-BODY.upper;arm.add(elbow);attach(elbow,P.fore,'forearm',style.shortSleeve?skin:shirt);
   const wrist=new T.Group();wrist.position.y=-BODY.fore;elbow.add(wrist);attach(wrist,P.hand,'hand',skin);
+  if(android && side===1)wrist.rotation.y=Math.PI; // turn both thumbs inward
   rig.arms.push({arm,elbow,wrist,side});
   const thigh=new T.Group();thigh.position.set(side*BODY.hipHalf,0,0);body.add(thigh);attach(thigh,P.thigh,'thigh',pants);
   const shin=new T.Group();shin.position.y=-BODY.thigh;thigh.add(shin);attach(shin,P.shin,'shin',pants);
@@ -498,6 +628,7 @@ export function createFleets(roads){
  if(instancer.meshes[0])instancer.meshes[0].onBeforeRender=(r,s,camera)=>{if(camera.isPerspectiveCamera){eye.setFromMatrixPosition(camera.matrixWorld);eyeKnown=true;}};
 
  const pos=new T.Vector3(),dir=new T.Vector3(),lastEye=new T.Vector3(Infinity,0,0);let lastT=NaN,lastKnown=false;
+ const surveyAim=new T.Euler(),surveyOrientation=new T.Quaternion();
  function pose(a,t){
   const o=a.object;
   if(a.standing){const st=a.standing;o.position.set(st.x,st.y,st.z);o.rotation.set(0,st.yaw,0);
@@ -512,6 +643,13 @@ export function createFleets(roads){
    const δ=6,ω=wrapAngle(a.route.yaw(s+δ)-a.route.yaw(s-δ))/(2*δ)*a.speed;
    const bank=T.MathUtils.clamp(Math.atan(a.speed*ω/9.81),-.42,.42);
    o.position.y+=Math.sin(t*.9+a.flight)*.35;o.rotation.set(.07+Math.sin(t*.6+a.flight)*.012,yaw,-bank);
+   if(o.userData.gimbal){
+    // Invert body attitude before applying the camera's inspection sweep.
+    const gimbal=o.userData.gimbal;
+    gimbal.quaternion.copy(o.quaternion).invert();
+    surveyAim.set(.20+.06*Math.cos(t*.42+a.flight),yaw+.28*Math.sin(t*.37+a.flight),0,'YXZ');
+    gimbal.quaternion.multiply(surveyOrientation.setFromEuler(surveyAim));
+   }
    o.rotorBlades.forEach((blade,i)=>{blade.rotation.y=t*(58+i*3.7)*(i%2?1:-1);});
    o.userData.strobe.userData.hidden=((t+a.flight*.137)%1.2)>.08;
   }

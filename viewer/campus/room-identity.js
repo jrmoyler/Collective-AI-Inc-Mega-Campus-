@@ -1,3 +1,6 @@
+import {Box3, Vector3} from 'three';
+import {fitCountertopExhibit} from './room-exhibits.js';
+
 // Deterministic room authorship. Every one of the 444 scheduled rooms receives
 // a materially and spatially distinct composition derived from its actual program,
 // facility and floor. This is not ordinal furniture scattering: semantics select
@@ -38,15 +41,67 @@ export function roomIdentity(r,index=0){
  const offset=(unit(seed,12)-.5)*Math.max(.2,r.w*.18);
  return {key,seed,serial,kind,accent,secondary,metal,floorFinish,left,panelSpan,credenzaWidth,artifactScale,revealCount,offset,geometrySignature:[kind,accent,secondary,metal,left?1:0,panelSpan.toFixed(3),credenzaWidth.toFixed(3),artifactScale.toFixed(3),revealCount,offset.toFixed(3),serial].join('|')};
 }
-function storage(k,i,r){
- const back=r.d-.43,x=Math.max(-r.w*.24,Math.min(r.w*.24,i.offset));
- k.box(i.key+' authored credenza',i.secondary,x,.48,back,i.credenzaWidth,.88,.54,.035);
- for(let door=0;door<3;door++){
-  const xx=x-i.credenzaWidth*.33+door*i.credenzaWidth*.33;
-  k.box(i.key+' credenza front',i.accent,xx,.50,back-.285,i.credenzaWidth*.29,.72,.035,.008);
-  k.box(i.key+' credenza pull',i.metal,xx,.50,back-.31,.12,.015,.018,.004);
+// Fit the cabinet against a wall with enough clear floor to approach it.
+// Existing room equipment is already in room-local coordinates at this point.
+function wallPosition(k, identity, room) {
+ const boxes=[];
+ for(const mesh of k.parts){
+  if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();
+  mesh.updateMatrix();
+  const box=mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrix);
+  if(box.max.y>.08 && box.min.y<1.82)boxes.push(box);
  }
- k.box(i.key+' counter',i.metal,x,.95,back,i.credenzaWidth+.10,.055,.60,.018);
+ const width=identity.credenzaWidth+.10;
+ const offsets=[0,-.22,.22,-.36,.36];
+ const candidates=[];
+ for(const t of offsets){
+  const x=t*room.w;
+  if(Math.abs(x)+width/2+.20<room.w/2)candidates.push([x,room.d-.53,0]);
+ }
+ for(const side of [identity.left?-1:1,identity.left?1:-1]){
+  for(const t of [.75,.49,.32,.88]){
+   const z=room.d*t;
+   if(z-width/2>1.75 && z+width/2<room.d-.20)
+    candidates.push([side*(room.w/2-.53),z,side*Math.PI/2]);
+  }
+ }
+ const envelope=new Box3();
+ for(const [x,z,angle] of candidates){
+  const side=Math.sign(angle);
+  // 0.55 m of clear floor in front of the door pulls and case.
+  if(side){
+   envelope.min.set(x-(side>0?.87:.32),.09,z-width/2-.06);
+   envelope.max.set(x+(side>0?.32:.87),1.82,z+width/2+.06);
+  }else{
+   envelope.min.set(x-width/2-.06,.09,z-.87);
+   envelope.max.set(x+width/2+.06,1.82,z+.32);
+  }
+  if(!boxes.some(box=>envelope.intersectsBox(box)))return {x,z,angle};
+ }
+ return null;
+}
+
+const up=new Vector3(0,1,0);
+function storage(k,i,r){
+ const placement=wallPosition(k,i,r);
+ if(!placement)return false;
+ const start=k.parts.length, width=i.credenzaWidth;
+ k.box('recessed toe kick','graphite',0,.09,.025,width-.12,.11,.46,.004);
+ k.box(i.key+' authored credenza',i.secondary,0,.54,0,width,.80,.54,.014);
+ for(let door=0;door<3;door++){
+  const xx=(door-1)*width/3;
+  k.box(i.key+' credenza front',i.accent,xx,.54,-.28,width/3-.014,.765,.026,.004);
+  k.box(i.key+' recessed pull',i.metal,xx,.833,-.300,width*.19,.018,.017,.002);
+ }
+ k.box(i.key+' counter',i.metal,0,.95,0,width+.10,.055,.60,.012);
+ fitCountertopExhibit(k,i,0,0);
+ for(const part of k.parts.slice(start)){
+  part.position.applyAxisAngle(up,placement.angle);
+  part.rotateOnWorldAxis(up,placement.angle);
+  part.position.x+=placement.x;
+  part.position.z+=placement.z;
+ }
+ return true;
 }
 function authoredWall(k,i,r){
  const x=(i.left?-1:1)*(r.w/2-.10),z=Math.min(r.d-.85,Math.max(1.1,r.d*.62));
@@ -57,55 +112,25 @@ function authoredWall(k,i,r){
  }
  k.box(i.key+' identity wash', 'warm',x-(i.left?-.055:.055),3.12,z,.018,.025,i.panelSpan*.82,.002);
 }
-function artifact(k,i,r){
- const x=-i.offset*.55,z=Math.min(r.d-.92,Math.max(1.4,r.d*.55)),s=i.artifactScale;
- if(i.kind==='care'){
-  k.box(i.key+' clinical casework','porcelain',x,.56,z,1.25*s,1.05,.58,.035);
-  k.box(i.key+' handwash basin','stone',x,.91,z-.17,.72*s,.12,.38,.04);
-  k.cylinder(i.key+' mixer tap','steel',x+.24*s,1.08,z-.08,.025,.30,.018);
-  k.box(i.key+' care supply rail','sage',x,1.48,z+.27,1.15*s,.10,.12,.018);
- }else if(i.kind==='living-systems'){
-  k.box(i.key+' specimen island','terrazzo',x,.76,z,1.55*s,.10,.82,.04);
-  for(let q=0;q<3;q++){const xx=x+(q-1)*.42*s;k.cylinder(i.key+' living sample','glass',xx,1.07,z,.11,.46,.09);k.cylinder(i.key+' sample collar','brass',xx,.86,z,.13,.04);}
-  k.box(i.key+' field chart','sage',x,1.55,z+.39,1.15*s,.58,.025,.01);
- }else if(i.kind==='trust'){
-  k.box(i.key+' secure evidence cabinet','slate',x,.95,z,1.28*s,1.90,.56,.025);
-  for(let q=0;q<4;q++){const yy=.35+q*.38;k.box(i.key+' evidence drawer','graphite',x,yy,z-.30,1.12*s,.30,.025,.006);k.box(i.key+' drawer index','brass',x+.40*s,yy,z-.318,.12,.05,.008,.002);}
- }else if(i.kind==='media'){
-  k.box(i.key+' media console','walnut',x,.72,z,1.55*s,.12,.72,.03);
-  for(const side of [-1,1]){k.box(i.key+' nearfield speaker','graphite',x+side*.62*s,1.26,z+.10,.23,.45,.22,.025);k.cylinder(i.key+' speaker cone','rubber',x+side*.62*s,1.26,z-.02,.075,.02,.075,Math.PI/2);}
-  k.box(i.key+' reference display','display',x,1.54,z+.32,1.02*s,.56,.018,.006);
- }else if(i.kind==='making'){
-  k.box(i.key+' fabrication bench','steel',x,.80,z,1.75*s,.12,.86,.025);
-  for(const side of [-1,1])k.box(i.key+' fabrication leg','graphite',x+side*.68*s,.39,z,.08,.76,.66,.012);
-  k.box(i.key+' tool shadowboard','slate',x,1.66,z+.40,1.38*s,.78,.035,.012);
-  for(let q=0;q<5;q++)k.bar(i.key+' hand tool','brass',[x-.52*s+q*.26*s,1.42,z+.37],[x-.46*s+q*.26*s,1.78,z+.37],.012);
- }else if(i.kind==='operations'){
-  k.box(i.key+' operations console','graphite',x,.75,z,1.68*s,.12,.72,.025);
-  for(let q=0;q<3;q++)k.box(i.key+' operations display','display',x+(q-1)*.46*s,1.25,z+.30,.40*s,.42,.018,.008);
-  k.box(i.key+' status light rail','blue',x,1.72,z+.34,1.42*s,.035,.026,.006);
- }else if(i.kind==='learning'){
-  k.box(i.key+' collection table','oak',x,.76,z,1.60*s,.10,.88,.03);
-  for(const side of [-1,1])k.box(i.key+' collection trestle','graphite',x+side*.60*s,.37,z,.08,.72,.66,.012);
-  for(let q=0;q<3;q++){k.box(i.key+' study folio','book',x-.46*s+q*.46*s,.84,z-.05,.28*s,.028,.38,.006,(q-1)*.10);}
- }else if(i.kind==='hospitality'){
-  k.cylinder(i.key+' hospitality table','walnut',x,.54,z,.62*s,.06);
-  k.cylinder(i.key+' hospitality pedestal','brass',x,.27,z,.09,.50);
-  for(const side of [-1,1])k.box(i.key+' lounge ottoman','linen',x+side*.82*s,.30,z,.52,.28,.52,.08);
-  k.cylinder(i.key+' table vessel','clay',x,.70,z,.11,.24,.09);
- }else if(i.kind==='mobility'){
-  k.box(i.key+' route table','terrazzo',x,.78,z,1.62*s,.09,.88,.035);
-  k.box(i.key+' route glass','glass',x,.84,z,1.44*s,.022,.70,.004);
-  for(let q=0;q<4;q++)k.bar(i.key+' route trace','brass',[x-.55*s+q*.34*s,.87,z-.18],[x-.38*s+q*.30*s,.87,z+.20],.008);
- }else{
-  k.box(i.key+' collaboration console','walnut',x,.76,z,1.55*s,.10,.78,.03);
-  k.box(i.key+' pin board','linen',x,1.62,z+.38,1.30*s,.70,.035,.01);
-  for(let q=0;q<4;q++)k.box(i.key+' working note','porcelain',x-.43*s+q*.28*s,1.60+(q%2)*.11,z+.356,.19,.16,.006,.002,(q-1.5)*.04);
+// On a crowded floor, show the room's finish samples flush to the feature
+// panel. The three real materials can be inspected without consuming aisle space.
+function finishSamples(k,identity,room){
+ const side=identity.left?-1:1, x=side*(room.w/2-.151);
+ const z=Math.min(room.d-.85,Math.max(1.1,room.d*.62));
+ const width=Math.min(.32,identity.panelSpan*.19);
+ k.box('sample mounting rail',identity.metal,x,2.45,z,.040,.34,width*3.7,.006);
+ for(const [i,finish] of [identity.floorFinish,identity.secondary,identity.accent].entries()){
+  const dz=z+(i-1)*width*1.13,face=x-side*.032;
+  k.box('finish sample',finish,face,2.47,dz,.027,.23,width,.003);
+  k.box('engraved sample index',identity.metal,face-side*.015,2.37,dz,.005,.018,width*.41,0);
  }
 }
+
 export function furnishRoomIdentity(k,r,index=0){
  const identity=roomIdentity(r,index);
- authoredWall(k,identity,r);storage(k,identity,r);artifact(k,identity,r);
+ const installed=storage(k,identity,r);
+ authoredWall(k,identity,r);
+ if(!installed)finishSamples(k,identity,r);
  // A unique, physically visible signature strip records the room's authored
  // composition in geometry rather than metadata. Width/depth vary per room.
  const z=Math.min(r.d-.28,Math.max(.75,r.d*.31));

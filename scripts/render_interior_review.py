@@ -37,8 +37,19 @@ s.world.use_nodes=True;s.world.node_tree.nodes['Background'].inputs[0].default_v
 s.view_settings.view_transform='AgX';s.view_settings.look='AgX - Medium High Contrast'
 for r in layout['rooms']:
  bpy.ops.object.light_add(type='AREA',location=(r['x'],-r['z'],r.get('height',3.9)-.30));o=bpy.context.object;o.data.energy=240*(r.get('height',3.9)/3.9)**2;o.data.shape='RECTANGLE';o.data.size=r['w']*.6;o.data.size_y=r['d']*.65;o.data.color=(1,.87,.66)
-for x in range(int(-layout['w']/2)+2,int(layout['w']/2),5):
- bpy.ops.object.light_add(type='AREA',location=(x,0,3.65));o=bpy.context.object;o.data.energy=90;o.data.size=2;o.data.color=(1,.88,.7)
+# Follow each gallery below its ceiling, including circulation branches which
+# neither lie on the world X axis nor pass through the building origin.
+for passage in layout['circulation']:
+ horizontal=passage['axis']=='H'
+ length=passage['w'] if horizontal else passage['d']
+ count=max(1,math.ceil(length/5.6))
+ for n in range(count):
+  along=((n+.5)/count-.5)*length
+  x=passage['x']+(along if horizontal else 0)
+  z=passage['z']+(0 if horizontal else along)
+  bpy.ops.object.light_add(type='AREA',location=(x,-z,3.40))
+  light=bpy.context.object
+  light.data.energy=160;light.data.size=.65;light.data.color=(1,.88,.74)
 bpy.ops.object.light_add(type='SUN');bpy.context.object.rotation_euler=(.6,-.5,.5);bpy.context.object.data.energy=1.3;bpy.context.object.data.angle=.15
 bpy.ops.object.camera_add();cam=bpy.context.object;cam.data.lens=22;s.camera=cam
 views=[('corridor',(layout['entry'][0],-layout['entry'][1],1.67),(layout['circulation'][0]['x'],-layout['circulation'][0]['z'],1.55))]

@@ -77,3 +77,37 @@ test('drones bank into turns and distant pedestrians are culled from the draw',(
  fleet.update(5,new T.Vector3(0,3000,0));const far=people.reduce((s,m)=>s+m.count,0);
  assert.ok(near>0&&far===0,'humanoids beyond LOD range are not submitted');
 });
+
+test('survey optics stay level while the airframe banks and the camera sweeps',()=>{
+ const fleet=createFleets([]);
+ const survey=fleet.root.children.find(o=>o.name==='survey-drone');
+ const cargo=fleet.root.children.find(o=>o.name==='cargo-drone');
+ assert.ok(survey.userData.gimbal);
+ assert.equal(cargo.userData.gimbal,undefined);
+ const orientation=new T.Quaternion(),angles=new T.Euler(0,0,0,'YXZ');
+ const headings=[];
+ for(const t of [0,2,5,8,13]){
+  fleet.update(t);
+  survey.userData.gimbal.getWorldQuaternion(orientation);
+  angles.setFromQuaternion(orientation,'YXZ');
+  assert.ok(Math.abs(angles.z)<1e-6,'optics counter airframe roll');
+  assert.ok(angles.x>=.139 && angles.x<=.261,'lens stays pitched toward the ground');
+  headings.push(Math.atan2(Math.sin(angles.y-survey.rotation.y),Math.cos(angles.y-survey.rotation.y)));
+ }
+ assert.ok(Math.max(...headings)-Math.min(...headings)>.28,'camera surveys independently of travel direction');
+});
+
+test('coachwork wheel arches clear both visible wheel hubs',()=>{
+ const fleet=createFleets([road()]);
+ const ray=new T.Raycaster();
+ for(const name of ['shuttle','freight']){
+  const vehicle=fleet.root.children.find(o=>o.name===name);
+  vehicle.updateMatrixWorld(true);
+  for(const wheel of vehicle.userData.wheels){
+   const {x,y,z}=wheel.position,side=Math.sign(x);
+   ray.set(new T.Vector3(side*3,y,z),new T.Vector3(-side,0,0));
+   const closest=ray.intersectObjects(vehicle.children,true)[0];
+   assert.equal(closest.object.name,'wheel',name+' side panel crosses a wheel hub');
+  }
+ }
+});

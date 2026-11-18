@@ -68,18 +68,42 @@ export function buildFloorLayout(f,level){
  return {w,d,core,corridor,rooms,circulation,entry,height:Math.max(...rooms.map(r=>r.height)),topology:PLANS[f.id][level],inferred:true};
 }
 
-// Project a free-walking corridor position onto its own passage before returning
-// to the root. A direct diagonal to the entrance would cut across room walls.
-export function routeToRoom(layout,position,index){
- const target=layout.rooms[index];if(!target)return [];
- const prior=layout.rooms.find(r=>Math.abs(position[0]-r.x)<r.w/2&&Math.abs(position[1]-r.z)<r.d/2);
- if(prior){
-  const aligned=Math.abs(Math.sin(prior.angle))>.5?[position[0],prior.doorZ]:[prior.doorX,position[1]];
-  return [aligned,...[...prior.route].reverse(),...target.route];
+// A guided visit follows the unique corridor-tree path between the two doors.
+// At a junction we can turn directly into the next branch, even if neither
+// room is served by the main arrival corridor.
+export function routeToRoom(layout, position, index) {
+ const target = layout.rooms[index];
+ if (!target) return [];
+ const contains = (box) => Math.abs(position[0] - box.x) < box.w / 2 &&
+                            Math.abs(position[1] - box.z) < box.d / 2;
+ const prior = layout.rooms.find(contains);
+ const align = (room) => Math.abs(Math.sin(room.angle)) > .5
+   ? [position[0], room.doorZ] : [room.doorX, position[1]];
+ if (prior === target) return [align(prior), target.arrival];
+
+ const corridors = layout.circulation;
+ const start = prior ? corridors[prior.parent] : corridors.find(contains);
+ if (!start) return target.route;
+ const points = prior
+   ? [align(prior), [prior.doorX, prior.doorZ], prior.approach]
+   : [start.axis === 'H' ? [position[0], start.z] : [start.x, position[1]]];
+ const ancestors = (passage) => {
+   const chain = [];
+   for (let c = passage; c; c = corridors[c.parent]) chain.push(c);
+   return chain;
+ };
+ const from = ancestors(start);
+ const to = ancestors(corridors[target.parent]);
+ const common = from.find(c => to.includes(c));
+ const path = [...from.slice(0, from.indexOf(common) + 1),
+               ...to.slice(0, to.indexOf(common)).reverse()];
+ for (let i = 1; i < path.length; i++) {
+   const a = path[i - 1], b = path[i];
+   points.push(a.axis === 'H' ? [b.x, a.z] : [a.x, b.z]);
  }
- let passage=layout.circulation.find(c=>Math.abs(position[0]-c.x)<=c.w/2&&Math.abs(position[1]-c.z)<=c.d/2);
- if(!passage)return [layout.entry,...target.route];
- const points=[passage.axis==='H'?[position[0],passage.z]:[passage.x,position[1]]];
- while(passage.parent!==null){const parent=layout.circulation[passage.parent];points.push(passage.axis==='H'?[parent.x,passage.z]:[passage.x,parent.z]);passage=parent;}
- points.push(layout.entry,...target.route);return points;
+ points.push(target.approach, [target.doorX, target.doorZ], target.arrival);
+ return points.filter(([x,z], i) => {
+   const previous = i ? points[i-1] : position;
+   return Math.hypot(x - previous[0], z - previous[1]) > 1e-6;
+ });
 }

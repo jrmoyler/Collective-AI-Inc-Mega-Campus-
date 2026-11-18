@@ -3,6 +3,7 @@ import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {botanicalMaterial,barkMaterial,speciesTemplates,CROWN_RATIO} from './botanical.js';
 import {Batch,materials,cylinder,ring,line,seeded,kineticRoadMaterial} from './geometry.js';
+import {addWaterfrontOverlook} from './waterfront.js';
 import {FACILITIES,SPIRES,LAKES,SITE} from './data.js';
 
 // Landscape owns its own physically based materials (ground, asphalt, pavers,
@@ -389,7 +390,15 @@ export function createLandscape(){
  }
  const insideLake=(x,z,margin=0)=>LAKES.some(([lx,lz,rx,rz],i)=>{const a=Math.atan2(-(z-lz)/rz,(x-lx)/rx),r=shoreRadius(i,a);return ((x-lx)/(rx*r+margin))**2+((z-lz)/(rz*r+margin))**2<1;});
  const channelClearance=(x,z)=>{let best=Infinity;for(const s of channelSamples)for(const p of s){const d=Math.hypot(x-p.x,z-p.z);if(d<best)best=d;}return best-3.6;};
- const lakeGeos=[],copingGeos=[],promenadeGeos=[];
+ const lakeGeos=[],copingGeos=[],promenadeGeos=[],overlooks=[];
+ for(const [i,[cx,cz]] of LAKES.entries()){
+  const site=addWaterfrontOverlook(b,i,shorePoint,(x,z)=>
+   roadClearance(x,z)>4 && channelClearance(x,z)>2 &&
+   Math.hypot(x-cx,z-cz)>5 &&
+   FACILITIES.every(f=>Math.abs(x-f.x)>f.w/2+5||Math.abs(z-f.z)>f.d/2+5)
+  );
+  overlooks.push(site);
+ }
  const K=9,SEG=128;
  for(const [lakeIndex] of LAKES.entries()){
   // Polar grid so depth can be shaded from shore to centre.
@@ -414,7 +423,14 @@ export function createLandscape(){
    shore.push({x,z,nx,nz,along});
   }
   const inlet=shore.map(p=>channelClearance(p.x,p.z)<1.2);
-  copingGeos.push(sweep(shore,[{o0:0,y0:.26,o1:0,y1:.56,face:'in'},{o0:0,y0:.56,o1:.9,y1:.56,face:'up'},{o0:.9,y0:.56,o1:.9,y1:.02,face:'out'}],{skip:i=>inlet[i]}));
+  const entry=overlooks[lakeIndex];
+  const copingGap=i=>{
+   if(inlet[i]||!entry)return inlet[i];
+   const p=shore[i],q=shore[i===shore.length-1?1:i+1],dx=q.x-p.x,dz=q.z-p.z;
+   const t=T.MathUtils.clamp(((entry.x-p.x)*dx+(entry.z-p.z)*dz)/(dx*dx+dz*dz),0,1);
+   return Math.hypot(entry.x-p.x-dx*t,entry.z-p.z-dz*t)<1.2;
+  };
+  copingGeos.push(sweep(shore,[{o0:0,y0:.26,o1:0,y1:.56,face:'in'},{o0:0,y0:.56,o1:.9,y1:.56,face:'up'},{o0:.9,y0:.56,o1:.9,y1:.02,face:'out'}],{skip:copingGap}));
   const promenadeBlocked=shore.map(p=>roadClearance(p.x+p.nx*2,p.z+p.nz*2)<4||FACILITIES.some(f=>Math.abs(p.x+p.nx*2-f.x)<f.w/2+1&&Math.abs(p.z+p.nz*2-f.z)<f.d/2+1));
   promenadeGeos.push(sweep(shore,[{o0:.9,y0:.1,o1:3.4,y1:.1,face:'up'},{o0:3.4,y0:.1,o1:3.4,y1:.02,face:'out'}],{skip:i=>promenadeBlocked[i]||inlet[i]}));
  }
@@ -626,6 +642,12 @@ export function createLandscape(){
    const start=random()*Math.PI*2,span=.25+random()*.45,isReed=k%2===0;
    for(let a=start;a<start+span;a+=isReed?.018:.03){
     const inset=isReed?1.2+random()*2.2:.3+random()*.7,[x,z]=shorePoint(lakeIndex,a,-inset);
+    const site=overlooks[lakeIndex];
+    if(site){
+     const dx=x-site.x,dz=z-site.z;
+     const side=dx*Math.cos(site.yaw)-dz*Math.sin(site.yaw),inward=dx*Math.sin(site.yaw)+dz*Math.cos(site.yaw);
+     if(Math.abs(side)<site.width/2+.5&&inward>-3.5&&inward<5+site.depth)continue;
+    }
     if(channelClearance(x,z)<3)continue;
     (isReed?reeds:rocks).push({x,z,s:isReed?.8+random()*.5:.35+random()*.55,rot:random()*6.283});
    }
@@ -644,15 +666,26 @@ export function createLandscape(){
   const n=lampEvery;
   for(let i=0;i<n;i++){
    const p=r.curve.getPoint(i/n),v=r.curve.getTangent(i/n);
-   for(const side of [-1,1]){const x=p.x-v.z*(r.width/2+4.2)*side,z=p.z+v.x*(r.width/2+4.2)*side;if(!insideLake(x,z,4.5)&&channelClearance(x,z)>1)lampPosts.push({x,z});}
+   for(const side of [-1,1]){const x=p.x-v.z*(r.width/2+4.2)*side,z=p.z+v.x*(r.width/2+4.2)*side;if(!insideLake(x,z,4.5)&&channelClearance(x,z)>1)lampPosts.push({x,z,yaw:Math.atan2(v.z*side,-v.x*side)});}
   }
  }
- const postMesh=new T.InstancedMesh(new T.BoxGeometry(.2,5,.2),materials.dark,lampPosts.length);
- const headMesh=new T.InstancedMesh(new T.BoxGeometry(1.15,.28,.9),materials.warm,lampPosts.length);
+ // A tapered shaft and swept outreach arm throw light over the carriageway.
+ // Join the cast housing and foundation to the shared shaft before instancing.
+ const postGeometry=mergeOrEmpty([
+  new T.CylinderGeometry(.105,.16,4.88,10).translate(0,2.52,0),
+  new T.CylinderGeometry(.22,.27,.17,10).translate(0,.085,0),
+  new T.TubeGeometry(new T.CatmullRomCurve3([
+   new T.Vector3(0,4.86,0),new T.Vector3(0,5.03,.16),new T.Vector3(0,5.12,.72),new T.Vector3(0,5.08,1.1)
+  ]),8,.072,6,false),
+  new T.CylinderGeometry(.28,.34,.13,12).scale(.8,1,1.9).translate(0,5.035,1.15),
+ ]);
+ const lensGeometry=new T.CylinderGeometry(.26,.22,.045,12).scale(.8,1,1.9).translate(0,4.95,1.15);
+ const postMesh=new T.InstancedMesh(postGeometry,materials.dark,lampPosts.length);
+ const headMesh=new T.InstancedMesh(lensGeometry,materials.warm,lampPosts.length);
  for(let i=0;i<lampPosts.length;i++){
   const l=lampPosts[i];
-  dummy.position.set(l.x,2.5,l.z);dummy.rotation.set(0,0,0);dummy.scale.set(1,1,1);dummy.updateMatrix();postMesh.setMatrixAt(i,dummy.matrix);
-  dummy.position.set(l.x,5.05,l.z);dummy.updateMatrix();headMesh.setMatrixAt(i,dummy.matrix);
+  dummy.position.set(l.x,0,l.z);dummy.rotation.set(0,l.yaw,0);dummy.scale.set(1,1,1);dummy.updateMatrix();
+  postMesh.setMatrixAt(i,dummy.matrix);headMesh.setMatrixAt(i,dummy.matrix);
  }
  postMesh.name='lamps';headMesh.name='lamp-heads';root.add(postMesh,headMesh);
 
@@ -661,7 +694,7 @@ export function createLandscape(){
 
  root.add(b.finish('roads-gardens-street-furniture'));
  return {
-  root,roads,kineticMats,
+  root,roads,kineticMats,overlooks,
   // Existing per-frame hook (main.js calls landscape.update(clock)).
   update(t){wind.value=t;waterUniforms.uTime.value=t;kineticMats.forEach(m=>m.uniforms.uTime.value=t);},
   treeCount:trees.length,shrubCount:shrubs.length,
@@ -682,6 +715,22 @@ export function createInfrastructure(){
   ring(b,'violet',x,50,z,5.2,.42);
   cylinder(b,'violet',x,64,z,.26,36,.08);
   ring(b,'kinetic',x,42,z,6.2,.28);
+  // A tapered mast collar carries each halo on four cantilevered brackets.
+  // Radial seams and a recessed service door give the plinth a human scale.
+  for(const elevation of [42,48,50]){
+   const radius=elevation===48?7.2:elevation===50?5.2:6.2;
+   cylinder(b,'steel',x,elevation-.45,z,1.55,.75,1.37,12);
+   for(let k=0;k<4;k++){
+    const phi=k*Math.PI/2+Math.PI/4, dx=Math.sin(phi),dz=Math.cos(phi);
+    line(b,'dark',[[x+dx,elevation-2.15,z+dz],[x+dx*radius,elevation-.3,z+dz*radius]],.14);
+   }
+  }
+  for(let k=0;k<16;k++){
+   const phi=k*Math.PI/8,dx=Math.sin(phi),dz=Math.cos(phi);
+   b.box('steel',x+dx*8.45,1.12,z+dz*8.45,.16,2.06,.17,phi);
+  }
+  b.box('dark',x,1.09,z+8.49,1.18,1.93,.12);
+  b.box('steel',x+.36,1.05,z+8.59,.05,.29,.08);
   nodes.push(new T.Vector3(x,48,z));
   for(let a=0;a<6.28;a+=Math.PI/3){
    const nx=x+Math.sin(a)*11,nz=z+Math.cos(a)*11;
@@ -710,7 +759,11 @@ export function createInfrastructure(){
   const x=Math.cos(a)*580*(SITE.width/SITE.depth);
   const z=Math.sin(a)*580;
   cylinder(b,'white',x,26,z,.8,52,.45);
-  const rotor=new T.Group();rotor.position.set(x,52,z);
+  // Keep the hub in front of the nacelle so blades clear the tower.
+  cylinder(b,'stone',x,.38,z,2.1,.76,1.95,16);
+  b.box('white',x,52,z-.4,2.1,1.85,4.5);
+  b.box('steel',x,52.98,z-1.4,1.4,.14,1.68);
+  const rotor=new T.Group();rotor.position.set(x,52,z+2.25);
   const airfoil=new T.Shape();airfoil.moveTo(-.42,.65);
   airfoil.bezierCurveTo(-1.3,3.2,-1.65,7.5,-.75,13);
   airfoil.bezierCurveTo(-.24,18.4,.04,22,.13,24);
