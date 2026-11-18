@@ -2,6 +2,7 @@
 import * as T from 'three';
 import {exteriorFinishes,setExteriorUV} from './exterior-finishes.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {architecturalGlass} from './arch-materials.js';
 
 function paint(size, fn){
  const data=new Uint8Array(size*size*4);let seed=22035;
@@ -114,6 +115,9 @@ for(const [name,finish,relief] of [
  m.bumpScale=relief;m.roughness=1;
 }
 materials.road.bumpMap=materials.road.map;materials.road.bumpScale=.006;
+// Curtain walls are dielectric float glass: Fresnel reflection added over the
+// transmitted background, never emissive (see arch-materials.js).
+architecturalGlass(materials.glazing);architecturalGlass(materials.blueGlass,{roughness:.05});
 
 const paneGeo=new T.PlaneGeometry(1,1),horizontalPaneGeo=new T.PlaneGeometry(1,1).rotateX(-Math.PI/2);
 const boxGeo=new T.BoxGeometry(1,1,1,1,1,1);const temp=new T.Object3D();

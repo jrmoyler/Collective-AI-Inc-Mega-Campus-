@@ -4,6 +4,7 @@ import {floorLayout} from './data.js';
 import {InteriorKit,furnishRoom,planter,server,robot} from './interior-kit.js';
 import {galleryBays,galleryFrontages,mountArrivalBoards,gallerySchedule,programWall,roomThreshold,sideWindow,signMount} from './interior-gallery.js';
 import {roomIdentity,furnishRoomIdentity} from './room-identity.js';
+import {slidingDoor,ceilingReveal,rearCove,slatWall} from './interior-joinery.js';
 // Bake oriented room vertices: Babylon and offline glTF consume the same buffers.
 function place(group,r){
  const matrix=new T.Matrix4().makeRotationY(r.angle);matrix.setPosition(r.doorX,0,r.doorZ);
@@ -78,6 +79,14 @@ export function createInteriorGeometry(f,level=0){
   k.box('door lintel','graphite',r.doorX,(h+2.96)/2,edge,door,h-2.96,.22,.015);
   for(const x of [dl,dr]){k.box('door jamb','graphite',x,1.48,edge,.085,2.96,.20,.007);k.box('door jamb brass reveal','brass',x,1.46,edge-side*.113,.012,2.90,.018,.003);}
   roomThreshold(k,source,gallery);
+  // Joinery: a parked sliding leaf, ceiling shadow gap, and for enclosed
+  // non-technical rooms a timber slat acoustic wall under a concealed cove.
+  slidingDoor(k,{dl,dr,right,height:h,solid:!!profile.privateRoom});
+  ceilingReveal(k,{w:r.w,d:r.d,h});
+  if(!glazed&&!profile.technical&&!/LED volume|Soundstage|Audio booths|Motion capture|Podcast/i.test(r.name)){
+   slatWall(k,{w:r.w,d:r.d,h},{timber:identity.accent==='walnut'?'walnut':'oak',backing:profile.privateRoom?'linen':'fabric'});
+   rearCove(k,{w:r.w,d:r.d,h});
+  }
   const mount=signMount(source);
   k.box('room identification plaque','graphite',mount.x,mount.y,-.169,mount.width+.035,mount.width/3.2+.035,.058,0);
   k.box('access reader','graphite',dr+.14,1.28,edge-side*.11,.085,.15,.03,.012);k.box('reader light','blue',dr+.14,1.3,edge-side*.131,.046,.055,.007,.002);
