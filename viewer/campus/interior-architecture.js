@@ -2,6 +2,7 @@ import * as T from 'three';
 import {furnishOccupants} from './room-occupants.js';
 import {floorLayout} from './data.js';
 import {InteriorKit,furnishRoom,planter,server,robot} from './interior-kit.js';
+import {galleryBays,gallerySchedule,programWall,roomThreshold,sideWindow,signMount} from './interior-gallery.js';
 import {roomIdentity,furnishRoomIdentity} from './room-identity.js';
 // Bake oriented room vertices: Babylon and offline glTF consume the same buffers.
 function place(group,r){
@@ -29,16 +30,19 @@ function populateHall(k,r,kind){
 export function createInteriorGeometry(f,level=0){
  const layout=floorLayout(f,level),root=new T.Group();root.name=`${f.key} floor ${level+1}`;
  const {w,d,core}=layout;
+ const gallery=gallerySchedule(f.id);
  for(const [i,source] of layout.rooms.entries()){
   const k=new InteriorKit('architecture room '+(i+1));
   const r={...source,x:0,z:source.localDepth/2,w:source.localWidth,d:source.localDepth,doorX:0};
   const identity=roomIdentity(r,i);
-  const corridor=0,door=source.doorWidth,partitionKeys=new Set();
+  const corridor=0,door=source.doorWidth;
   k.box('room acoustic ceiling','plaster',0,r.height+.04,r.z,r.w,.12,r.d,0);
   // A perimeter room receives daylight; an internal room has a solid back wall.
-  const bx=source.doorX+Math.sin(source.angle)*source.localDepth,bz=source.doorZ+Math.cos(source.angle)*source.localDepth;
+  const bz=source.doorZ+Math.cos(source.angle)*source.localDepth;
   const exterior=Math.abs(Math.abs(bz)-d/2)<.01;
-  const glazed=exterior&&!r.fitout.privateRoom&&!/LED volume|Soundstage|Audio booths|Motion capture|Podcast/i.test(r.name);
+  const acceptsDaylight=!r.fitout.privateRoom&&!/LED volume|Soundstage|Audio booths|Motion capture|Podcast/i.test(r.name);
+  const glazed=exterior&&acceptsDaylight;
+  let daylightDirection=glazed?[-Math.sin(source.angle),-Math.cos(source.angle)]:null;
   if(glazed){
    k.box('perimeter sill','stone',0,.32,r.d,r.w,.64,.16,.01);
    k.box('clear exterior glazing','glass',0,(r.height+.64)/2,r.d,r.w,r.height-.64,.016,0);
@@ -47,7 +51,23 @@ export function createInteriorGeometry(f,level=0){
   }else k.box('enclosed rear partition',/LED volume|Soundstage|Audio booths|Motion capture|Podcast/i.test(r.name)?'rubber':'plaster',0,r.height/2,r.d,r.w,r.height,.14,0);
   const profile=r.fitout,h=r.height;
   const side=Math.sign(r.z),edge=side*corridor/2,left=r.x-r.w/2,right=r.x+r.w/2,dl=r.doorX-door/2,dr=r.doorX+door/2;
-  for(const x of [left,right]){const key=x.toFixed(3)+':'+r.z.toFixed(3);if(!partitionKeys.has(key)){k.box('room partition','plaster',x,h/2,r.z,.12,h,r.d,0);for(const zz of [r.z-r.d/2+.10,r.z+r.d/2-.10])k.box('partition brass edge','brass',x+.065,h/2,zz,.018,h-.35,.025,.002);partitionKeys.add(key);}}
+  for(const wallSide of [-1,1]){
+   const x=wallSide*r.w/2;
+   if(acceptsDaylight&&sideWindow(source,wallSide,d)){
+    // A high sill keeps solid backing behind casework, art and acoustic treatments.
+    const sill=Math.min(3.04,h-.64),head=h-.13;
+    k.box('clerestory spandrel','plaster',x,sill/2,r.z,.12,sill,r.d,0);
+    k.box('clerestory glazing','glass',x,(sill+head)/2,r.z,.016,head-sill,r.d,0);
+    k.box('clerestory head','graphite',x,h-.065,r.z,.16,.13,r.d,0);
+    k.box('clerestory sill','steel',x,sill,r.z,.19,.075,r.d,0);
+    const panes=Math.ceil(r.d/1.8);
+    for(let n=0;n<=panes;n++)k.box('clerestory pressure cap','graphite',x,(sill+head)/2,.035+n*(r.d-.07)/panes,.13,head-sill,.055,0);
+    daylightDirection??=[-wallSide*Math.cos(source.angle),wallSide*Math.sin(source.angle)];
+   }else{
+    k.box('room partition','plaster',x,h/2,r.z,.12,h,r.d,0);
+    for(const zz of [.1,r.d-.1])k.box('partition brass edge','brass',x-wallSide*.065,h/2,zz,.018,h-.35,.025,.002);
+   }
+  }
   k.box('program floor finish',identity.floorFinish,r.x,.046,r.z,r.w-.16,.022,r.d-.14,0);
   for(const [a,b] of [[left,dl],[dr,right]]){
    k.box('corridor plinth','graphite',(a+b)/2,.33,edge,b-a,.66,.14,.01);
@@ -57,10 +77,13 @@ export function createInteriorGeometry(f,level=0){
   }
   k.box('door lintel','graphite',r.doorX,(h+2.96)/2,edge,door,h-2.96,.22,.015);
   for(const x of [dl,dr]){k.box('door jamb','graphite',x,1.48,edge,.085,2.96,.20,.007);k.box('door jamb brass reveal','brass',x,1.46,edge-side*.113,.012,2.90,.018,.003);}
+  roomThreshold(k,source,gallery);
+  const mount=signMount(source);
+  k.box('room identification plaque','graphite',mount.x,mount.y,-.169,mount.width+.035,mount.width/3.2+.035,.058,0);
   k.box('access reader','graphite',dr+.14,1.28,edge-side*.11,.085,.15,.03,.012);k.box('reader light','blue',dr+.14,1.3,edge-side*.131,.046,.055,.007,.002);
   k.box('room skirting','graphite',r.x,.075,r.z+side*(r.d/2-.07),r.w-.2,.15,.03,.004);
   for(const x of [left+.14,right-.14])k.box('partition skirting','graphite',x,.075,r.z,.025,.15,r.d,.003);
-  if(!profile.technical)for(let q=0;q<Math.min(20,Math.floor(r.d/.35));q++)k.box('acoustic timber slat','oak',left+.085,1.7,r.z-r.d*.43+q*.30,.045,2.75,.08,.005);
+  programWall(k,r,identity,gallery);
   if(profile.ceiling==='services'){
    // Exposed technical services, with suspended task lighting over working banks.
    for(const offset of [-.28,.28]){
@@ -113,7 +136,7 @@ export function createInteriorGeometry(f,level=0){
   k.box('room thermostat','porcelain',dr+.28,1.42,edge+side*.12,.085,.11,.026,.008);
   k.box('thermostat display','display',dr+.28,1.44,edge+side*.139,.057,.035,.004,.001);
   const furniture=new InteriorKit(`room-${i+1}: ${r.name}`);const kind=furnishRoom(furniture,r);const authored=furnishRoomIdentity(furniture,r,i);populateHall(furniture,r,kind);if(!profile.technical&&r.w>7&&r.d>6){if(authored.seed&1)planter(furniture,r.x-r.w*.34,r.z-side*r.d*.31,.36);if(authored.seed&2)planter(furniture,r.x+r.w*.34,r.z-side*r.d*.31,.36);}const occupants=new InteriorKit(`occupants room ${i+1}`),occupiedSeats=furnishOccupants(occupants,furniture,r,authored);const people=occupants.finish(false);people.userData.occupiedSeats=occupiedSeats;people.userData.identityKey=authored.key;place(people,source);root.add(people);const room=furniture.finish(true);room.userData.kind=kind;room.userData.fitout=profile;room.userData.identityKey=authored.key;room.userData.geometrySignature=authored.geometrySignature;place(room,source);root.add(room);
-  const shell=k.finish(true);shell.userData.identityKey=identity.key;shell.userData.daylight=glazed;place(shell,source);root.add(shell);
+  const shell=k.finish(true);shell.userData.identityKey=identity.key;shell.userData.daylight=!!daylightDirection;shell.userData.daylightDirection=daylightDirection;place(shell,source);root.add(shell);
  }
  const k=new InteriorKit('architecture circulation');
  k.box('structural floor','stone',0,-.15,0,w,.3,d,0);
@@ -121,12 +144,7 @@ export function createInteriorGeometry(f,level=0){
  for(const c of layout.circulation){
   k.box('circulation stone inlay','floorStone',c.x,.04,c.z,c.w,.025,c.d,0);
   k.box('circulation acoustic ceiling','plaster',c.x,3.64,c.z,c.w,.12,c.d,0);
-  const length=c.axis==='H'?c.w:c.d;
-  for(let t=-length/2+1;t<length/2-.3;t+=2.4){
-   const x=c.x+(c.axis==='H'?t:0),z=c.z+(c.axis==='V'?t:0);
-   k.box('suspended linear luminaire','warm',x,3.48,z,c.axis==='H'?1.6:.08,.035,c.axis==='H'?.08:1.6,.008);
-   k.box('luminaire brass spine','brass',x,3.52,z,c.axis==='H'?1.65:.025,.025,c.axis==='H'?.025:1.65,.004);
-  }
+  galleryBays(k,c,gallery);
  }
  // Close the envelope at passage ends and around the two service strips.
  // Keep these out of room glazing to avoid doubling tinted surfaces.

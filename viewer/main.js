@@ -12,6 +12,7 @@ import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {animate} from 'animejs';
+import {renderDirectory,levelCode} from './campus/wayfinding.js';
 import {FACILITIES,DISTRICTS,SPIRES} from './campus/data.js';
 import {createFacility} from './campus/buildings.js';
 import {configureFacilityDetails} from './campus/facility-details.js';
@@ -33,9 +34,53 @@ let booted=false,frameLoop=null,tourRequest=0,resizeHandler=null,graphicsGenerat
 function message(text){const el=$('#status');if(el)el.textContent=text;}
 function sheet(){document.body.classList.toggle('sheet-open',!$('#detail')?.hidden||!$('#directory')?.hidden);}
 function closeDirectory(){if($('#directory'))$('#directory').hidden=true;$('#directory-toggle')?.setAttribute('aria-expanded','false');sheet();}
-function updateDirectory(){if(!$('#facility-list'))return;const q=($('#search')?.value||'').toLowerCase().trim(),district=Number($('#district')?.value||0);const fs=FACILITIES.filter(f=>(!district||f.district===district)&&(!q||`${f.key} ${f.id} ${f.name}`.toLowerCase().includes(q)));$('#facility-list').replaceChildren();for(const f of fs){const button=document.createElement('button');button.innerHTML=`<span>${String(f.id).padStart(2,'0')}</span>${f.name}`;button.onclick=()=>select(f.id);$('#facility-list').append(button);}if(!fs.length){const p=document.createElement('p');p.textContent='No matching facilities.';$('#facility-list').append(p);}}
-function select(id){if(entering&&selected?.id!==id)exit();document.body.classList.add('exploring');selected=FACILITIES.find(f=>f.id===id);if(!selected)return;const f=selected;if($('#detail'))$('#detail').hidden=false;if(innerWidth<761)closeDirectory();sheet();if($('#facility-key'))$('#facility-key').textContent=f.key;if($('#facility-name'))$('#facility-name').textContent=f.name;if($('#facility-district'))$('#facility-district').textContent=DISTRICTS[f.district];if($('#facility-area'))$('#facility-area').textContent=f.design_area.toLocaleString();if($('#facility-floors'))$('#facility-floors').textContent=f.levels;if($('#facility-program'))$('#facility-program').textContent=f.program[0].split(';').slice(0,4).join(' · ');if($('#area-note'))$('#area-note').textContent=f.assumedArea?'Area is a design-package assumption; original allowance remains unresolved.':'Program and floor count from the supplied schematic design package.';markers.forEach(({el,f})=>el.classList.toggle('selected',f.id===id));message(graphicsReady?`${f.key} selected · exterior or interior tour available`:`${f.key} selected · schematic floor plans available`);}
-function moveCamera(position,target){if(!graphicsReady)return;if(entering)exit();document.body.classList.add('exploring');flight?.pause();flyover=false;$('#tour')?.classList.remove('active');const state={x:camera.position.x,y:camera.position.y,z:camera.position.z,tx:controls.target.x,ty:controls.target.y,tz:controls.target.z};flight=animate(state,{x:position[0],y:position[1],z:position[2],tx:target[0],ty:target[1],tz:target[2],duration:reduced?0:1200,ease:'inOutCubic',onUpdate:()=>{camera.position.set(state.x,state.y,state.z);controls.target.set(state.tx,state.ty,state.tz);controls.update();},onComplete:()=>flight=null});}
+let arrivalFloor=0;
+function updateDirectory(){
+ const list=$('#facility-list');
+ if(!list)return;
+ renderDirectory({list,count:$('#directory-count'),reset:$('#reset-search'),facilities:FACILITIES,
+  districts:DISTRICTS,query:$('#search').value,district:Number($('#district').value),select});
+}
+function chooseFloor(level){
+ arrivalFloor=level;
+ if($('#destination-floor'))$('#destination-floor').value=String(level);
+ if($('#facility-program'))$('#facility-program').textContent=selected.program[level].split(';').join(' · ');
+}
+function setView(id){
+ for(const control of ['aerial','north','ground','tour']){
+  const button=$('#'+control);
+  button?.classList.toggle('active',control===id);
+  button?.setAttribute('aria-pressed',String(control===id));
+ }
+}
+function setLayers(open){
+ if($('#layers'))$('#layers').hidden=!open;
+ $('#layers-toggle')?.setAttribute('aria-expanded',String(open));
+}
+function select(id,level=0){
+ if(entering&&selected?.id!==id)exit();
+ const f=FACILITIES.find(facility=>facility.id===id);
+ if(!f)return;
+ selected=f;
+ setLayers(false);
+ document.body.classList.add('exploring');
+ if($('#detail'))$('#detail').hidden=false;
+ if(innerWidth<761)closeDirectory();
+ sheet();
+ if($('#facility-key'))$('#facility-key').textContent=f.key;
+ if($('#facility-name'))$('#facility-name').textContent=f.name;
+ if($('#facility-district'))$('#facility-district').textContent=DISTRICTS[f.district];
+ if($('#facility-area'))$('#facility-area').textContent=f.design_area.toLocaleString();
+ if($('#facility-floors'))$('#facility-floors').textContent=f.levels;
+ const floors=$('#destination-floor');
+ if(floors)floors.replaceChildren(...f.program.map((_,i)=>new Option(levelCode(f,i),String(i))));
+ chooseFloor(level);
+ if($('#area-note'))$('#area-note').textContent=f.assumedArea?'Area is a design-package assumption; original allowance remains unresolved.':'Program and floor count from the supplied schematic design package.';
+ markers.forEach(({el,f})=>el.classList.toggle('selected',f.id===id));
+ $('#facility-name')?.focus({preventScroll:true});
+ message(graphicsReady?`${f.key} selected · exterior or interior tour available`:`${f.key} selected · schematic floor plans available`);
+}
+function moveCamera(position,target,view=null){if(!graphicsReady)return;if(entering)exit();document.body.classList.add('exploring');flight?.pause();flyover=false;setView(view);const state={x:camera.position.x,y:camera.position.y,z:camera.position.z,tx:controls.target.x,ty:controls.target.y,tz:controls.target.z};flight=animate(state,{x:position[0],y:position[1],z:position[2],tx:target[0],ty:target[1],tz:target[2],duration:reduced?0:1200,ease:'inOutCubic',onUpdate:()=>{camera.position.set(state.x,state.y,state.z);controls.target.set(state.tx,state.ty,state.tz);controls.update();},onComplete:()=>flight=null});}
 function facilityHeight(f){return buildings.find(group=>group.userData.facility===f.id)?.userData.envelopeHeight??f.h;}
 function focus(){if(!selected)return;const f=selected,h=facilityHeight(f);moveCamera([f.x+f.w*1.2,h+f.w*.8,f.z+f.d*1.9],[f.x,h*.35,f.z]);}
 function disposePostprocessing(){
@@ -126,8 +171,13 @@ function setDay(day){
  }catch(e){if(next!==environmentTarget)next?.dispose();console.warn('Atmosphere reflections unavailable',e);}
  finally{pmrem?.dispose();if(envSky?.material!==sky.material)envSky?.material.dispose();}
 }
-async function enter(){if(!graphicsReady)return;if(!selected||entering||interior)return;entering=true;if($('#enter')){$('#enter').disabled=true;$('#enter').textContent='Opening interior…';}const f=selected,request=++tourRequest;performanceReport.pause('tour-load');performanceReport.event('tour-request',{facility:f.key});try{const {createInterior}=await import('./campus/interior.js');if(request!==tourRequest||!graphicsReady)return;flight?.pause();flyover=false;$('#interior').hidden=false;$('#inside-key').textContent=f.key;$('#inside-name').textContent=f.name;$('#floor-select').replaceChildren();for(let i=0;i<f.levels;i++){const option=document.createElement('option');option.value=i;option.textContent=f.id===3?`B${i+1}`:`L${String(i+1).padStart(2,'0')}`;$('#floor-select').append(option);}interior=createInterior($('#interior-canvas'),f,{reduced,quality,onError:error=>{performanceReport.event('interior-error',{message:String(error.message)});exit();message('Interior graphics stopped. You can reopen the tour.');console.error(error);},onLifecycle:(type,detail)=>{performanceReport.event(type,detail);if(type==='floor-request'||type==='interior-context-lost')performanceReport.pause(type);},onFrame:sample=>{performanceReport.record({...sample,quality});acceptancePanel?.frame($('#interior-canvas'),sample);},onRoom:name=>{$('#room-status').textContent=name;},onFloor:(l,rooms)=>{$('#floor-select').value=l;$('#room-list').hidden=false;$('#rooms-toggle').setAttribute('aria-expanded','true');$('#room-list').replaceChildren();rooms.forEach((r,i)=>{const button=document.createElement('button');button.textContent=`${i+1}. ${r.name}`;button.onclick=()=>{interior?.visit(i);if(innerWidth<761){$('#room-list').hidden=true;$('#rooms-toggle').setAttribute('aria-expanded','false');}};$('#room-list').append(button);});}});$('#interior-canvas').focus();message('');}catch(e){if(request!==tourRequest)return;console.error(e);$('#interior').hidden=true;interior?.dispose();interior=null;message('Interior could not open. Please try again.');}finally{if(request===tourRequest){entering=false;if($('#enter')){$('#enter').disabled=false;$('#enter').innerHTML='Explore inside <span>↗</span>';}}}}
-function exit(){if(interior||entering){performanceReport.event('tour-exit',{facility:selected?.key});performanceReport.pause('tour-exit');}tourRequest++;entering=false;if($('#enter')){$('#enter').disabled=!graphicsReady;$('#enter').innerHTML='Explore inside <span>↗</span>';}interior?.dispose();interior=null;if($('#interior'))$('#interior').hidden=true;if(graphicsReady){renderer?.setSize(innerWidth,innerHeight);composer?.setSize(innerWidth,innerHeight);checkPostprocessing();}$('#enter')?.focus();}
+async function enter(){if(!graphicsReady)return;if(!selected||entering||interior)return;entering=true;if($('#enter')){$('#enter').disabled=true;$('#enter').textContent='Opening interior…';}const f=selected,request=++tourRequest;performanceReport.pause('tour-load');performanceReport.event('tour-request',{facility:f.key});try{const {createInterior}=await import('./campus/interior.js');if(request!==tourRequest||!graphicsReady)return;flight?.pause();flyover=false;setView(null);$('#interior').hidden=false;setCampusInert(true);$('#inside-key').textContent=f.key;$('#inside-name').textContent=f.name;$('#floor-select').replaceChildren();for(let i=0;i<f.levels;i++){const option=document.createElement('option');option.value=i;option.textContent=f.id===3?`B${i+1}`:`L${String(i+1).padStart(2,'0')}`;$('#floor-select').append(option);}interior=createInterior($('#interior-canvas'),f,{initialFloor:arrivalFloor,reduced,quality,onError:error=>{performanceReport.event('interior-error',{message:String(error.message)});exit();message('Interior graphics stopped. You can reopen the tour.');console.error(error);},onLifecycle:(type,detail)=>{performanceReport.event(type,detail);if(type==='floor-request'||type==='interior-context-lost')performanceReport.pause(type);},onFrame:sample=>{performanceReport.record({...sample,quality});acceptancePanel?.frame($('#interior-canvas'),sample);},onRoom:name=>{$('#room-status').textContent=name;},onFloor:(l,rooms)=>{chooseFloor(l);$('#floor-select').value=l;$('#room-list').hidden=innerWidth<761;$('#rooms-toggle').setAttribute('aria-expanded',String(!$('#room-list').hidden));$('#room-list').replaceChildren();rooms.forEach((r,i)=>{const button=document.createElement('button');button.textContent=`${i+1}. ${r.name}`;button.onclick=()=>{interior?.visit(i);if(innerWidth<761){$('#room-list').hidden=true;$('#rooms-toggle').setAttribute('aria-expanded','false');}};$('#room-list').append(button);});}});$('#interior-canvas').focus();message('');}catch(e){if(request!==tourRequest)return;console.error(e);$('#interior').hidden=true;setCampusInert(false);interior?.dispose();interior=null;message('Interior could not open. Please try again.');}finally{if(request===tourRequest){entering=false;if($('#enter')){$('#enter').disabled=false;$('#enter').innerHTML='Explore inside <span>↗</span>';}}}}
+function setCampusInert(active){
+ for(const panel of document.querySelectorAll('body > header, #app, #directory, #detail, #layers, #toolbar, #markers')){
+  panel.inert=active;
+ }
+}
+function exit(){setCampusInert(false);if(interior||entering){performanceReport.event('tour-exit',{facility:selected?.key});performanceReport.pause('tour-exit');}tourRequest++;entering=false;if($('#enter')){$('#enter').disabled=!graphicsReady;$('#enter').innerHTML='Explore inside <span>↗</span>';}interior?.dispose();interior=null;if($('#interior'))$('#interior').hidden=true;if(graphicsReady){renderer?.setSize(innerWidth,innerHeight);composer?.setSize(innerWidth,innerHeight);checkPostprocessing();}$('#enter')?.focus();}
 function bind(){
  acceptancePanel=createAcceptancePanel({report:performanceReport,getCanvas:()=>interior?.getCanvas()||renderer?.domElement,});
  document.addEventListener('visibilitychange',()=>performanceReport.pause(document.hidden?'hidden':'visible'));
@@ -138,20 +188,28 @@ function bind(){
  if($('#performance-report'))$('#performance-report').onclick=()=>{if(performanceReport.active){const report=performanceReport.finish();$('#performance-report').textContent='Record device performance';message(report.segments.length?'Device report downloaded.':'No rendered frames recorded.');}else{performanceReport.start();$('#performance-report').textContent='Finish & download report';message('Recording locally · explore the campus and interiors, then finish in Systems.');}};
  const dist=$('#district');if(dist){dist.replaceChildren();DISTRICTS.forEach((name,i)=>{const option=document.createElement('option');option.value=i;option.textContent=name;dist.append(option);});}
  updateDirectory();if($('#search'))$('#search').oninput=updateDirectory;if(dist)dist.onchange=updateDirectory;
- if($('#directory-toggle'))$('#directory-toggle').onclick=()=>{const open=$('#directory').hidden;if(open&&entering)exit();$('#directory').hidden=!open;$('#directory-toggle').setAttribute('aria-expanded',String(open));if(open&&innerWidth<761&&$('#detail'))$('#detail').hidden=true;sheet();if(open)$('#search')?.focus();};
- if($('#directory-close'))$('#directory-close').onclick=closeDirectory;if($('#detail-close'))$('#detail-close').onclick=()=>{if(entering)exit();$('#detail').hidden=true;sheet();};
- if($('#focus'))$('#focus').onclick=focus;if($('#view-plan'))$('#view-plan').onclick=()=>{if(entering)exit();if(selected)planViewer.open(selected);};if($('#enter'))$('#enter').onclick=enter;if($('#exit-interior'))$('#exit-interior').onclick=exit;if($('#floor-select'))$('#floor-select').onchange=e=>interior?.setFloor(Number(e.target.value));
- if($('#aerial'))$('#aerial').onclick=()=>moveCamera([40,mobile?720:680,mobile?980:920],[0,10,-40]);if($('#north'))$('#north').onclick=()=>moveCamera([-80,620,-980],[20,20,-40]);if($('#ground'))$('#ground').onclick=()=>{if(selected){const f=selected;moveCamera([f.x,5.2,f.z+f.d/2+38],[f.x,facilityHeight(f)*.42,f.z]);}else moveCamera([-280,8,285],[-130,25,110]);};
- if($('#tour'))$('#tour').onclick=()=>{if(entering)exit();flight?.pause();flyover=!flyover;$('#tour').classList.toggle('active',flyover);};
+ if($('#reset-search'))$('#reset-search').onclick=()=>{
+  $('#search').value='';dist.value='0';updateDirectory();$('#search').focus();
+ };
+ if($('#destination-floor'))$('#destination-floor').onchange=e=>chooseFloor(Number(e.target.value));
+ if($('#directory-toggle'))$('#directory-toggle').onclick=()=>{setLayers(false);const open=$('#directory').hidden;if(open&&entering)exit();$('#directory').hidden=!open;$('#directory-toggle').setAttribute('aria-expanded',String(open));if(open&&innerWidth<761&&$('#detail'))$('#detail').hidden=true;sheet();if(open)$('#search')?.focus();};
+ if($('#directory-close'))$('#directory-close').onclick=()=>{closeDirectory();$('#directory-toggle').focus();};if($('#detail-close'))$('#detail-close').onclick=()=>{if(entering)exit();$('#detail').hidden=true;sheet();$('#directory-toggle')?.focus();};
+ if($('#focus'))$('#focus').onclick=focus;if($('#view-plan'))$('#view-plan').onclick=()=>{if(entering)exit();if(selected)planViewer.open(selected,arrivalFloor);};if($('#enter'))$('#enter').onclick=enter;if($('#exit-interior'))$('#exit-interior').onclick=exit;if($('#floor-select'))$('#floor-select').onchange=e=>interior?.setFloor(Number(e.target.value));
+ if($('#aerial'))$('#aerial').onclick=()=>moveCamera([40,mobile?720:680,mobile?980:920],[0,10,-40],'aerial');if($('#north'))$('#north').onclick=()=>moveCamera([-80,620,-980],[20,20,-40],'north');if($('#ground'))$('#ground').onclick=()=>{if(selected){const f=selected;moveCamera([f.x,5.2,f.z+f.d/2+38],[f.x,facilityHeight(f)*.42,f.z],'ground');}else moveCamera([-280,8,285],[-130,25,110],'ground');};
+ if($('#tour'))$('#tour').onclick=()=>{if(entering)exit();flight?.pause();flyover=!flyover;setView(flyover?'tour':null);};
  if($('#day'))$('#day').onclick=()=>setDay($('#day').getAttribute('aria-pressed')!=='true');
- if($('#layers-toggle'))$('#layers-toggle').onclick=()=>{$('#layers').hidden=!$('#layers').hidden;$('#layers-toggle').setAttribute('aria-expanded',String(!$('#layers').hidden));};
+ if($('#layers-toggle'))$('#layers-toggle').onclick=()=>{const open=$('#layers').hidden;if(open){closeDirectory();if($('#detail'))$('#detail').hidden=true;sheet();}setLayers(open);};
  if($('#labels'))$('#labels').onclick=()=>{showLabels=!showLabels;$('#labels').setAttribute('aria-pressed',String(showLabels));if($('#markers'))$('#markers').hidden=!showLabels;};
  if($('#mesh-layer'))$('#mesh-layer').onchange=e=>infrastructure?.setNetwork(e.target.checked);
  if($('#energy-layer'))$('#energy-layer').onchange=e=>infrastructure?.setEnergy(e.target.checked);
  if($('#fleet-layer'))$('#fleet-layer').onchange=e=>{if(fleets)fleets.root.visible=e.target.checked;};
  document.querySelectorAll('[data-move]').forEach(b=>{b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);interior?.hold(b.dataset.move,true);};for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>interior?.hold(b.dataset.move,false));});
  window.addEventListener('blur',()=>{document.querySelectorAll('[data-move]').forEach(b=>interior?.hold(b.dataset.move,false));});
- window.addEventListener('keydown',e=>{if(e.key==='Escape'){if(interior||entering)exit();else{closeDirectory();if($('#detail'))$('#detail').hidden=true;if($('#layers'))$('#layers').hidden=true;sheet();}}});
+ window.addEventListener('keydown',e=>{if(e.key!=='Escape'||$('#plan-dialog')?.open)return;
+  if(interior||entering){exit();return;}
+  if($('#layers')&&!$('#layers').hidden){setLayers(false);$('#layers-toggle')?.focus();return;}
+  if($('#detail')&&!$('#detail').hidden){$('#detail').hidden=true;sheet();($('#directory')?.hidden?$('#directory-toggle'):$('#search'))?.focus();return;}
+  if($('#directory')&&!$('#directory').hidden){closeDirectory();$('#directory-toggle')?.focus();}});
 }
 function attachCanvas(){
  const app=document.getElementById('app');
@@ -180,7 +238,7 @@ async function boot(){
  renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance',preserveDrawingBuffer:false,alpha:false,reversedDepthBuffer:!legacyDepth});reversedDepth=renderer.capabilities.reversedDepthBuffer===true;renderer.debug.onShaderError=(gl,program)=>{throw new Error('WebGL shader compilation failed: '+gl.getProgramInfoLog(program));};renderer.setPixelRatio(exteriorPixelRatio(devicePixelRatio,quality,mobile));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;attachCanvas();
  {const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');performanceReport.event('graphics-capabilities',{api:gl.getParameter(gl.VERSION),vendor:gl.getParameter(debug?debug.UNMASKED_VENDOR_WEBGL:gl.VENDOR),renderer:gl.getParameter(debug?debug.UNMASKED_RENDERER_WEBGL:gl.RENDERER),maxTextureSize:gl.getParameter(gl.MAX_TEXTURE_SIZE)});}
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();performanceReport.event('exterior-context-lost');performanceReport.pause('exterior-context-lost');flight?.pause();flyover=false;graphicsGeneration++;graphicsReady=false;frameLoop?.stop();environmentTarget?.dispose();environmentTarget=null;if(scene)scene.environment=null;exit();message('Graphics paused · waiting for the browser to restore them');});
- scene=new T.Scene();scene.background=new T.Color(0x6a2848);scene.fog=new T.Fog(0xe88870,1700,4000);sky=createAtmosphere();scene.add(sky);camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.5,9000);camera.position.set(40,mobile?720:680,mobile?980:920);controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,10,-40);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.02;controls.minDistance=8;controls.maxDistance=2300;controls.update();controls.addEventListener('start',()=>{document.body.classList.add('exploring');flight?.pause();flight=null;flyover=false;$('#tour')?.classList.remove('active');});
+ scene=new T.Scene();scene.background=new T.Color(0x6a2848);scene.fog=new T.Fog(0xe88870,1700,4000);sky=createAtmosphere();scene.add(sky);camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.5,9000);camera.position.set(40,mobile?720:680,mobile?980:920);controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,10,-40);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.02;controls.minDistance=8;controls.maxDistance=2300;controls.update();controls.addEventListener('start',()=>{document.body.classList.add('exploring');flight?.pause();flight=null;flyover=false;setView(null);});
  ambient=new T.AmbientLight(0xffead4,.28);scene.add(ambient);
  hemi=new T.HemisphereLight(0xffc090,0x3a2818,.85);scene.add(hemi);sun=new T.DirectionalLight(0xff9a48,2.4);sun.position.set(-400,180,-1200);{sun.castShadow=true;sun.shadow.mapSize.set(mobile?1024:2048,mobile?1024:2048);sun.shadow.camera.left=-700;sun.shadow.camera.right=700;sun.shadow.camera.top=700;sun.shadow.camera.bottom=-700;sun.shadow.camera.far=2400;sun.shadow.normalBias=.6;}scene.add(sun);rim=new T.DirectionalLight(0xb08cff,1.15);rim.position.set(420,180,380);scene.add(rim);
  const prismFill=new T.PointLight(0xffc070,1800,220,2);prismFill.position.set(0,70,-315);scene.add(prismFill);

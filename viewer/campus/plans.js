@@ -26,5 +26,5 @@ export function createPlanViewer(){
  query('#floor-drawing').replaceChildren(svg);choose(0);
  }
  query('#plan-close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>lastFocus?.focus());query('#plan-floor').onchange=e=>draw(Number(e.target.value));
- return {open(f){facility=f;lastFocus=document.activeElement;query('#plan-id').textContent=`${f.key} · SCHEMATIC FLOOR PLAN`;query('#plan-title').textContent=f.name;query('#plan-floor').replaceChildren();for(let i=0;i<f.levels;i++){const o=document.createElement('option');o.value=i;o.textContent=f.id===3?`B${i+1}`:`L${String(i+1).padStart(2,'0')}`;query('#plan-floor').append(o);}draw(0);dialog.showModal();},close(){dialog.close();}};
+ return {open(f,level=0){facility=f;lastFocus=document.activeElement;query('#plan-id').textContent=`${f.key} · SCHEMATIC FLOOR PLAN`;query('#plan-title').textContent=f.name;query('#plan-floor').replaceChildren();for(let i=0;i<f.levels;i++){const o=document.createElement('option');o.value=i;o.textContent=f.id===3?`B${i+1}`:`L${String(i+1).padStart(2,'0')}`;query('#plan-floor').append(o);}query('#plan-floor').value=String(level);draw(level);dialog.showModal();},close(){dialog.close();}};
 }
