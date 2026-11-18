@@ -5,6 +5,7 @@ import {InteriorKit,furnishRoom,planter,server,robot} from './interior-kit.js';
 import {galleryBays,galleryFrontages,mountArrivalBoards,gallerySchedule,programWall,roomThreshold,sideWindow,signMount} from './interior-gallery.js';
 import {roomIdentity,furnishRoomIdentity} from './room-identity.js';
 import {slidingDoor,ceilingReveal,rearCove,slatWall} from './interior-joinery.js';
+import {populateLargeRoom} from './interior-population.js';
 // Bake oriented room vertices: Babylon and offline glTF consume the same buffers.
 function place(group,r){
  const matrix=new T.Matrix4().makeRotationY(r.angle);matrix.setPosition(r.doorX,0,r.doorZ);
@@ -84,7 +85,7 @@ export function createInteriorGeometry(f,level=0){
   slidingDoor(k,{dl,dr,right,height:h,solid:!!profile.privateRoom});
   ceilingReveal(k,{w:r.w,d:r.d,h});
   if(!glazed&&!profile.technical&&!/LED volume|Soundstage|Audio booths|Motion capture|Podcast/i.test(r.name)){
-   slatWall(k,{w:r.w,d:r.d,h},{timber:identity.accent==='walnut'?'walnut':'oak',backing:profile.privateRoom?'linen':'fabric'});
+   slatWall(k,{w:r.w,d:r.d,h},{timber:identity.accent==='walnut'?'walnut':'oak',backing:profile.privateRoom?'linen':'fabric',maxWidth:r.w>12?Math.min(8,r.w*.4):4.2});
    rearCove(k,{w:r.w,d:r.d,h});
   }
   const mount=signMount(source);
@@ -144,7 +145,7 @@ export function createInteriorGeometry(f,level=0){
   k.cylinder('sprinkler head','brass',r.x+.75,h-0.125,r.z,.014,.07);
   k.box('room thermostat','porcelain',dr+.28,1.42,edge+side*.12,.085,.11,.026,.008);
   k.box('thermostat display','display',dr+.28,1.44,edge+side*.139,.057,.035,.004,.001);
-  const furniture=new InteriorKit(`room-${i+1}: ${r.name}`);const kind=furnishRoom(furniture,r);const authored=furnishRoomIdentity(furniture,r,i);populateHall(furniture,r,kind);if(!profile.technical&&r.w>7&&r.d>6){if(authored.seed&1)planter(furniture,r.x-r.w*.34,r.z-side*r.d*.31,.36);if(authored.seed&2)planter(furniture,r.x+r.w*.34,r.z-side*r.d*.31,.36);}const occupants=new InteriorKit(`occupants room ${i+1}`),occupiedSeats=furnishOccupants(occupants,furniture,r,authored);const people=occupants.finish(false);people.userData.occupiedSeats=occupiedSeats;people.userData.identityKey=authored.key;place(people,source);root.add(people);const room=furniture.finish(true);room.userData.kind=kind;room.userData.fitout=profile;room.userData.identityKey=authored.key;room.userData.geometrySignature=authored.geometrySignature;place(room,source);root.add(room);
+  const furniture=new InteriorKit(`room-${i+1}: ${r.name}`);const kind=furnishRoom(furniture,r);const authored=furnishRoomIdentity(furniture,r,i);populateHall(furniture,r,kind);populateLargeRoom(furniture,r,kind);if(!profile.technical&&r.w>7&&r.d>6){if(authored.seed&1)planter(furniture,r.x-r.w*.34,r.z-side*r.d*.31,.36);if(authored.seed&2)planter(furniture,r.x+r.w*.34,r.z-side*r.d*.31,.36);}const occupants=new InteriorKit(`occupants room ${i+1}`),occupiedSeats=furnishOccupants(occupants,furniture,r,authored);const people=occupants.finish(false);people.userData.occupiedSeats=occupiedSeats;people.userData.identityKey=authored.key;place(people,source);root.add(people);const room=furniture.finish(true);room.userData.kind=kind;room.userData.fitout=profile;room.userData.identityKey=authored.key;room.userData.geometrySignature=authored.geometrySignature;place(room,source);root.add(room);
   const shell=k.finish(true);shell.userData.identityKey=identity.key;shell.userData.daylight=!!daylightDirection;shell.userData.daylightDirection=daylightDirection;place(shell,source);root.add(shell);
  }
  const k=new InteriorKit('architecture circulation');
