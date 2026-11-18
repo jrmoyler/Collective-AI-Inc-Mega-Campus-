@@ -5,7 +5,7 @@ import * as T from 'three';
 import {FACILITIES, DISTRICTS} from './data.js';
 import {levelCode} from './wayfinding.js';
 import {applyDepthConvention} from './geometry.js';
-import {obstaclesFrom, composeShot, freeViewport} from './experience-camera.js';
+import {obstaclesFrom, treeObstacles, composeShot, freeViewport} from './experience-camera.js';
 import {parseDeepLink, serializeDeepLink} from './experience-deeplink.js';
 import {TOUR_STOPS, createTourController} from './experience-tour.js';
 import {SHORTCUTS, shortcutFor} from './experience-shortcuts.js';
@@ -30,14 +30,18 @@ export function uiRects() {
 
 /** Composed oblique of the selected facility given what the UI currently covers. */
 export function shotFor(api, f, overrides = {}) {
-  return composeShot(f, {
-    height: api.facilityHeight(f), obstacles: obstaclesFrom(FACILITIES, api.facilityHeight),
-    aspect: innerWidth / innerHeight, fov: api.camera?.fov ?? 42,
-    free: freeViewport(uiRects(), innerWidth, innerHeight), ...overrides,
-  });
+  const obstacles = [...obstaclesFrom(FACILITIES, api.facilityHeight), ...treeObstacles(api.trees, [f.x, 0, f.z], 420)];
+  const base = {
+    height: api.facilityHeight(f), obstacles, aspect: innerWidth / innerHeight, fov: api.camera?.fov ?? 42,
+    free: freeViewport(uiRects(), innerWidth, innerHeight),
+  };
+  // Street level is only offered from a clear eye point; otherwise drop to a low oblique.
+  if (overrides === GROUND_SHOT) return composeShot(f, { ...base, ...GROUND_SHOT }) ?? composeShot(f, { ...base, ...LOW_SHOT });
+  return composeShot(f, { ...base, ...overrides });
 }
 
-export const GROUND_SHOT = { elevations: [-3, -1, 3, 7], azimuths: [0, 22, -22, 45, -45, 90, -90, 180], fill: .82, minY: 2.5 };
+export const GROUND_SHOT = { elevations: [-2, 2, 6], azimuths: [0, 22, -22, 45, -45, 90, -90, 180], fill: .72, minY: 2.5, requireClear: true };
+const LOW_SHOT = { elevations: [10, 15, 21], fill: .6 };
 
 export function showSelection(api, f) {
   const scene = api?.scene;
@@ -186,15 +190,13 @@ export function bindExperience(api) {
   // ---- Hover affordance (fine pointers only) -------------------------------------
   if ($('#app') && matchMedia('(hover: hover) and (pointer: fine)').matches) {
     const ray = new T.Raycaster(), pointer = new T.Vector2();
-    let queued = null, frame = 0, last = 0;
+    let queued = null, timer = 0, last = 0;
     const clear = () => { hover.hide(); document.body.classList.remove('hovering-facility'); };
+    // Raycast at most every 60 ms; a trailing probe catches the resting position.
     const probe = () => {
-      frame = 0;
+      timer = 0; last = performance.now();
       const e = queued;
       if (!e || !api.graphicsReady || api.busy || !api.camera) { clear(); return; }
-      const now = performance.now();
-      if (now - last < 60) { frame = requestAnimationFrame(probe); return; }
-      last = now;
       pointer.set(e.clientX / innerWidth * 2 - 1, 1 - e.clientY / innerHeight * 2);
       ray.setFromCamera(pointer, api.camera);
       let object = ray.intersectObjects(api.buildings, true)[0]?.object;
@@ -207,7 +209,7 @@ export function bindExperience(api) {
     $('#app').addEventListener('pointermove', e => {
       if (e.buttons) { clear(); return; }
       queued = e;
-      if (!frame) frame = requestAnimationFrame(probe);
+      if (!timer) timer = setTimeout(probe, Math.max(0, 60 - (performance.now() - last)));
     });
     $('#app').addEventListener('pointerleave', () => { queued = null; clear(); });
   }

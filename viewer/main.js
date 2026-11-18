@@ -227,7 +227,7 @@ function exit(){invalidateExterior();setCampusInert(false);if(interior||entering
 function bind(){
  bindExperience({select,chooseFloor,setView,moveCamera,focus:options=>focus(options),reduced,mobile,facilityHeight,invalidate:invalidateExterior,
   get selected(){return selected;},get arrivalFloor(){return arrivalFloor;},get graphicsReady(){return graphicsReady;},get busy(){return !!(interior||entering);},
-  get camera(){return camera;},get scene(){return scene;},get buildings(){return buildings;},get reversedDepth(){return reversedDepth;}});
+  get camera(){return camera;},get scene(){return scene;},get buildings(){return buildings;},get reversedDepth(){return reversedDepth;},get trees(){return landscape?.trees;}});
  updateTrip=bindVisitorAtlas((id,floor)=>{
   if(entering)exit();
   closeDirectory();select(id,floor);
