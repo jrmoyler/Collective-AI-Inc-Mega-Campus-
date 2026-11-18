@@ -31,8 +31,8 @@ header {
 .head-stats b, .eyebrow, .facts small, .facility-number, .directory-summary, #inside-key { font-family: var(--mono); }
 #scene-caption {
   border-left: 3px solid var(--gold);
-  padding: 4px 0 4px 17px;
-  filter: drop-shadow(0 1px 4px #050a18);
+  padding: 10px 16px;
+  background: #091321;
 }
 #scene-caption h1 { font-size: clamp(25px, 3.5vw, 46px); letter-spacing: -.035em; margin: 8px 0; }
 #scene-caption p { font-size: 14px; margin: 0; }
@@ -79,6 +79,7 @@ header {
   .interior-top { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; padding-top: max(8px, env(safe-area-inset-top)); }
   .interior-top > div { grid-column: span 2; min-width: 0; }
   .interior-top h2 { max-width: none; margin: 2px 0; }
+  .interior-top .quality-control select { width: 104px; }
   .interior-top .quality-control { grid-column: span 2; justify-self: start; }
   .interior-top label:last-child { justify-self: end; }
   #rooms { top: calc(125px + env(safe-area-inset-top)); }
@@ -94,4 +95,10 @@ header {
   .interior-top { display: flex; flex-wrap: nowrap; align-items: center; }
   .interior-top > div { min-width: 0; }
   #rooms { top: 66px; left: 8px; right: auto; width: min(270px, 43vw); max-height: calc(100dvh - 76px); }
+}
+
+.touch-guide { display: none; }
+@media (pointer: coarse) {
+  .keyboard-guide { display: none; }
+  .touch-guide { display: inline; }
 }
